@@ -1,38 +1,33 @@
-name: Update Private GitHub Stats
+name: Update Engineering Analytics
 
 on:
-  # Refresh the card once per day at 02:17 UTC.
   schedule:
+    # Runs daily at 02:17 UTC.
     - cron: "17 2 * * *"
-
-  # Allow manual execution from the GitHub Actions tab.
   workflow_dispatch:
 
-# Required so GITHUB_TOKEN can commit the generated SVG.
 permissions:
   contents: write
 
-# Prevent two refresh jobs from pushing at the same time.
 concurrency:
-  group: update-private-github-stats
+  group: update-engineering-analytics
   cancel-in-progress: true
 
 jobs:
-  generate-private-stats:
-    name: Generate private language card
+  generate:
+    name: Generate analytics cards
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
 
     steps:
       - name: Check out profile repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
-          # Keep credentials available so the workflow can push the SVG.
           persist-credentials: true
           fetch-depth: 1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "24"
 
@@ -47,72 +42,97 @@ jobs:
             exit 1
           fi
 
-          echo "PRIVATE_STATS_TOKEN is configured."
-
-      - name: Verify GitHub API authentication
-        shell: bash
-        env:
-          PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
-        run: |
-          HTTP_STATUS=$(curl \
+          STATUS=$(curl \
             --silent \
-            --output /tmp/github-user-response.json \
+            --output /tmp/github-user.json \
             --write-out "%{http_code}" \
             --header "Accept: application/vnd.github+json" \
             --header "Authorization: Bearer $PRIVATE_STATS_TOKEN" \
             --header "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/user)
 
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "::error::GitHub rejected PRIVATE_STATS_TOKEN with HTTP $HTTP_STATUS."
-            cat /tmp/github-user-response.json
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::GitHub rejected PRIVATE_STATS_TOKEN with HTTP $STATUS."
+            cat /tmp/github-user.json
             exit 1
           fi
 
-          echo "GitHub API authentication succeeded."
+          echo "GitHub authentication succeeded."
 
-      - name: Generate private GitHub statistics
+      - name: Generate fresh analytics cards
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
-        run: node scripts/generate-language-stats.mjs
+          GITHUB_USERNAME: maharudraabhishek
+          MAX_REPOSITORIES: "200"
+          REPOSITORY_CONCURRENCY: "5"
+        run: |
+          mkdir -p assets
 
-      - name: Validate generated SVG
+          rm -f \
+            assets/github-overview.svg \
+            assets/contribution-streak.svg \
+            assets/activity-timeline.svg \
+            assets/language-spectrum.svg \
+            assets/frameworks-platforms.svg \
+            assets/engineering-domains.svg \
+            assets/delivery-collaboration.svg \
+            assets/repository-portfolio.svg
+
+          node scripts/generate-engineering-analytics.mjs
+
+      - name: Validate generated SVG cards
         shell: bash
         run: |
-          SVG_PATH="assets/github-languages.svg"
+          SVG_FILES=(
+            "assets/github-overview.svg"
+            "assets/contribution-streak.svg"
+            "assets/activity-timeline.svg"
+            "assets/language-spectrum.svg"
+            "assets/frameworks-platforms.svg"
+            "assets/engineering-domains.svg"
+            "assets/delivery-collaboration.svg"
+            "assets/repository-portfolio.svg"
+          )
 
-          if [ ! -f "$SVG_PATH" ]; then
-            echo "::error::$SVG_PATH was not generated."
-            exit 1
-          fi
+          for svg in "${SVG_FILES[@]}"; do
+            if [ ! -s "$svg" ]; then
+              echo "::error::$svg is missing or empty."
+              exit 1
+            fi
 
-          if [ ! -s "$SVG_PATH" ]; then
-            echo "::error::$SVG_PATH was generated but is empty."
-            exit 1
-          fi
+            if ! grep -q "<svg" "$svg"; then
+              echo "::error::$svg does not contain SVG markup."
+              exit 1
+            fi
 
-          if ! grep -q "<svg" "$SVG_PATH"; then
-            echo "::error::$SVG_PATH does not contain valid SVG markup."
-            exit 1
-          fi
+            if grep -qiE \
+              "github_pat_|ghp_|PRIVATE_STATS_TOKEN|Authorization: Bearer" \
+              "$svg"; then
+              echo "::error::Potential secret material was found in $svg."
+              exit 1
+            fi
 
-          echo "Generated SVG:"
-          ls -lh "$SVG_PATH"
+            echo "Validated: $svg"
+          done
 
-      - name: Commit and push updated SVG
+      - name: Commit and push refreshed cards
         shell: bash
         run: |
-          SVG_PATH="assets/github-languages.svg"
-
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add "$SVG_PATH"
+          git add --force assets/*.svg
 
           if git diff --cached --quiet; then
-            echo "Language statistics have not changed. Nothing to commit."
+            echo "Analytics are unchanged. Nothing to commit."
             exit 0
           fi
 
-          git commit -m "chore(stats): refresh private language card"
-          git push
+          git commit -m "chore(stats): refresh engineering analytics"
+
+          if ! git push; then
+            echo "Initial push failed. Rebasing onto the latest branch..."
+            git pull --rebase
+            git push
+          fi
