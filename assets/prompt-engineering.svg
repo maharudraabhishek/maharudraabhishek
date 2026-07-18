@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="446" viewBox="0 0 900 446" role="img" aria-label="Prompt Engineering">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:500 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:700 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="899" height="445" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2h12v9H7l-3 3v-3H2zM5 5h6M5 8h4"/></g>
+  <text x="48" y="31" class="title">Prompt Engineering</text>
+  <text x="48" y="49" class="subtitle">Reusable prompts, system instructions, few-shot patterns, structured outputs and prompt validation</text>
+  <rect x="20" y="72" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(33 85) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2h12v9H7l-3 3v-3H2zM5 5h6M5 8h4"/></g>
+      <text x="62" y="103" class="value">7</text>
+      <text x="33" y="128" text-anchor="start" class="label"><tspan x="33" dy="0">Repositories with prompt engineering</tspan></text>
+      <rect x="456" y="72" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(469 85) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
+      <text x="498" y="103" class="value">131</text>
+      <text x="469" y="128" text-anchor="start" class="label"><tspan x="469" dy="0">Prompt and command files</tspan></text>
+      <rect x="20" y="166" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(33 179) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+      <text x="62" y="197" class="value">3</text>
+      <text x="33" y="222" text-anchor="start" class="label"><tspan x="33" dy="0">System-prompt signals</tspan></text>
+      <rect x="456" y="166" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(469 179) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <text x="498" y="197" class="value">8.4K</text>
+      <text x="469" y="222" text-anchor="start" class="label"><tspan x="469" dy="0">Few-shot and example signals</tspan></text>
+      <rect x="20" y="260" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(33 273) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="62" y="291" class="value">4</text>
+      <text x="33" y="316" text-anchor="start" class="label"><tspan x="33" dy="0">Structured-output and schema signals</tspan></text>
+      <rect x="456" y="260" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(469 273) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="13" r="2"/><path d="M5 3h3a3 3 0 0 1 3 3v2a3 3 0 0 0 2 3"/></g>
+      <text x="498" y="291" class="value">0</text>
+      <text x="469" y="316" text-anchor="start" class="label"><tspan x="469" dy="0">Prompt versioning and registry signals</tspan></text>
+      <rect x="20" y="354" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(33 367) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v5l-4 7a1.5 1.5 0 0 0 1.3 2h9.4a1.5 1.5 0 0 0 1.3-2l-4-7V1M5 10h6"/></g>
+      <text x="62" y="385" class="value">7</text>
+      <text x="33" y="410" text-anchor="start" class="label"><tspan x="33" dy="0">Prompt tests and regression signals</tspan></text>
+      <rect x="456" y="354" width="424" height="82" rx="10" fill="#DB61A2" fill-opacity=".09" stroke="#DB61A2" stroke-opacity=".55"/>
+      <g transform="translate(469 367) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <text x="498" y="385" class="value">3</text>
+      <text x="469" y="410" text-anchor="start" class="label"><tspan x="469" dy="0">Prompt-injection safeguards</tspan></text>
+      
+</svg>

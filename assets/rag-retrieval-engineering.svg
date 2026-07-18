@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="446" viewBox="0 0 900 446" role="img" aria-label="RAG &amp; Retrieval Engineering">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:500 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:700 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="899" height="445" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></g>
+  <text x="48" y="31" class="title">RAG &amp; Retrieval Engineering</text>
+  <text x="48" y="49" class="subtitle">Retrieval pipelines, embeddings, vector stores, chunking, reranking and dynamic context injection</text>
+  <rect x="20" y="72" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(33 85) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></g>
+      <text x="62" y="103" class="value">4</text>
+      <text x="33" y="128" text-anchor="start" class="label"><tspan x="33" dy="0">Repositories with RAG or retrieval</tspan><tspan x="33" dy="14">engineering</tspan></text>
+      <rect x="456" y="72" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(469 85) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
+      <text x="498" y="103" class="value">23</text>
+      <text x="469" y="128" text-anchor="start" class="label"><tspan x="469" dy="0">RAG and retrieval implementation files</tspan></text>
+      <rect x="20" y="166" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(33 179) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></g>
+      <text x="62" y="197" class="value">1</text>
+      <text x="33" y="222" text-anchor="start" class="label"><tspan x="33" dy="0">Retriever and semantic-search signals</tspan></text>
+      <rect x="456" y="166" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(469 179) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
+      <text x="498" y="197" class="value">3</text>
+      <text x="469" y="222" text-anchor="start" class="label"><tspan x="469" dy="0">Embedding generation and model signals</tspan></text>
+      <rect x="20" y="260" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(33 273) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="8" cy="3" rx="5" ry="2"/><path d="M3 3v8c0 1.1 2.2 2 5 2s5-.9 5-2V3M3 7c0 1.1 2.2 2 5 2s5-.9 5-2"/></g>
+      <text x="62" y="291" class="value">4</text>
+      <text x="33" y="316" text-anchor="start" class="label"><tspan x="33" dy="0">Vector database and store signals</tspan></text>
+      <rect x="456" y="260" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(469 273) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <text x="498" y="291" class="value">1</text>
+      <text x="469" y="316" text-anchor="start" class="label"><tspan x="469" dy="0">Document chunking and splitting signals</tspan></text>
+      <rect x="20" y="354" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(33 367) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="13" r="2"/><path d="M5 3h3a3 3 0 0 1 3 3v2a3 3 0 0 0 2 3"/></g>
+      <text x="62" y="385" class="value">1</text>
+      <text x="33" y="410" text-anchor="start" class="label"><tspan x="33" dy="0">Reranking and fusion signals</tspan></text>
+      <rect x="456" y="354" width="424" height="82" rx="10" fill="#58A6FF" fill-opacity=".09" stroke="#58A6FF" stroke-opacity=".55"/>
+      <g transform="translate(469 367) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
+      <text x="498" y="385" class="value">1</text>
+      <text x="469" y="410" text-anchor="start" class="label"><tspan x="469" dy="0">Retrieved-context injection signals</tspan></text>
+      
+</svg>

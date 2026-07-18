@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="352" viewBox="0 0 960 352" role="img" aria-label="AI Governance &amp; Safety">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:500 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:700 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="959" height="351" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+  <text x="48" y="31" class="title">AI Governance &amp; Safety</text>
+  <text x="48" y="49" class="subtitle">Secret protection, least privilege, approvals, production safeguards, validation, injection defence and auditability</text>
+  <rect x="20" y="72" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(33 85) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <text x="62" y="103" class="value">5</text>
+      <text x="33" y="128" text-anchor="start" class="label"><tspan x="33" dy="0">Repositories with AI</tspan><tspan x="33" dy="14">governance evidence</tspan></text>
+      <rect x="330.6666666666667" y="72" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(343.6666666666667 85) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></g>
+      <text x="372.6666666666667" y="103" class="value">4</text>
+      <text x="343.6666666666667" y="128" text-anchor="start" class="label"><tspan x="343.6666666666667" dy="0">Repositories with</tspan><tspan x="343.6666666666667" dy="14">secret-protection rules</tspan></text>
+      <rect x="641.3333333333334" y="72" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(654.3333333333334 85) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="683.3333333333334" y="103" class="value">4</text>
+      <text x="654.3333333333334" y="128" text-anchor="start" class="label"><tspan x="654.3333333333334" dy="0">Restricted-command and tool</tspan><tspan x="654.3333333333334" dy="14">policies</tspan></text>
+      <rect x="20" y="166" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(33 179) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <text x="62" y="197" class="value">4</text>
+      <text x="33" y="222" text-anchor="start" class="label"><tspan x="33" dy="0">Human-approval checkpoints</tspan></text>
+      <rect x="330.6666666666667" y="166" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(343.6666666666667 179) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></g>
+      <text x="372.6666666666667" y="197" class="value">1</text>
+      <text x="343.6666666666667" y="222" text-anchor="start" class="label"><tspan x="343.6666666666667" dy="0">Production-write safeguards</tspan></text>
+      <rect x="641.3333333333334" y="166" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(654.3333333333334 179) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v5l-4 7a1.5 1.5 0 0 0 1.3 2h9.4a1.5 1.5 0 0 0 1.3-2l-4-7V1M5 10h6"/></g>
+      <text x="683.3333333333334" y="197" class="value">5</text>
+      <text x="654.3333333333334" y="222" text-anchor="start" class="label"><tspan x="654.3333333333334" dy="0">Generated-output validation</tspan><tspan x="654.3333333333334" dy="14">requirements</tspan></text>
+      <rect x="20" y="260" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(33 273) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <text x="62" y="291" class="value">3</text>
+      <text x="33" y="316" text-anchor="start" class="label"><tspan x="33" dy="0">Prompt-injection defence</tspan><tspan x="33" dy="14">signals</tspan></text>
+      <rect x="330.6666666666667" y="260" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(343.6666666666667 273) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="8" rx="2"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></g>
+      <text x="372.6666666666667" y="291" class="value">2</text>
+      <text x="343.6666666666667" y="316" text-anchor="start" class="label"><tspan x="343.6666666666667" dy="0">Privacy and PII protection</tspan><tspan x="343.6666666666667" dy="14">signals</tspan></text>
+      <rect x="641.3333333333334" y="260" width="298.6666666666667" height="82" rx="10" fill="#F85149" fill-opacity=".09" stroke="#F85149" stroke-opacity=".55"/>
+      <g transform="translate(654.3333333333334 273) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="683.3333333333334" y="291" class="value">3</text>
+      <text x="654.3333333333334" y="316" text-anchor="start" class="label"><tspan x="654.3333333333334" dy="0">Audit, journal and</tspan><tspan x="654.3333333333334" dy="14">traceability signals</tspan></text>
+      
+</svg>

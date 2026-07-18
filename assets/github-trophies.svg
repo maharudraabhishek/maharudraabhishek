@@ -6,6 +6,10 @@
     .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
     .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
   <rect x=".5" y=".5" width="899" height="319" rx="12" fill="#0D1117" stroke="#30363D"/>
@@ -15,7 +19,7 @@
   <rect x="22" y="70" width="206" height="94" rx="10" fill="#21262D" stroke="#30363D"/>
       <g transform="translate(38 86) scale(1.375)" fill="none" stroke="#CD7F32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
       <text x="72" y="101" class="small">Commit Builder</text>
-      <text x="38" y="131" class="value" style="fill:#CD7F32">Bronze · 104</text>
+      <text x="38" y="131" class="value" style="fill:#CD7F32">Bronze · 105</text>
       <text x="38" y="150" class="tiny">Milestone-based GitHub analytics</text><rect x="240" y="70" width="206" height="94" rx="10" fill="#21262D" stroke="#30363D"/>
       <g transform="translate(256 86) scale(1.375)" fill="none" stroke="#C0C0C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
       <text x="290" y="101" class="small">Pull Shark</text>

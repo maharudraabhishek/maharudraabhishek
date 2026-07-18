@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="940" viewBox="0 0 1000 940" role="img" aria-label="Public Open-Source Contributions">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1780" viewBox="0 0 1000 1780" role="img" aria-label="Public Open-Source Contributions">
   <style>
     .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -6,131 +6,294 @@
     .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
     .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
-  <rect x=".5" y=".5" width="999" height="939" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <rect x=".5" y=".5" width="999" height="1779" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
   <text x="48" y="31" class="title">Public Open-Source Contributions</text>
-  <text x="48" y="49" class="subtitle">Verified code, PR and review attribution · full project composition is not a whole-project authorship claim</text>
-  <rect x="18" y="70" width="964" height="264" rx="10" fill="#21262D" stroke="#30363D"/>
+  <text x="48" y="49" class="subtitle">Adaptive project cards · verified commits, pull requests, reviews and approvals are highlighted</text>
+  <rect x="18" y="70" width="964" height="558" rx="12" fill="#21262D" stroke="#30363D"/>
       <g transform="translate(32 86) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="60" y="101" class="value">heremaps/here-sdk-examples</text>
-      <text x="32" y="125" class="small">Full public project composition: 409 project commits · 117 releases · 7 languages · 1.8K source files · 208 stars · 143 forks</text>
-      <text x="32" y="146" class="label">Attributed identities: maharudraabhishek</text>
-      <text x="32" y="164" class="tiny">78 attributed commits · 4K analyzed changed lines · 216 files touched · 57 authored PRs · 10 PRs reviewed · 10 PRs approved · 11 review submissions · evidence: repository-relationship, commit, pull-request, pull-request-review</text>
-      <defs><clipPath id="public-heremaps-here-sdk-examples"><rect x="28" y="175" width="944" height="12" rx="6"/></clipPath></defs>
-      <rect x="28" y="175" width="944" height="12" rx="6" fill="#0D1117"/>
-      <g clip-path="url(#public-heremaps-here-sdk-examples)"><rect x="28.00" y="175" width="281.32" height="12" fill="#A97BFF"/><rect x="309.32" y="175" width="207.35" height="12" fill="#083FA1"/><rect x="516.67" y="175" width="168.79" height="12" fill="#F05138"/><rect x="685.47" y="175" width="132.85" height="12" fill="#B07219"/><rect x="818.31" y="175" width="90.65" height="12" fill="#00B4AB"/><rect x="908.96" y="175" width="39.59" height="12" fill="#CB171E"/><rect x="948.56" y="175" width="23.44" height="12" fill="#555555"/></g>
-      <circle cx="37" cy="211" r="5" fill="#A97BFF"/>
-      <text x="50" y="215" class="small">Kotlin</text>
-      <text x="158" y="215" class="label">29.8%</text>
-      <text x="212" y="215" class="tiny">540 files</text><circle cx="275" cy="211" r="5" fill="#083FA1"/>
-      <text x="288" y="215" class="small">Markdown</text>
-      <text x="396" y="215" class="label">22.0%</text>
-      <text x="450" y="215" class="tiny">398 files</text><circle cx="513" cy="211" r="5" fill="#F05138"/>
-      <text x="526" y="215" class="small">Swift</text>
-      <text x="634" y="215" class="label">17.9%</text>
-      <text x="688" y="215" class="tiny">324 files</text><circle cx="751" cy="211" r="5" fill="#B07219"/>
-      <text x="764" y="215" class="small">Java</text>
-      <text x="872" y="215" class="label">14.1%</text>
-      <text x="926" y="215" class="tiny">255 files</text><circle cx="37" cy="239" r="5" fill="#00B4AB"/>
-      <text x="50" y="243" class="small">Dart</text>
-      <text x="158" y="243" class="label">9.6%</text>
-      <text x="212" y="243" class="tiny">174 files</text><circle cx="275" cy="239" r="5" fill="#CB171E"/>
-      <text x="288" y="243" class="small">YAML</text>
-      <text x="396" y="243" class="label">4.2%</text>
-      <text x="450" y="243" class="tiny">76 files</text><circle cx="513" cy="239" r="5" fill="#555555"/>
-      <text x="526" y="243" class="small">C</text>
-      <text x="634" y="243" class="label">2.5%</text>
-      <text x="688" y="243" class="tiny">45 files</text>
-      <circle cx="37" cy="279" r="4" fill="#3DDC84"/>
-      <text x="48" y="283" class="tiny">Android</text><circle cx="225" cy="279" r="4" fill="#02569B"/>
-      <text x="236" y="283" class="tiny">Flutter</text><circle cx="413" cy="279" r="4" fill="#00AFAA"/>
-      <text x="424" y="283" class="tiny">HERE SDK</text><circle cx="601" cy="279" r="4" fill="#4285F4"/>
-      <text x="612" y="283" class="tiny">Jetpack Compose</text><circle cx="789" cy="279" r="4" fill="#A2AAAD"/>
-      <text x="800" y="283" class="tiny">iOS</text><rect x="18" y="348" width="964" height="264" rx="10" fill="#21262D" stroke="#30363D"/>
-      <g transform="translate(32 364) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
-      <text x="60" y="379" class="value">heremaps/here-sdk-ref-app-flutter</text>
-      <text x="32" y="403" class="small">Full public project composition: 228 project commits · 19 releases · 7 languages · 117 source files · 51 stars · 22 forks</text>
-      <text x="32" y="424" class="label">Attributed identities: maharudraabhishek</text>
-      <text x="32" y="442" class="tiny">1 attributed commits · 0 analyzed changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · 0 PRs approved · 0 review submissions · evidence: commit, pull-request</text>
-      <defs><clipPath id="public-heremaps-here-sdk-ref-app-flutter"><rect x="28" y="453" width="944" height="12" rx="6"/></clipPath></defs>
-      <rect x="28" y="453" width="944" height="12" rx="6" fill="#0D1117"/>
-      <g clip-path="url(#public-heremaps-here-sdk-ref-app-flutter)"><rect x="28.00" y="453" width="911.86" height="12" fill="#00B4AB"/><rect x="939.86" y="453" width="18.09" height="12" fill="#A97BFF"/><rect x="957.95" y="453" width="5.40" height="12" fill="#C1F12E"/><rect x="963.34" y="453" width="3.85" height="12" fill="#89E051"/><rect x="967.19" y="453" width="3.70" height="12" fill="#701516"/><rect x="970.90" y="453" width="1.04" height="12" fill="#F05138"/><rect x="971.94" y="453" width="0.06" height="12" fill="#438EFF"/></g>
-      <circle cx="37" cy="489" r="5" fill="#00B4AB"/>
-      <text x="50" y="493" class="small">Dart</text>
-      <text x="158" y="493" class="label">96.6%</text>
-      <text x="212" y="493" class="tiny">103 files</text><circle cx="275" cy="489" r="5" fill="#A97BFF"/>
-      <text x="288" y="493" class="small">Kotlin</text>
-      <text x="396" y="493" class="label">1.9%</text>
-      <text x="450" y="493" class="tiny">3 files</text><circle cx="513" cy="489" r="5" fill="#C1F12E"/>
-      <text x="526" y="493" class="small">Batchfile</text>
-      <text x="634" y="493" class="label">0.6%</text>
-      <text x="688" y="493" class="tiny">github-linguist</text><circle cx="751" cy="489" r="5" fill="#89E051"/>
-      <text x="764" y="493" class="small">Shell</text>
-      <text x="872" y="493" class="label">0.4%</text>
-      <text x="926" y="493" class="tiny">1 file</text><circle cx="37" cy="517" r="5" fill="#701516"/>
-      <text x="50" y="521" class="small">Ruby</text>
-      <text x="158" y="521" class="label">0.4%</text>
-      <text x="212" y="521" class="tiny">github-linguist</text><circle cx="275" cy="517" r="5" fill="#F05138"/>
-      <text x="288" y="521" class="small">Swift</text>
-      <text x="396" y="521" class="label">0.1%</text>
-      <text x="450" y="521" class="tiny">1 file</text><circle cx="513" cy="517" r="5" fill="#438EFF"/>
-      <text x="526" y="521" class="small">Objective-C</text>
-      <text x="634" y="521" class="label">&lt;0.1%</text>
-      <text x="688" y="521" class="tiny">github-linguist</text>
-      <circle cx="37" cy="557" r="4" fill="#3DDC84"/>
-      <text x="48" y="561" class="tiny">Android</text><circle cx="225" cy="557" r="4" fill="#02569B"/>
-      <text x="236" y="561" class="tiny">Flutter</text><circle cx="413" cy="557" r="4" fill="#00AFAA"/>
-      <text x="424" y="561" class="tiny">HERE SDK</text><circle cx="601" cy="557" r="4" fill="#A2AAAD"/>
-      <text x="612" y="561" class="tiny">iOS</text><rect x="18" y="626" width="964" height="292" rx="10" fill="#21262D" stroke="#30363D"/>
-      <g transform="translate(32 642) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
-      <text x="60" y="657" class="value">heremaps/gluecodium</text>
-      <text x="32" y="681" class="small">Full public project composition: 2.6K project commits · 242 releases · 12 languages · 2.7K source files · 234 stars · 30 forks</text>
-      <text x="32" y="702" class="label">Attributed identities: maharudraabhishek</text>
-      <text x="32" y="720" class="tiny">0 attributed commits · 0 analyzed changed lines · 0 files touched · 2 authored PRs · 2 PRs reviewed · 1 PRs approved · 4 review submissions · evidence: pull-request, pull-request-review</text>
-      <defs><clipPath id="public-heremaps-gluecodium"><rect x="28" y="731" width="944" height="12" rx="6"/></clipPath></defs>
-      <rect x="28" y="731" width="944" height="12" rx="6" fill="#0D1117"/>
-      <g clip-path="url(#public-heremaps-gluecodium)"><rect x="28.00" y="731" width="223.46" height="12" fill="#00B4AB"/><rect x="251.46" y="731" width="218.33" height="12" fill="#F34B7D"/><rect x="469.78" y="731" width="155.57" height="12" fill="#A97BFF"/><rect x="625.36" y="731" width="153.42" height="12" fill="#F05138"/><rect x="778.78" y="731" width="75.19" height="12" fill="#58A6FF"/><rect x="853.96" y="731" width="52.33" height="12" fill="#B07219"/><rect x="906.29" y="731" width="34.68" height="12" fill="#DA3434"/><rect x="940.97" y="731" width="25.16" height="12" fill="#555555"/><rect x="966.14" y="731" width="3.25" height="12" fill="#89E051"/><rect x="969.39" y="731" width="1.41" height="12" fill="#3572A5"/><rect x="970.80" y="731" width="1.19" height="12" fill="#DB61A2"/><rect x="971.99" y="731" width="0.01" height="12" fill="#C1F12E"/></g>
-      <circle cx="37" cy="767" r="5" fill="#00B4AB"/>
-      <text x="50" y="771" class="small">Dart</text>
-      <text x="158" y="771" class="label">23.7%</text>
-      <text x="212" y="771" class="tiny">299 files</text><circle cx="275" cy="767" r="5" fill="#F34B7D"/>
-      <text x="288" y="771" class="small">C++</text>
-      <text x="396" y="771" class="label">23.1%</text>
-      <text x="450" y="771" class="tiny">580 files</text><circle cx="513" cy="767" r="5" fill="#A97BFF"/>
-      <text x="526" y="771" class="small">Kotlin</text>
-      <text x="634" y="771" class="label">16.5%</text>
-      <text x="688" y="771" class="tiny">569 files</text><circle cx="751" cy="767" r="5" fill="#F05138"/>
-      <text x="764" y="771" class="small">Swift</text>
-      <text x="872" y="771" class="label">16.3%</text>
-      <text x="926" y="771" class="tiny">325 files</text><circle cx="37" cy="795" r="5" fill="#58A6FF"/>
-      <text x="50" y="799" class="small">Mustache</text>
-      <text x="158" y="799" class="label">8.0%</text>
-      <text x="212" y="799" class="tiny">github-linguist</text><circle cx="275" cy="795" r="5" fill="#B07219"/>
-      <text x="288" y="799" class="small">Java</text>
-      <text x="396" y="799" class="label">5.5%</text>
-      <text x="450" y="799" class="tiny">312 files</text><circle cx="513" cy="795" r="5" fill="#DA3434"/>
-      <text x="526" y="799" class="small">CMake</text>
-      <text x="634" y="799" class="label">3.7%</text>
-      <text x="688" y="799" class="tiny">128 files</text><circle cx="751" cy="795" r="5" fill="#555555"/>
-      <text x="764" y="799" class="small">C</text>
-      <text x="872" y="799" class="label">2.7%</text>
-      <text x="926" y="799" class="tiny">442 files</text><circle cx="37" cy="823" r="5" fill="#89E051"/>
-      <text x="50" y="827" class="small">Shell</text>
-      <text x="158" y="827" class="label">0.3%</text>
-      <text x="212" y="827" class="tiny">2 files</text><circle cx="275" cy="823" r="5" fill="#3572A5"/>
-      <text x="288" y="827" class="small">Python</text>
-      <text x="396" y="827" class="label">0.1%</text>
-      <text x="450" y="827" class="tiny">2 files</text><circle cx="513" cy="823" r="5" fill="#DB61A2"/>
-      <text x="526" y="827" class="small">ANTLR</text>
-      <text x="634" y="827" class="label">0.1%</text>
-      <text x="688" y="827" class="tiny">github-linguist</text><circle cx="751" cy="823" r="5" fill="#C1F12E"/>
-      <text x="764" y="827" class="small">Batchfile</text>
-      <text x="872" y="827" class="label">&lt;0.1%</text>
-      <text x="926" y="827" class="tiny">github-linguist</text>
-      <circle cx="37" cy="863" r="4" fill="#3DDC84"/>
-      <text x="48" y="867" class="tiny">Android</text><circle cx="225" cy="863" r="4" fill="#2088FF"/>
-      <text x="236" y="867" class="tiny">GitHub Actions</text><circle cx="413" cy="863" r="4" fill="#A2AAAD"/>
-      <text x="424" y="867" class="tiny">iOS</text>
+      <text x="32" y="125" class="label"><tspan x="32" dy="0">Attributed identities: maharudraabhishek</tspan></text>
+      <text x="32" y="144" class="tiny"><tspan x="32" dy="0">Evidence: repository-relationship, commit, pull-request, pull-request-review</tspan></text>
+      <text x="32" y="177" class="sectionLabel">FULL PROJECT COMPOSITION</text>
+      <rect x="32" y="189" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="44" y="206" class="small">409</text>
+      <text x="44" y="220" class="tiny">Project commits</text><rect x="347.3333333333333" y="189" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="359.3333333333333" y="206" class="small">117</text>
+      <text x="359.3333333333333" y="220" class="tiny">Releases</text><rect x="662.6666666666666" y="189" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="674.6666666666666" y="206" class="small">7</text>
+      <text x="674.6666666666666" y="220" class="tiny">Languages</text><rect x="32" y="235" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="44" y="252" class="small">1.8K</text>
+      <text x="44" y="266" class="tiny">Source files</text><rect x="347.3333333333333" y="235" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="359.3333333333333" y="252" class="small">208</text>
+      <text x="359.3333333333333" y="266" class="tiny">Stars</text><rect x="662.6666666666666" y="235" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="674.6666666666666" y="252" class="small">143</text>
+      <text x="674.6666666666666" y="266" class="tiny">Forks</text>
+      <text x="32" y="299" class="sectionLabel">VERIFIED PERSONAL CONTRIBUTION</text>
+      <rect x="32" y="311" width="226.5" height="58" rx="10" fill="#58A6FF" fill-opacity="0.16" stroke="#58A6FF" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(44 322) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
+      <text x="72" y="336" class="metricValue">78</text>
+      <text x="44" y="358" class="metricLabel">Attributed commits</text>
+      <rect x="268.5" y="311" width="226.5" height="58" rx="10" fill="#A371F7" fill-opacity="0.16" stroke="#A371F7" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(280.5 322) scale(1.0625)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
+      <text x="308.5" y="336" class="metricValue">57</text>
+      <text x="280.5" y="358" class="metricLabel">Authored PRs</text>
+      <rect x="505" y="311" width="226.5" height="58" rx="10" fill="#39C5CF" fill-opacity="0.16" stroke="#39C5CF" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(517 322) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/></g>
+      <text x="545" y="336" class="metricValue">10</text>
+      <text x="517" y="358" class="metricLabel">PRs reviewed</text>
+      <rect x="741.5" y="311" width="226.5" height="58" rx="10" fill="#3FB950" fill-opacity="0.16" stroke="#3FB950" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(753.5 322) scale(1.0625)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v4l-4 7a2 2 0 0 0 1.7 3h8.6A2 2 0 0 0 14 12l-4-7V1M4.5 10h7"/></g>
+      <text x="781.5" y="336" class="metricValue">10</text>
+      <text x="753.5" y="358" class="metricLabel">PRs approved</text>
+      <rect x="32" y="377" width="226.5" height="58" rx="10" fill="#F0883E" fill-opacity="0.16" stroke="#F0883E" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(44 388) scale(1.0625)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="72" y="402" class="metricValue">11</text>
+      <text x="44" y="424" class="metricLabel">Review submissions</text>
+      <rect x="268.5" y="377" width="226.5" height="58" rx="10" fill="#D29922" fill-opacity="0.08" stroke="#D29922" stroke-opacity="0.45" stroke-width="1"/>
+      <g transform="translate(280.5 388) scale(1.0625)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="308.5" y="402" class="metricValue">4K</text>
+      <text x="280.5" y="424" class="metricLabel">Analyzed changed lines</text>
+      <rect x="505" y="377" width="226.5" height="58" rx="10" fill="#DB61A2" fill-opacity="0.08" stroke="#DB61A2" stroke-opacity="0.45" stroke-width="1"/>
+      <g transform="translate(517 388) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="545" y="402" class="metricValue">216</text>
+      <text x="517" y="424" class="metricLabel">Files touched</text>
+      
+      <text x="32" y="461" class="sectionLabel">LANGUAGE COMPOSITION</text>
+      <defs>
+        <clipPath id="public-heremaps-here-sdk-examples">
+          <rect x="32" y="475" width="936" height="12" rx="6"/>
+        </clipPath>
+      </defs>
+      <rect x="32" y="475" width="936" height="12" rx="6" fill="#0D1117"/>
+      <g clip-path="url(#public-heremaps-here-sdk-examples)"><rect x="32.00" y="475" width="278.94" height="12" fill="#A97BFF"/><rect x="310.94" y="475" width="205.59" height="12" fill="#083FA1"/><rect x="516.53" y="475" width="167.36" height="12" fill="#F05138"/><rect x="683.89" y="475" width="131.72" height="12" fill="#B07219"/><rect x="815.62" y="475" width="89.88" height="12" fill="#00B4AB"/><rect x="905.50" y="475" width="39.26" height="12" fill="#CB171E"/><rect x="944.75" y="475" width="23.25" height="12" fill="#555555"/></g>
+      <circle cx="37" cy="505" r="5" fill="#A97BFF"/>
+      <text x="50" y="509" class="small">Kotlin</text>
+      <text x="194" y="509" class="label">29.8%</text>
+      <text x="254" y="509" class="tiny">540 files</text><circle cx="349" cy="505" r="5" fill="#083FA1"/>
+      <text x="362" y="509" class="small">Markdown</text>
+      <text x="506" y="509" class="label">22.0%</text>
+      <text x="566" y="509" class="tiny">398 files</text><circle cx="661" cy="505" r="5" fill="#F05138"/>
+      <text x="674" y="509" class="small">Swift</text>
+      <text x="818" y="509" class="label">17.9%</text>
+      <text x="878" y="509" class="tiny">324 files</text><circle cx="37" cy="535" r="5" fill="#B07219"/>
+      <text x="50" y="539" class="small">Java</text>
+      <text x="194" y="539" class="label">14.1%</text>
+      <text x="254" y="539" class="tiny">255 files</text><circle cx="349" cy="535" r="5" fill="#00B4AB"/>
+      <text x="362" y="539" class="small">Dart</text>
+      <text x="506" y="539" class="label">9.6%</text>
+      <text x="566" y="539" class="tiny">174 files</text><circle cx="661" cy="535" r="5" fill="#CB171E"/>
+      <text x="674" y="539" class="small">YAML</text>
+      <text x="818" y="539" class="label">4.2%</text>
+      <text x="878" y="539" class="tiny">76 files</text><circle cx="37" cy="565" r="5" fill="#555555"/>
+      <text x="50" y="569" class="small">C</text>
+      <text x="194" y="569" class="label">2.5%</text>
+      <text x="254" y="569" class="tiny">45 files</text>
+      <text x="32" y="607" class="sectionLabel">FRAMEWORKS &amp; PLATFORMS</text>
+      <rect x="32" y="613" width="224" height="22" rx="11" fill="#3DDC84" fill-opacity=".11" stroke="#3DDC84" stroke-opacity=".55"/>
+      <circle cx="44" cy="624" r="4" fill="#3DDC84"/>
+      <text x="55" y="628" class="small">Android</text><rect x="266" y="613" width="224" height="22" rx="11" fill="#02569B" fill-opacity=".11" stroke="#02569B" stroke-opacity=".55"/>
+      <circle cx="278" cy="624" r="4" fill="#02569B"/>
+      <text x="289" y="628" class="small">Flutter</text><rect x="500" y="613" width="224" height="22" rx="11" fill="#00AFAA" fill-opacity=".11" stroke="#00AFAA" stroke-opacity=".55"/>
+      <circle cx="512" cy="624" r="4" fill="#00AFAA"/>
+      <text x="523" y="628" class="small">HERE SDK</text><rect x="734" y="613" width="224" height="22" rx="11" fill="#4285F4" fill-opacity=".11" stroke="#4285F4" stroke-opacity=".55"/>
+      <circle cx="746" cy="624" r="4" fill="#4285F4"/>
+      <text x="757" y="628" class="small">Jetpack Compose</text><rect x="32" y="639" width="224" height="22" rx="11" fill="#A2AAAD" fill-opacity=".11" stroke="#A2AAAD" stroke-opacity=".55"/>
+      <circle cx="44" cy="650" r="4" fill="#A2AAAD"/>
+      <text x="55" y="654" class="small">iOS</text><rect x="18" y="644" width="964" height="532" rx="12" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(32 660) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="60" y="675" class="value">heremaps/here-sdk-ref-app-flutter</text>
+      <text x="32" y="699" class="label"><tspan x="32" dy="0">Attributed identities: maharudraabhishek</tspan></text>
+      <text x="32" y="718" class="tiny"><tspan x="32" dy="0">Evidence: commit, pull-request</tspan></text>
+      <text x="32" y="751" class="sectionLabel">FULL PROJECT COMPOSITION</text>
+      <rect x="32" y="763" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="44" y="780" class="small">228</text>
+      <text x="44" y="794" class="tiny">Project commits</text><rect x="347.3333333333333" y="763" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="359.3333333333333" y="780" class="small">19</text>
+      <text x="359.3333333333333" y="794" class="tiny">Releases</text><rect x="662.6666666666666" y="763" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="674.6666666666666" y="780" class="small">7</text>
+      <text x="674.6666666666666" y="794" class="tiny">Languages</text><rect x="32" y="809" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="44" y="826" class="small">117</text>
+      <text x="44" y="840" class="tiny">Source files</text><rect x="347.3333333333333" y="809" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="359.3333333333333" y="826" class="small">51</text>
+      <text x="359.3333333333333" y="840" class="tiny">Stars</text><rect x="662.6666666666666" y="809" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="674.6666666666666" y="826" class="small">22</text>
+      <text x="674.6666666666666" y="840" class="tiny">Forks</text>
+      <text x="32" y="873" class="sectionLabel">VERIFIED PERSONAL CONTRIBUTION</text>
+      <rect x="32" y="885" width="226.5" height="58" rx="10" fill="#58A6FF" fill-opacity="0.16" stroke="#58A6FF" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(44 896) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
+      <text x="72" y="910" class="metricValue">1</text>
+      <text x="44" y="932" class="metricLabel">Attributed commits</text>
+      <rect x="268.5" y="885" width="226.5" height="58" rx="10" fill="#A371F7" fill-opacity="0.16" stroke="#A371F7" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(280.5 896) scale(1.0625)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
+      <text x="308.5" y="910" class="metricValue">0</text>
+      <text x="280.5" y="932" class="metricLabel">Authored PRs</text>
+      <rect x="505" y="885" width="226.5" height="58" rx="10" fill="#39C5CF" fill-opacity="0.16" stroke="#39C5CF" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(517 896) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/></g>
+      <text x="545" y="910" class="metricValue">0</text>
+      <text x="517" y="932" class="metricLabel">PRs reviewed</text>
+      <rect x="741.5" y="885" width="226.5" height="58" rx="10" fill="#3FB950" fill-opacity="0.16" stroke="#3FB950" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(753.5 896) scale(1.0625)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v4l-4 7a2 2 0 0 0 1.7 3h8.6A2 2 0 0 0 14 12l-4-7V1M4.5 10h7"/></g>
+      <text x="781.5" y="910" class="metricValue">0</text>
+      <text x="753.5" y="932" class="metricLabel">PRs approved</text>
+      <rect x="32" y="951" width="226.5" height="58" rx="10" fill="#F0883E" fill-opacity="0.16" stroke="#F0883E" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(44 962) scale(1.0625)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="72" y="976" class="metricValue">0</text>
+      <text x="44" y="998" class="metricLabel">Review submissions</text>
+      <rect x="268.5" y="951" width="226.5" height="58" rx="10" fill="#D29922" fill-opacity="0.08" stroke="#D29922" stroke-opacity="0.45" stroke-width="1"/>
+      <g transform="translate(280.5 962) scale(1.0625)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="308.5" y="976" class="metricValue">0</text>
+      <text x="280.5" y="998" class="metricLabel">Analyzed changed lines</text>
+      <rect x="505" y="951" width="226.5" height="58" rx="10" fill="#DB61A2" fill-opacity="0.08" stroke="#DB61A2" stroke-opacity="0.45" stroke-width="1"/>
+      <g transform="translate(517 962) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="545" y="976" class="metricValue">0</text>
+      <text x="517" y="998" class="metricLabel">Files touched</text>
+      
+      <text x="32" y="1035" class="sectionLabel">LANGUAGE COMPOSITION</text>
+      <defs>
+        <clipPath id="public-heremaps-here-sdk-ref-app-flutter">
+          <rect x="32" y="1049" width="936" height="12" rx="6"/>
+        </clipPath>
+      </defs>
+      <rect x="32" y="1049" width="936" height="12" rx="6" fill="#0D1117"/>
+      <g clip-path="url(#public-heremaps-here-sdk-ref-app-flutter)"><rect x="32.00" y="1049" width="904.13" height="12" fill="#00B4AB"/><rect x="936.13" y="1049" width="17.93" height="12" fill="#A97BFF"/><rect x="954.07" y="1049" width="5.35" height="12" fill="#C1F12E"/><rect x="959.42" y="1049" width="3.82" height="12" fill="#89E051"/><rect x="963.23" y="1049" width="3.67" height="12" fill="#701516"/><rect x="966.91" y="1049" width="1.04" height="12" fill="#F05138"/><rect x="967.94" y="1049" width="0.06" height="12" fill="#438EFF"/></g>
+      <circle cx="37" cy="1079" r="5" fill="#00B4AB"/>
+      <text x="50" y="1083" class="small">Dart</text>
+      <text x="194" y="1083" class="label">96.6%</text>
+      <text x="254" y="1083" class="tiny">103 files</text><circle cx="349" cy="1079" r="5" fill="#A97BFF"/>
+      <text x="362" y="1083" class="small">Kotlin</text>
+      <text x="506" y="1083" class="label">1.9%</text>
+      <text x="566" y="1083" class="tiny">3 files</text><circle cx="661" cy="1079" r="5" fill="#C1F12E"/>
+      <text x="674" y="1083" class="small">Batchfile</text>
+      <text x="818" y="1083" class="label">0.6%</text>
+      <text x="878" y="1083" class="tiny">github-linguist</text><circle cx="37" cy="1109" r="5" fill="#89E051"/>
+      <text x="50" y="1113" class="small">Shell</text>
+      <text x="194" y="1113" class="label">0.4%</text>
+      <text x="254" y="1113" class="tiny">1 file</text><circle cx="349" cy="1109" r="5" fill="#701516"/>
+      <text x="362" y="1113" class="small">Ruby</text>
+      <text x="506" y="1113" class="label">0.4%</text>
+      <text x="566" y="1113" class="tiny">github-linguist</text><circle cx="661" cy="1109" r="5" fill="#F05138"/>
+      <text x="674" y="1113" class="small">Swift</text>
+      <text x="818" y="1113" class="label">0.1%</text>
+      <text x="878" y="1113" class="tiny">1 file</text><circle cx="37" cy="1139" r="5" fill="#438EFF"/>
+      <text x="50" y="1143" class="small">Objective-C</text>
+      <text x="194" y="1143" class="label">&lt;0.1%</text>
+      <text x="254" y="1143" class="tiny">github-linguist</text>
+      <text x="32" y="1181" class="sectionLabel">FRAMEWORKS &amp; PLATFORMS</text>
+      <rect x="32" y="1187" width="224" height="22" rx="11" fill="#3DDC84" fill-opacity=".11" stroke="#3DDC84" stroke-opacity=".55"/>
+      <circle cx="44" cy="1198" r="4" fill="#3DDC84"/>
+      <text x="55" y="1202" class="small">Android</text><rect x="266" y="1187" width="224" height="22" rx="11" fill="#02569B" fill-opacity=".11" stroke="#02569B" stroke-opacity=".55"/>
+      <circle cx="278" cy="1198" r="4" fill="#02569B"/>
+      <text x="289" y="1202" class="small">Flutter</text><rect x="500" y="1187" width="224" height="22" rx="11" fill="#00AFAA" fill-opacity=".11" stroke="#00AFAA" stroke-opacity=".55"/>
+      <circle cx="512" cy="1198" r="4" fill="#00AFAA"/>
+      <text x="523" y="1202" class="small">HERE SDK</text><rect x="734" y="1187" width="224" height="22" rx="11" fill="#A2AAAD" fill-opacity=".11" stroke="#A2AAAD" stroke-opacity=".55"/>
+      <circle cx="746" cy="1198" r="4" fill="#A2AAAD"/>
+      <text x="757" y="1202" class="small">iOS</text><rect x="18" y="1192" width="964" height="562" rx="12" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(32 1208) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="60" y="1223" class="value">heremaps/gluecodium</text>
+      <text x="32" y="1247" class="label"><tspan x="32" dy="0">Attributed identities: maharudraabhishek</tspan></text>
+      <text x="32" y="1266" class="tiny"><tspan x="32" dy="0">Evidence: pull-request, pull-request-review</tspan></text>
+      <text x="32" y="1299" class="sectionLabel">FULL PROJECT COMPOSITION</text>
+      <rect x="32" y="1311" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="44" y="1328" class="small">2.6K</text>
+      <text x="44" y="1342" class="tiny">Project commits</text><rect x="347.3333333333333" y="1311" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="359.3333333333333" y="1328" class="small">242</text>
+      <text x="359.3333333333333" y="1342" class="tiny">Releases</text><rect x="662.6666666666666" y="1311" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="674.6666666666666" y="1328" class="small">12</text>
+      <text x="674.6666666666666" y="1342" class="tiny">Languages</text><rect x="32" y="1357" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="44" y="1374" class="small">2.7K</text>
+      <text x="44" y="1388" class="tiny">Source files</text><rect x="347.3333333333333" y="1357" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="359.3333333333333" y="1374" class="small">234</text>
+      <text x="359.3333333333333" y="1388" class="tiny">Stars</text><rect x="662.6666666666666" y="1357" width="305.3333333333333" height="38" rx="8" fill="#0D1117" stroke="#30363D"/>
+      <text x="674.6666666666666" y="1374" class="small">30</text>
+      <text x="674.6666666666666" y="1388" class="tiny">Forks</text>
+      <text x="32" y="1421" class="sectionLabel">VERIFIED PERSONAL CONTRIBUTION</text>
+      <rect x="32" y="1433" width="226.5" height="58" rx="10" fill="#58A6FF" fill-opacity="0.16" stroke="#58A6FF" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(44 1444) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
+      <text x="72" y="1458" class="metricValue">0</text>
+      <text x="44" y="1480" class="metricLabel">Attributed commits</text>
+      <rect x="268.5" y="1433" width="226.5" height="58" rx="10" fill="#A371F7" fill-opacity="0.16" stroke="#A371F7" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(280.5 1444) scale(1.0625)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
+      <text x="308.5" y="1458" class="metricValue">2</text>
+      <text x="280.5" y="1480" class="metricLabel">Authored PRs</text>
+      <rect x="505" y="1433" width="226.5" height="58" rx="10" fill="#39C5CF" fill-opacity="0.16" stroke="#39C5CF" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(517 1444) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/></g>
+      <text x="545" y="1458" class="metricValue">2</text>
+      <text x="517" y="1480" class="metricLabel">PRs reviewed</text>
+      <rect x="741.5" y="1433" width="226.5" height="58" rx="10" fill="#3FB950" fill-opacity="0.16" stroke="#3FB950" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(753.5 1444) scale(1.0625)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v4l-4 7a2 2 0 0 0 1.7 3h8.6A2 2 0 0 0 14 12l-4-7V1M4.5 10h7"/></g>
+      <text x="781.5" y="1458" class="metricValue">1</text>
+      <text x="753.5" y="1480" class="metricLabel">PRs approved</text>
+      <rect x="32" y="1499" width="226.5" height="58" rx="10" fill="#F0883E" fill-opacity="0.16" stroke="#F0883E" stroke-opacity="0.9" stroke-width="1.5"/>
+      <g transform="translate(44 1510) scale(1.0625)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="72" y="1524" class="metricValue">4</text>
+      <text x="44" y="1546" class="metricLabel">Review submissions</text>
+      <rect x="268.5" y="1499" width="226.5" height="58" rx="10" fill="#D29922" fill-opacity="0.08" stroke="#D29922" stroke-opacity="0.45" stroke-width="1"/>
+      <g transform="translate(280.5 1510) scale(1.0625)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="308.5" y="1524" class="metricValue">0</text>
+      <text x="280.5" y="1546" class="metricLabel">Analyzed changed lines</text>
+      <rect x="505" y="1499" width="226.5" height="58" rx="10" fill="#DB61A2" fill-opacity="0.08" stroke="#DB61A2" stroke-opacity="0.45" stroke-width="1"/>
+      <g transform="translate(517 1510) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="545" y="1524" class="metricValue">0</text>
+      <text x="517" y="1546" class="metricLabel">Files touched</text>
+      
+      <text x="32" y="1583" class="sectionLabel">LANGUAGE COMPOSITION</text>
+      <defs>
+        <clipPath id="public-heremaps-gluecodium">
+          <rect x="32" y="1597" width="936" height="12" rx="6"/>
+        </clipPath>
+      </defs>
+      <rect x="32" y="1597" width="936" height="12" rx="6" fill="#0D1117"/>
+      <g clip-path="url(#public-heremaps-gluecodium)"><rect x="32.00" y="1597" width="221.56" height="12" fill="#00B4AB"/><rect x="253.56" y="1597" width="216.48" height="12" fill="#F34B7D"/><rect x="470.04" y="1597" width="154.26" height="12" fill="#A97BFF"/><rect x="624.30" y="1597" width="152.12" height="12" fill="#F05138"/><rect x="776.42" y="1597" width="74.55" height="12" fill="#58A6FF"/><rect x="850.96" y="1597" width="51.88" height="12" fill="#B07219"/><rect x="902.85" y="1597" width="34.39" height="12" fill="#DA3434"/><rect x="937.24" y="1597" width="24.95" height="12" fill="#555555"/><rect x="962.19" y="1597" width="3.23" height="12" fill="#89E051"/><rect x="965.41" y="1597" width="1.40" height="12" fill="#3572A5"/><rect x="966.81" y="1597" width="1.18" height="12" fill="#DB61A2"/><rect x="967.99" y="1597" width="0.01" height="12" fill="#C1F12E"/></g>
+      <circle cx="37" cy="1627" r="5" fill="#00B4AB"/>
+      <text x="50" y="1631" class="small">Dart</text>
+      <text x="194" y="1631" class="label">23.7%</text>
+      <text x="254" y="1631" class="tiny">299 files</text><circle cx="349" cy="1627" r="5" fill="#F34B7D"/>
+      <text x="362" y="1631" class="small">C++</text>
+      <text x="506" y="1631" class="label">23.1%</text>
+      <text x="566" y="1631" class="tiny">580 files</text><circle cx="661" cy="1627" r="5" fill="#A97BFF"/>
+      <text x="674" y="1631" class="small">Kotlin</text>
+      <text x="818" y="1631" class="label">16.5%</text>
+      <text x="878" y="1631" class="tiny">569 files</text><circle cx="37" cy="1657" r="5" fill="#F05138"/>
+      <text x="50" y="1661" class="small">Swift</text>
+      <text x="194" y="1661" class="label">16.3%</text>
+      <text x="254" y="1661" class="tiny">325 files</text><circle cx="349" cy="1657" r="5" fill="#58A6FF"/>
+      <text x="362" y="1661" class="small">Mustache</text>
+      <text x="506" y="1661" class="label">8.0%</text>
+      <text x="566" y="1661" class="tiny">github-linguist</text><circle cx="661" cy="1657" r="5" fill="#B07219"/>
+      <text x="674" y="1661" class="small">Java</text>
+      <text x="818" y="1661" class="label">5.5%</text>
+      <text x="878" y="1661" class="tiny">312 files</text><circle cx="37" cy="1687" r="5" fill="#DA3434"/>
+      <text x="50" y="1691" class="small">CMake</text>
+      <text x="194" y="1691" class="label">3.7%</text>
+      <text x="254" y="1691" class="tiny">128 files</text><circle cx="349" cy="1687" r="5" fill="#555555"/>
+      <text x="362" y="1691" class="small">C</text>
+      <text x="506" y="1691" class="label">2.7%</text>
+      <text x="566" y="1691" class="tiny">442 files</text><circle cx="661" cy="1687" r="5" fill="#89E051"/>
+      <text x="674" y="1691" class="small">Shell</text>
+      <text x="818" y="1691" class="label">0.3%</text>
+      <text x="878" y="1691" class="tiny">2 files</text><circle cx="37" cy="1717" r="5" fill="#3572A5"/>
+      <text x="50" y="1721" class="small">Python</text>
+      <text x="194" y="1721" class="label">0.1%</text>
+      <text x="254" y="1721" class="tiny">2 files</text><circle cx="349" cy="1717" r="5" fill="#DB61A2"/>
+      <text x="362" y="1721" class="small">ANTLR</text>
+      <text x="506" y="1721" class="label">0.1%</text>
+      <text x="566" y="1721" class="tiny">github-linguist</text><circle cx="661" cy="1717" r="5" fill="#C1F12E"/>
+      <text x="674" y="1721" class="small">Batchfile</text>
+      <text x="818" y="1721" class="label">&lt;0.1%</text>
+      <text x="878" y="1721" class="tiny">github-linguist</text>
+      <text x="32" y="1759" class="sectionLabel">FRAMEWORKS &amp; PLATFORMS</text>
+      <rect x="32" y="1765" width="224" height="22" rx="11" fill="#3DDC84" fill-opacity=".11" stroke="#3DDC84" stroke-opacity=".55"/>
+      <circle cx="44" cy="1776" r="4" fill="#3DDC84"/>
+      <text x="55" y="1780" class="small">Android</text><rect x="266" y="1765" width="224" height="22" rx="11" fill="#2088FF" fill-opacity=".11" stroke="#2088FF" stroke-opacity=".55"/>
+      <circle cx="278" cy="1776" r="4" fill="#2088FF"/>
+      <text x="289" y="1780" class="small">GitHub Actions</text><rect x="500" y="1765" width="224" height="22" rx="11" fill="#A2AAAD" fill-opacity=".11" stroke="#A2AAAD" stroke-opacity=".55"/>
+      <circle cx="512" cy="1776" r="4" fill="#A2AAAD"/>
+      <text x="523" y="1780" class="small">iOS</text>
 </svg>
