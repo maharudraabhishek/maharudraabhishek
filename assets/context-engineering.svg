@@ -1,48 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="446" viewBox="0 0 900 446" role="img" aria-label="Context Engineering">
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="252" viewBox="0 0 480 252" role="img" aria-label="Context Engineering">
   <style>
     .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .label{fill:#8B949E;font:500 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .value{fill:#F0F6FC;font:700 20px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .small{fill:#F0F6FC;font:600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
-  <rect x=".5" y=".5" width="899" height="445" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <rect x=".5" y=".5" width="479" height="251" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
   <text x="48" y="31" class="title">Context Engineering</text>
-  <text x="48" y="49" class="subtitle">Instruction hierarchy, architecture context, handovers, context selection and retrieval-based context injection</text>
-  <rect x="20" y="72" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(33 85) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
-      <text x="62" y="103" class="value">7</text>
-      <text x="33" y="128" text-anchor="start" class="label"><tspan x="33" dy="0">Repositories with context engineering</tspan></text>
-      <rect x="456" y="72" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(469 85) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
-      <text x="498" y="103" class="value">212</text>
-      <text x="469" y="128" text-anchor="start" class="label"><tspan x="469" dy="0">Repository instruction signals</tspan></text>
-      <rect x="20" y="166" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(33 179) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
-      <text x="62" y="197" class="value">2</text>
-      <text x="33" y="222" text-anchor="start" class="label"><tspan x="33" dy="0">Module-level instruction files</tspan></text>
-      <rect x="456" y="166" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(469 179) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="13" r="2"/><path d="M5 3h3a3 3 0 0 1 3 3v2a3 3 0 0 0 2 3"/></g>
-      <text x="498" y="197" class="value">53</text>
-      <text x="469" y="222" text-anchor="start" class="label"><tspan x="469" dy="0">Architecture and decision context</tspan></text>
-      <rect x="20" y="260" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(33 273) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
-      <text x="62" y="291" class="value">3</text>
-      <text x="33" y="316" text-anchor="start" class="label"><tspan x="33" dy="0">Handovers, journals and session</tspan><tspan x="33" dy="14">summaries</tspan></text>
-      <rect x="456" y="260" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(469 273) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
-      <text x="498" y="291" class="value">3</text>
-      <text x="469" y="316" text-anchor="start" class="label"><tspan x="469" dy="0">Context selection and budget signals</tspan></text>
-      <rect x="20" y="354" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(33 367) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
-      <text x="62" y="385" class="value">0</text>
-      <text x="33" y="410" text-anchor="start" class="label"><tspan x="33" dy="0">Context compression and summarization</tspan></text>
-      <rect x="456" y="354" width="424" height="82" rx="10" fill="#39C5CF" fill-opacity=".09" stroke="#39C5CF" stroke-opacity=".55"/>
-      <g transform="translate(469 367) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="m11 11 4 4"/></g>
-      <text x="498" y="385" class="value">1</text>
-      <text x="469" y="410" text-anchor="start" class="label"><tspan x="469" dy="0">Retrieval-based context injection</tspan></text>
-      
+  <text x="48" y="49" class="subtitle">Instructions, decisions, handovers and context shaping</text>
+  <text x="22" y="88" class="value">7</text>
+      <text x="22" y="106" class="label">repositories</text>
+      <text x="164" y="88" class="value">274</text>
+      <text x="164" y="106" class="label">evidence signals</text>
+      <rect x="304" y="75" width="150" height="10" rx="5" fill="#21262D"/>
+      <rect x="304" y="75" width="150.0" height="10" rx="5" fill="#3FB950"/>
+      <text x="454" y="103" text-anchor="end" style="fill:#3FB950;font:600 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Deep depth</text>
+      <rect x="20" y="132" width="212" height="46" rx="8" fill="#39C5CF" fill-opacity=".075" stroke="#39C5CF" stroke-opacity=".42"/>
+      <g transform="translate(30 142) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
+      <text x="52" y="153" class="small">214</text>
+      <text x="30" y="170" class="tiny">Instruction hierarchy</text><rect x="244" y="132" width="212" height="46" rx="8" fill="#39C5CF" fill-opacity=".075" stroke="#39C5CF" stroke-opacity=".42"/>
+      <g transform="translate(254 142) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <text x="276" y="153" class="small">56</text>
+      <text x="254" y="170" class="tiny">Decisions &amp; handovers</text><rect x="20" y="188" width="212" height="46" rx="8" fill="#39C5CF" fill-opacity=".075" stroke="#39C5CF" stroke-opacity=".42"/>
+      <g transform="translate(30 198) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
+      <text x="52" y="209" class="small">3</text>
+      <text x="30" y="226" class="tiny">Selection &amp; budgets</text><rect x="244" y="188" width="212" height="46" rx="8" fill="#39C5CF" fill-opacity=".075" stroke="#39C5CF" stroke-opacity=".42"/>
+      <g transform="translate(254 198) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l1.4 4.6L14 7l-4.6 1.4L8 13l-1.4-4.6L2 7l4.6-1.4L8 1z"/></g>
+      <text x="276" y="209" class="small">1</text>
+      <text x="254" y="226" class="tiny">Compression &amp; injection</text>
 </svg>
