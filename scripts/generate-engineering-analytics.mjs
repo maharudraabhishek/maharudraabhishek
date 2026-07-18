@@ -4050,401 +4050,522 @@ function renderTechnologies(
 
 function renderPublicContributionPortfolio(projects) {
   const width = 1000;
-  const contentX = 32;
-  const contentWidth = width - contentX * 2;
+  const projectX = 18;
+  const projectWidth = width - projectX * 2;
+  const innerPadding = 24;
+  const contentX = projectX + innerPadding;
+  const contentWidth =
+    projectWidth - innerPadding * 2;
+  const projectGap = 30;
+  const maximumVisibleProjects = 12;
+  const maximumVisibleLanguages = 12;
+  const maximumVisibleTechnologies = 16;
+  const projectAccents = [
+    THEME.green,
+    THEME.blue,
+    THEME.purple,
+    THEME.orange,
+    THEME.cyan,
+    THEME.pink,
+    THEME.yellow,
+  ];
 
   if (projects.length === 0) {
     return cardShell({
       width,
-      height: 132,
+      height: 142,
       title: "Public Open-Source Contributions",
       iconName: "branch",
       accent: THEME.green,
       subtitle:
         "Verified public repositories with attributed commits, authored PRs, or submitted reviews",
       body:
-        `<text x="28" y="92" class="empty">No verified public contribution projects were returned by GitHub.</text>`,
+        `<rect x="20" y="70" width="${width - 40}" height="48" rx="10" fill="${THEME.track}" stroke="${THEME.border}"/>
+      <text x="38" y="99" class="empty">No verified public contribution projects were returned by GitHub.</text>`,
     });
   }
 
-  const visibleProjects = projects.slice(0, 12);
+  const visibleProjects =
+    projects.slice(0, maximumVisibleProjects);
   const hiddenCount = Math.max(
     0,
     projects.length - visibleProjects.length,
   );
 
   const layouts = [];
-  let cursorY = 70;
+  let cursorY = 74;
 
-  for (const project of visibleProjects) {
-    const languageColumns = 3;
-    const technologyColumns = 4;
-    const languageRows = Math.max(
-      1,
-      Math.ceil(project.languages.length / languageColumns),
-    );
-    const technologyRows = Math.max(
-      1,
-      Math.ceil(
-        project.technologies.length / technologyColumns,
-      ),
+  visibleProjects.forEach((project, index) => {
+    const displayedLanguages =
+      (project.languages ?? [])
+        .slice(0, maximumVisibleLanguages);
+    const hiddenLanguages = Math.max(
+      0,
+      (project.languages ?? []).length -
+        displayedLanguages.length,
     );
 
-    const identityText =
-      `Attributed identities: ${
-        (
-          project.attributedIdentities.length > 0
-            ? project.attributedIdentities
-            : [username]
-        ).join(", ")
-      }`;
-    const evidenceText =
-      `Evidence: ${
+    const displayedTechnologies =
+      (project.technologies ?? [])
+        .slice(0, maximumVisibleTechnologies);
+    const hiddenTechnologies = Math.max(
+      0,
+      (project.technologies ?? []).length -
+        displayedTechnologies.length,
+    );
+
+    const titleLines = wrapWords(
+      project.fullName,
+      70,
+      2,
+    );
+
+    const identities =
+      (project.attributedIdentities ?? []).length > 0
+        ? project.attributedIdentities
+        : [username];
+
+    const identityLines = wrapWords(
+      `Attributed identities: ${identities.join(", ")}`,
+      120,
+      2,
+    );
+
+    const evidenceLines = wrapWords(
+      `Verified by: ${
         (project.evidence ?? []).join(", ") ||
-        "verified engineering activity"
-      }`;
+        "engineering activity"
+      }`,
+      120,
+      2,
+    );
 
-    const identityLines = wrapWords(identityText, 115, 2);
-    const evidenceLines = wrapWords(evidenceText, 115, 2);
+    const languageRows =
+      displayedLanguages.length > 0
+        ? Math.ceil(displayedLanguages.length / 3)
+        : 1;
 
-    const headerHeight =
-      44 +
-      identityLines.length * 15 +
-      evidenceLines.length * 15;
-    const projectSummaryHeight = 96;
-    const contributionGridHeight = 134;
-    const languageHeight = 52 + languageRows * 30;
-    const technologyHeight = 36 + technologyRows * 26;
+    const technologyRows =
+      displayedTechnologies.length > 0
+        ? Math.ceil(displayedTechnologies.length / 4)
+        : 1;
+
+    // SVG has no automatic document flow. Precompute every section position
+    // and include complete bottom padding in the final project-card height.
+    const titleY = 38;
+    const titleLineHeight = 21;
+    const titleBottom =
+      titleY +
+      Math.max(0, titleLines.length - 1) *
+        titleLineHeight;
+
+    const identityY = titleBottom + 24;
+    const identityBottom =
+      identityY +
+      Math.max(0, identityLines.length - 1) * 15;
+
+    const evidenceY = identityBottom + 22;
+    const evidenceBottom =
+      evidenceY +
+      Math.max(0, evidenceLines.length - 1) * 15;
+
+    const summaryTitleY = evidenceBottom + 30;
+    const summaryGridY = summaryTitleY + 17;
+    const summaryGridHeight = 42 * 2 + 10;
+
+    const contributionTitleY =
+      summaryGridY + summaryGridHeight + 29;
+    const contributionGridY =
+      contributionTitleY + 17;
+    const contributionGridHeight = 64 * 2 + 10;
+
+    const languageTitleY =
+      contributionGridY +
+      contributionGridHeight +
+      29;
+    const languageBarY = languageTitleY + 18;
+    const languageLegendY = languageBarY + 36;
+    const languageLegendHeight =
+      displayedLanguages.length > 0
+        ? languageRows * 32
+        : 24;
+    const languageOverflowHeight =
+      hiddenLanguages > 0 ? 20 : 0;
+
+    const technologyTitleY =
+      languageLegendY +
+      languageLegendHeight +
+      languageOverflowHeight +
+      22;
+    const technologyGridY =
+      technologyTitleY + 25;
+    const technologyGridHeight =
+      displayedTechnologies.length > 0
+        ? technologyRows * 30
+        : 24;
+    const technologyOverflowHeight =
+      hiddenTechnologies > 0 ? 20 : 0;
 
     const blockHeight =
-      headerHeight +
-      projectSummaryHeight +
-      contributionGridHeight +
-      languageHeight +
-      technologyHeight +
-      24;
+      technologyGridY +
+      technologyGridHeight +
+      technologyOverflowHeight +
+      25;
 
     layouts.push({
       project,
+      index,
       y: cursorY,
       blockHeight,
-      languageRows,
-      technologyRows,
+      accent:
+        projectAccents[index % projectAccents.length],
+      titleLines,
       identityLines,
       evidenceLines,
+      displayedLanguages,
+      hiddenLanguages,
+      displayedTechnologies,
+      hiddenTechnologies,
+      positions: {
+        titleY,
+        identityY,
+        evidenceY,
+        summaryTitleY,
+        summaryGridY,
+        contributionTitleY,
+        contributionGridY,
+        languageTitleY,
+        languageBarY,
+        languageLegendY,
+        languageLegendHeight,
+        technologyTitleY,
+        technologyGridY,
+        technologyGridHeight,
+      },
     });
 
-    cursorY += blockHeight + 16;
-  }
+    cursorY += blockHeight + projectGap;
+  });
 
-  const footerHeight = hiddenCount > 0 ? 38 : 10;
-  const height = cursorY + footerHeight;
+  const footerHeight =
+    hiddenCount > 0 ? 46 : 16;
+  const height =
+    cursorY - projectGap + footerHeight;
 
   const body = layouts
-    .map(
-      ({
+    .map((layout) => {
+      const {
         project,
+        index,
         y,
         blockHeight,
-        languageRows,
+        accent,
+        titleLines,
         identityLines,
         evidenceLines,
-      }) => {
-        const projectName = truncate(project.fullName, 92);
+        displayedLanguages,
+        hiddenLanguages,
+        displayedTechnologies,
+        hiddenTechnologies,
+        positions,
+      } = layout;
 
-        const headerTitleY = y + 31;
-        const identityY = y + 55;
-        const evidenceY =
-          identityY + identityLines.length * 15 + 4;
-        const summaryTitleY =
-          evidenceY + evidenceLines.length * 15 + 18;
-        const summaryGridY = summaryTitleY + 12;
+      const absolute = (value) => y + value;
 
-        const summaryMetrics = [
-          {
-            value: compactNumber(project.lifecycle.commits),
-            label: "Project commits",
-          },
-          {
-            value: compactNumber(project.lifecycle.releases),
-            label: "Releases",
-          },
-          {
-            value: compactNumber(project.languages.length),
-            label: "Languages",
-          },
-          {
-            value: compactNumber(project.sourceFiles),
-            label: "Source files",
-          },
-          {
-            value: compactNumber(project.lifecycle.stars),
-            label: "Stars",
-          },
-          {
-            value: compactNumber(project.lifecycle.forks),
-            label: "Forks",
-          },
-        ];
+      const summaryMetrics = [
+        {
+          value: compactNumber(project.lifecycle.commits),
+          label: "Project commits",
+        },
+        {
+          value: compactNumber(project.lifecycle.releases),
+          label: "Releases",
+        },
+        {
+          value: compactNumber(
+            (project.languages ?? []).length,
+          ),
+          label: "Languages",
+        },
+        {
+          value: compactNumber(project.sourceFiles),
+          label: "Source files",
+        },
+        {
+          value: compactNumber(project.lifecycle.stars),
+          label: "Stars",
+        },
+        {
+          value: compactNumber(project.lifecycle.forks),
+          label: "Forks",
+        },
+      ];
 
-        const summaryColumns = 3;
-        const summaryGap = 10;
-        const summaryCellWidth =
-          (
-            contentWidth -
-            summaryGap * (summaryColumns - 1)
-          ) / summaryColumns;
-        const summaryCellHeight = 38;
+      const summaryCellWidth =
+        (contentWidth - 10 * 2) / 3;
 
-        const summaryGrid = summaryMetrics
-          .map((metric, index) => {
-            const column = index % summaryColumns;
-            const row = Math.floor(index / summaryColumns);
-            const metricX =
-              contentX +
-              column * (summaryCellWidth + summaryGap);
-            const metricY =
-              summaryGridY +
-              row * (summaryCellHeight + 8);
+      const summaryGrid = summaryMetrics
+        .map((metric, metricIndex) => {
+          const column = metricIndex % 3;
+          const row = Math.floor(metricIndex / 3);
+          const metricX =
+            contentX +
+            column * (summaryCellWidth + 10);
+          const metricY =
+            absolute(positions.summaryGridY) +
+            row * 52;
 
-            return `<rect x="${metricX}" y="${metricY}" width="${summaryCellWidth}" height="${summaryCellHeight}" rx="8" fill="${THEME.background}" stroke="${THEME.border}"/>
-      <text x="${metricX + 12}" y="${metricY + 17}" class="small">${escapeXml(metric.value)}</text>
-      <text x="${metricX + 12}" y="${metricY + 31}" class="tiny">${escapeXml(metric.label)}</text>`;
-          })
-          .join("");
+          return `<rect x="${metricX}" y="${metricY}" width="${summaryCellWidth}" height="42" rx="9" fill="${THEME.background}" stroke="${accent}" stroke-opacity=".34"/>
+      <text x="${metricX + 13}" y="${metricY + 19}" class="small">${escapeXml(metric.value)}</text>
+      <text x="${metricX + 13}" y="${metricY + 34}" class="tiny">${escapeXml(metric.label)}</text>`;
+        })
+        .join("");
 
-        const contributionTitleY =
-          summaryGridY +
-          2 * (summaryCellHeight + 8) +
-          18;
-        const contributionGridY = contributionTitleY + 12;
-
-        const reviewCapNote = project.reviewScanCapped
+      const reviewCapNote =
+        project.reviewScanCapped
           ? "Scan capped"
           : "";
 
-        const contributionMetrics = [
-          {
-            value: compactNumber(project.attributedCommits),
-            label: "Attributed commits",
-            iconName: "commit",
-            accent: THEME.blue,
-            important: true,
-          },
-          {
-            value: compactNumber(project.authoredPullRequests),
-            label: "Authored PRs",
-            iconName: "pull",
-            accent: THEME.purple,
-            important: true,
-          },
-          {
-            value: compactNumber(project.reviewedPullRequests),
-            label: "PRs reviewed",
-            iconName: "people",
-            accent: THEME.cyan,
-            important: true,
-            note: reviewCapNote,
-          },
-          {
-            value: compactNumber(project.approvedPullRequests),
-            label: "PRs approved",
-            iconName: "test",
-            accent: THEME.green,
-            important: true,
-            note: reviewCapNote,
-          },
-          {
-            value: compactNumber(project.reviewSubmissions),
-            label: "Review submissions",
-            iconName: "activity",
-            accent: THEME.orange,
-            important: true,
-            note: reviewCapNote,
-          },
-          {
-            value: compactNumber(project.personal.changedLines),
-            label: "Analyzed changed lines",
-            iconName: "code",
-            accent: THEME.yellow,
-          },
-          {
-            value: compactNumber(project.personal.files),
-            label: "Files touched",
-            iconName: "repo",
-            accent: THEME.pink,
-          },
-        ];
+      const contributionMetrics = [
+        {
+          value: compactNumber(project.attributedCommits),
+          label: "Attributed commits",
+          iconName: "commit",
+          color: THEME.blue,
+        },
+        {
+          value: compactNumber(project.authoredPullRequests),
+          label: "Authored PRs",
+          iconName: "pull",
+          color: THEME.purple,
+        },
+        {
+          value: compactNumber(project.reviewedPullRequests),
+          label: "PRs reviewed",
+          iconName: "people",
+          color: THEME.cyan,
+          note: reviewCapNote,
+        },
+        {
+          value: compactNumber(project.approvedPullRequests),
+          label: "PRs approved",
+          iconName: "test",
+          color: THEME.green,
+          note: reviewCapNote,
+        },
+        {
+          value: compactNumber(project.reviewSubmissions),
+          label: "Review submissions",
+          iconName: "activity",
+          color: THEME.orange,
+          note: reviewCapNote,
+        },
+        {
+          value: compactNumber(project.personal.changedLines),
+          label: "Analyzed changed lines",
+          iconName: "code",
+          color: THEME.yellow,
+        },
+        {
+          value: compactNumber(project.personal.files),
+          label: "Files touched",
+          iconName: "repo",
+          color: THEME.pink,
+        },
+      ];
 
-        const contributionColumns = 4;
-        const contributionGap = 10;
-        const contributionCellWidth =
-          (
-            contentWidth -
-            contributionGap * (contributionColumns - 1)
-          ) / contributionColumns;
-        const contributionCellHeight = 58;
+      const contributionCellWidth =
+        (contentWidth - 10 * 3) / 4;
 
-        const contributionGrid = contributionMetrics
-          .map((metric, index) => {
-            const column = index % contributionColumns;
-            const row = Math.floor(
-              index / contributionColumns,
-            );
+      const contributionGrid =
+        contributionMetrics
+          .map((metric, metricIndex) => {
+            const column = metricIndex % 4;
+            const row = Math.floor(metricIndex / 4);
             const metricX =
               contentX +
-              column *
-                (
-                  contributionCellWidth +
-                  contributionGap
-                );
+              column * (contributionCellWidth + 10);
             const metricY =
-              contributionGridY +
-              row * (contributionCellHeight + 8);
+              absolute(positions.contributionGridY) +
+              row * 74;
 
-            const fillOpacity = metric.important
-              ? 0.16
-              : 0.08;
-            const strokeOpacity = metric.important
-              ? 0.9
-              : 0.45;
-
-            return `<rect x="${metricX}" y="${metricY}" width="${contributionCellWidth}" height="${contributionCellHeight}" rx="10" fill="${metric.accent}" fill-opacity="${fillOpacity}" stroke="${metric.accent}" stroke-opacity="${strokeOpacity}" stroke-width="${metric.important ? 1.5 : 1}"/>
-      ${icon(metric.iconName, metricX + 12, metricY + 11, metric.accent, 17)}
-      <text x="${metricX + 40}" y="${metricY + 25}" class="metricValue">${escapeXml(metric.value)}</text>
-      <text x="${metricX + 12}" y="${metricY + 47}" class="metricLabel">${escapeXml(metric.label)}</text>
+            return `<rect x="${metricX}" y="${metricY}" width="${contributionCellWidth}" height="64" rx="10" fill="${metric.color}" fill-opacity=".15" stroke="${metric.color}" stroke-opacity=".9" stroke-width="1.5"/>
+      ${icon(metric.iconName, metricX + 12, metricY + 12, metric.color, 17)}
+      <text x="${metricX + 42}" y="${metricY + 28}" class="metricValue">${escapeXml(metric.value)}</text>
+      <text x="${metricX + 12}" y="${metricY + 52}" class="metricLabel">${escapeXml(metric.label)}</text>
       ${
         metric.note
-          ? `<text x="${metricX + contributionCellWidth - 10}" y="${metricY + 14}" text-anchor="end" class="metricNote">${escapeXml(metric.note)}</text>`
+          ? `<text x="${metricX + contributionCellWidth - 10}" y="${metricY + 15}" text-anchor="end" class="metricNote">${escapeXml(metric.note)}</text>`
           : ""
       }`;
           })
           .join("");
 
-        const languageTitleY =
-          contributionGridY +
-          2 * (contributionCellHeight + 8) +
-          18;
-        const barY = languageTitleY + 14;
-        const barX = contentX;
-        const barWidth = contentWidth;
-        let currentX = barX;
+      const languageBarX = contentX;
+      const languageBarWidth = contentWidth;
+      let languageCursorX = languageBarX;
 
-        const segments = project.languages
+      const languageSegments =
+        (project.languages ?? [])
           .map((language) => {
             const segmentWidth =
-              (language.percentage / 100) * barWidth;
+              (language.percentage / 100) *
+              languageBarWidth;
             const segment =
-              `<rect x="${currentX.toFixed(2)}" y="${barY}" width="${Math.max(0, segmentWidth).toFixed(2)}" height="12" fill="${language.color}"/>`;
-            currentX += segmentWidth;
+              `<rect x="${languageCursorX.toFixed(2)}" y="${absolute(positions.languageBarY)}" width="${Math.max(0, segmentWidth).toFixed(2)}" height="12" fill="${language.color}"/>`;
+
+            languageCursorX += segmentWidth;
             return segment;
           })
           .join("");
 
-        const clipId =
-          `public-${project.fullName.replace(/[^a-z0-9]/gi, "-")}`;
+      const clipId =
+        `public-project-${index}-${
+          project.fullName
+            .replace(/[^a-z0-9]/gi, "-")
+        }`;
 
-        const legendStartY = barY + 34;
-        const languageColumns = 3;
-        const languageColumnWidth = contentWidth / languageColumns;
+      const languageColumnWidth =
+        contentWidth / 3;
 
-        const legend =
-          project.languages.length > 0
-            ? project.languages
-                .map((language, index) => {
-                  const column = index % languageColumns;
-                  const row = Math.floor(
-                    index / languageColumns,
-                  );
-                  const itemX =
-                    contentX +
-                    column * languageColumnWidth;
-                  const itemY =
-                    legendStartY + row * 30;
-                  const fileText =
-                    language.files > 0
-                      ? plural(language.files, "file")
-                      : project.languageSource;
+      const languageLegend =
+        displayedLanguages.length > 0
+          ? displayedLanguages
+              .map((language, languageIndex) => {
+                const column = languageIndex % 3;
+                const row = Math.floor(languageIndex / 3);
+                const itemX =
+                  contentX +
+                  column * languageColumnWidth;
+                const itemY =
+                  absolute(positions.languageLegendY) +
+                  row * 32;
+                const fileText =
+                  language.files > 0
+                    ? plural(language.files, "file")
+                    : project.languageSource;
 
-                  return `<circle cx="${itemX + 5}" cy="${itemY - 4}" r="5" fill="${language.color}"/>
-      <text x="${itemX + 18}" y="${itemY}" class="small">${escapeXml(truncate(language.language, 22))}</text>
-      <text x="${itemX + 162}" y="${itemY}" class="label">${escapeXml(formatPercentage(language.percentage))}</text>
-      <text x="${itemX + 222}" y="${itemY}" class="tiny">${escapeXml(truncate(fileText, 18))}</text>`;
-                })
-                .join("")
-            : `<text x="${contentX}" y="${legendStartY}" class="empty">No language composition was available.</text>`;
+                return `<circle cx="${itemX + 5}" cy="${itemY - 4}" r="5" fill="${language.color}"/>
+      <text x="${itemX + 18}" y="${itemY}" class="small">${escapeXml(truncate(language.language, 20))}</text>
+      <text x="${itemX + 150}" y="${itemY}" class="label">${escapeXml(formatPercentage(language.percentage))}</text>
+      <text x="${itemX + 210}" y="${itemY}" class="tiny">${escapeXml(truncate(fileText, 16))}</text>`;
+              })
+              .join("")
+          : `<text x="${contentX}" y="${absolute(positions.languageLegendY)}" class="empty">No language composition was available.</text>`;
 
-        const technologyTitleY =
-          legendStartY + languageRows * 30 + 8;
-        const technologyStartY = technologyTitleY + 22;
-        const technologyColumns = 4;
-        const technologyColumnWidth =
-          contentWidth / technologyColumns;
+      const languageOverflowY =
+        absolute(
+          positions.languageLegendY +
+          positions.languageLegendHeight +
+          3,
+        );
 
-        const technologyBadges =
-          project.technologies.length > 0
-            ? project.technologies
-                .map((technology, index) => {
-                  const column =
-                    index % technologyColumns;
-                  const row = Math.floor(
-                    index / technologyColumns,
-                  );
-                  const itemX =
-                    contentX +
-                    column * technologyColumnWidth;
-                  const itemY =
-                    technologyStartY + row * 26;
-                  const color =
-                    TECHNOLOGY_COLORS[technology] ??
-                    fallbackColor(technology);
+      const technologyColumnWidth =
+        contentWidth / 4;
 
-                  return `<rect x="${itemX}" y="${itemY - 16}" width="${technologyColumnWidth - 10}" height="22" rx="11" fill="${color}" fill-opacity=".11" stroke="${color}" stroke-opacity=".55"/>
-      <circle cx="${itemX + 12}" cy="${itemY - 5}" r="4" fill="${color}"/>
-      <text x="${itemX + 23}" y="${itemY - 1}" class="small">${escapeXml(truncate(technology, 25))}</text>`;
-                })
-                .join("")
-            : `<text x="${contentX}" y="${technologyStartY}" class="tiny">No supported framework/platform signature detected.</text>`;
+      const technologyBadges =
+        displayedTechnologies.length > 0
+          ? displayedTechnologies
+              .map((technology, technologyIndex) => {
+                const column = technologyIndex % 4;
+                const row = Math.floor(technologyIndex / 4);
+                const itemX =
+                  contentX +
+                  column * technologyColumnWidth;
+                const itemY =
+                  absolute(positions.technologyGridY) +
+                  row * 30;
+                const color =
+                  TECHNOLOGY_COLORS[technology] ??
+                  fallbackColor(technology);
 
-        return `<rect x="18" y="${y}" width="${width - 36}" height="${blockHeight}" rx="12" fill="${THEME.track}" stroke="${THEME.border}"/>
-      ${icon("repo", 32, y + 16, THEME.green, 19)}
-      <text x="60" y="${headerTitleY}" class="value">${escapeXml(projectName)}</text>
+                return `<rect x="${itemX}" y="${itemY}" width="${technologyColumnWidth - 10}" height="23" rx="11.5" fill="${color}" fill-opacity=".12" stroke="${color}" stroke-opacity=".62"/>
+      <circle cx="${itemX + 12}" cy="${itemY + 11.5}" r="4" fill="${color}"/>
+      <text x="${itemX + 24}" y="${itemY + 15}" class="small">${escapeXml(truncate(technology, 24))}</text>`;
+              })
+              .join("")
+          : `<text x="${contentX}" y="${absolute(positions.technologyGridY + 16)}" class="tiny">No supported framework or platform signature was detected.</text>`;
+
+      const technologyOverflowY =
+        absolute(
+          positions.technologyGridY +
+          positions.technologyGridHeight +
+          2,
+        );
+
+      const projectNumber =
+        String(index + 1).padStart(2, "0");
+
+      return `<g data-project-index="${index + 1}">
+      <rect x="${projectX + 5}" y="${y + 7}" width="${projectWidth - 2}" height="${blockHeight}" rx="16" fill="#000000" fill-opacity=".22"/>
+      <rect data-project-card="${index + 1}" x="${projectX}" y="${y}" width="${projectWidth}" height="${blockHeight}" rx="16" fill="${THEME.track}" stroke="${accent}" stroke-opacity=".86" stroke-width="1.7"/>
+      <rect x="${projectX}" y="${y}" width="${projectWidth}" height="6" rx="3" fill="${accent}"/>
+      <rect x="${projectX + 1}" y="${y + 7}" width="${projectWidth - 2}" height="${positions.summaryTitleY - 18}" rx="14" fill="${accent}" fill-opacity=".065"/>
+      ${icon("repo", contentX, absolute(19), accent, 20)}
+      ${svgTextLines({
+        lines: titleLines,
+        x: contentX + 30,
+        y: absolute(positions.titleY),
+        className: "value",
+        lineHeight: 21,
+      })}
+      <rect x="${width - 142}" y="${y + 18}" width="100" height="25" rx="12.5" fill="${accent}" fill-opacity=".16" stroke="${accent}" stroke-opacity=".72"/>
+      <text x="${width - 92}" y="${y + 35}" text-anchor="middle" class="metricLabel">PROJECT ${projectNumber}</text>
       ${svgTextLines({
         lines: identityLines,
         x: contentX,
-        y: identityY,
+        y: absolute(positions.identityY),
         className: "label",
         lineHeight: 15,
       })}
       ${svgTextLines({
         lines: evidenceLines,
         x: contentX,
-        y: evidenceY,
+        y: absolute(positions.evidenceY),
         className: "tiny",
         lineHeight: 15,
       })}
-      <text x="${contentX}" y="${summaryTitleY}" class="sectionLabel">FULL PROJECT COMPOSITION</text>
+
+      <rect x="${contentX - 10}" y="${absolute(positions.summaryTitleY - 17)}" width="${contentWidth + 20}" height="22" rx="7" fill="${accent}" fill-opacity=".1"/>
+      <text x="${contentX}" y="${absolute(positions.summaryTitleY)}" class="sectionLabel">FULL PROJECT COMPOSITION</text>
       ${summaryGrid}
-      <text x="${contentX}" y="${contributionTitleY}" class="sectionLabel">VERIFIED PERSONAL CONTRIBUTION</text>
+
+      <rect x="${contentX - 10}" y="${absolute(positions.contributionTitleY - 17)}" width="${contentWidth + 20}" height="${positions.languageTitleY - positions.contributionTitleY - 1}" rx="12" fill="${THEME.background}" stroke="${accent}" stroke-opacity=".34"/>
+      <text x="${contentX}" y="${absolute(positions.contributionTitleY)}" class="sectionLabel">VERIFIED PERSONAL CONTRIBUTION</text>
       ${contributionGrid}
-      <text x="${contentX}" y="${languageTitleY}" class="sectionLabel">LANGUAGE COMPOSITION</text>
+
+      <rect x="${contentX - 10}" y="${absolute(positions.languageTitleY - 17)}" width="${contentWidth + 20}" height="${positions.technologyTitleY - positions.languageTitleY - 1}" rx="12" fill="${THEME.background}" stroke="${THEME.border}"/>
+      <text x="${contentX}" y="${absolute(positions.languageTitleY)}" class="sectionLabel">LANGUAGE COMPOSITION</text>
       <defs>
         <clipPath id="${escapeXml(clipId)}">
-          <rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6"/>
+          <rect x="${languageBarX}" y="${absolute(positions.languageBarY)}" width="${languageBarWidth}" height="12" rx="6"/>
         </clipPath>
       </defs>
-      <rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6" fill="${THEME.background}"/>
-      <g clip-path="url(#${escapeXml(clipId)})">${segments}</g>
-      ${legend}
-      <text x="${contentX}" y="${technologyTitleY}" class="sectionLabel">FRAMEWORKS &amp; PLATFORMS</text>
-      ${technologyBadges}`;
-      },
-    )
+      <rect x="${languageBarX}" y="${absolute(positions.languageBarY)}" width="${languageBarWidth}" height="12" rx="6" fill="${THEME.track}"/>
+      <g clip-path="url(#${escapeXml(clipId)})">${languageSegments}</g>
+      ${languageLegend}
+      ${
+        hiddenLanguages > 0
+          ? `<text x="${contentX}" y="${languageOverflowY}" class="tiny">+${hiddenLanguages} additional languages are included in the composition bar and aggregate analytics.</text>`
+          : ""
+      }
+
+      <rect x="${contentX - 10}" y="${absolute(positions.technologyTitleY - 17)}" width="${contentWidth + 20}" height="${blockHeight - positions.technologyTitleY - 7}" rx="12" fill="${THEME.background}" stroke="${THEME.border}"/>
+      <text x="${contentX}" y="${absolute(positions.technologyTitleY)}" class="sectionLabel">FRAMEWORKS &amp; PLATFORMS</text>
+      ${technologyBadges}
+      ${
+        hiddenTechnologies > 0
+          ? `<text x="${contentX}" y="${technologyOverflowY}" class="tiny">+${hiddenTechnologies} additional framework or platform signals are included in aggregate analytics.</text>`
+          : ""
+      }
+    </g>`;
+    })
     .join("");
 
   const footer =
     hiddenCount > 0
-      ? `<text x="28" y="${height - 18}" class="subtitle">${hiddenCount} additional verified public contribution projects are included in aggregate language and framework statistics.</text>`
+      ? `<rect x="20" y="${height - 38}" width="${width - 40}" height="25" rx="12.5" fill="${THEME.track}" stroke="${THEME.border}"/>
+      <text x="36" y="${height - 21}" class="subtitle">${hiddenCount} additional verified public projects are included in aggregate language and framework statistics.</text>`
       : "";
 
   return cardShell({
@@ -4454,7 +4575,7 @@ function renderPublicContributionPortfolio(projects) {
     iconName: "branch",
     accent: THEME.green,
     subtitle:
-      "Adaptive project cards · verified commits, pull requests, reviews and approvals are highlighted",
+      "Each verified repository is rendered as an independent adaptive project card",
     body: `${body}${footer}`,
   });
 }
