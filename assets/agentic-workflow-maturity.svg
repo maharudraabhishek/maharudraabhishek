@@ -27,8 +27,8 @@
       <text x="650" y="168" text-anchor="end" class="label">0 repos</text><g transform="translate(24 195) scale(0.9375)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
       <text x="50" y="211" class="small">Level 3 · Agentic Automation</text>
       <rect x="290" y="199" width="330" height="9" rx="4.5" fill="#21262D"/>
-      <rect x="290" y="199" width="144.4" height="9" rx="4.5" fill="#F0883E"/>
-      <text x="650" y="211" text-anchor="end" class="label">7 repos</text><g transform="translate(24 238) scale(0.9375)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <rect x="290" y="199" width="103.1" height="9" rx="4.5" fill="#F0883E"/>
+      <text x="650" y="211" text-anchor="end" class="label">5 repos</text><g transform="translate(24 238) scale(0.9375)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
       <text x="50" y="254" class="small">Level 4 · Governed AI Engineering</text>
       <rect x="290" y="242" width="330" height="9" rx="4.5" fill="#21262D"/>
       <rect x="290" y="242" width="82.5" height="9" rx="4.5" fill="#3FB950"/>
