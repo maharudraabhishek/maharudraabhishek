@@ -54,6 +54,35 @@ const config = Object.freeze({
     "DEBUG_PRIVATE_REPOSITORIES",
     false,
   ),
+  codeActivityYears: integerEnvironment("CODE_ACTIVITY_YEARS", 10, {
+    min: 1,
+    max: 20,
+  }),
+  maxCommitsPerRepository: integerEnvironment(
+    "MAX_COMMITS_PER_REPOSITORY",
+    250,
+    { min: 1, max: 1_000 },
+  ),
+  maxAnalyzedCommits: integerEnvironment(
+    "MAX_ANALYZED_COMMITS",
+    2_500,
+    { min: 1, max: 4_000 },
+  ),
+  commitListConcurrency: integerEnvironment(
+    "COMMIT_LIST_CONCURRENCY",
+    2,
+    { min: 1, max: 5 },
+  ),
+  commitDetailConcurrency: integerEnvironment(
+    "COMMIT_DETAIL_CONCURRENCY",
+    3,
+    { min: 1, max: 6 },
+  ),
+  maxPublicContributedRepositories: integerEnvironment(
+    "MAX_PUBLIC_CONTRIBUTED_REPOSITORIES",
+    100,
+    { min: 0, max: 500 },
+  ),
 });
 
 const REST_HEADERS = Object.freeze({
@@ -124,6 +153,7 @@ const LANGUAGE_COLORS = Object.freeze({
   Lua: "#000080",
   Makefile: "#427819",
   MATLAB: "#E16737",
+  Markdown: "#083FA1",
   MDX: "#FCB32C",
   Nix: "#7E7EFF",
   "Objective-C": "#438EFF",
@@ -138,12 +168,14 @@ const LANGUAGE_COLORS = Object.freeze({
   Scala: "#C22D40",
   SCSS: "#C6538C",
   Shell: "#89E051",
+  SQL: "#E38C00",
   Solidity: "#AA6746",
   Svelte: "#FF3E00",
   Swift: "#F05138",
   TeX: "#3D6117",
   TypeScript: "#3178C6",
   Vue: "#41B883",
+  YAML: "#CB171E",
   Zig: "#EC915C",
 });
 
@@ -203,6 +235,8 @@ const ICONS = Object.freeze({
   docs: `<path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/>`,
   people: `<circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/>`,
   calendar: `<rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1v4M11 1v4M2 7h12"/>`,
+  trophy: `<path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/>`,
+  branch: `<circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/>`,
 });
 
 const MANIFEST_BASENAMES = new Set([
@@ -233,6 +267,98 @@ const MANIFEST_BASENAMES = new Set([
   "settings.gradle.kts",
   "wrangler.toml",
 ]);
+
+const CONTRIBUTION_LANGUAGE_BY_EXTENSION = Object.freeze({
+  ".astro": "Astro",
+  ".c": "C",
+  ".cc": "C++",
+  ".clj": "Clojure",
+  ".cljs": "Clojure",
+  ".cmake": "CMake",
+  ".coffee": "CoffeeScript",
+  ".cpp": "C++",
+  ".cs": "C#",
+  ".css": "CSS",
+  ".cxx": "C++",
+  ".dart": "Dart",
+  ".ex": "Elixir",
+  ".exs": "Elixir",
+  ".fs": "F#",
+  ".fsx": "F#",
+  ".go": "Go",
+  ".graphql": "GraphQL",
+  ".gql": "GraphQL",
+  ".groovy": "Groovy",
+  ".h": "C",
+  ".hpp": "C++",
+  ".html": "HTML",
+  ".java": "Java",
+  ".jl": "Julia",
+  ".js": "JavaScript",
+  ".jsx": "JavaScript",
+  ".kt": "Kotlin",
+  ".kts": "Kotlin",
+  ".lua": "Lua",
+  ".m": "Objective-C",
+  ".md": "Markdown",
+  ".mdx": "MDX",
+  ".mm": "Objective-C++",
+  ".php": "PHP",
+  ".pl": "Perl",
+  ".ps1": "PowerShell",
+  ".py": "Python",
+  ".r": "R",
+  ".rb": "Ruby",
+  ".rs": "Rust",
+  ".scala": "Scala",
+  ".scss": "SCSS",
+  ".sh": "Shell",
+  ".sol": "Solidity",
+  ".sql": "SQL",
+  ".svelte": "Svelte",
+  ".swift": "Swift",
+  ".tex": "TeX",
+  ".ts": "TypeScript",
+  ".tsx": "TypeScript",
+  ".vue": "Vue",
+  ".yaml": "YAML",
+  ".yml": "YAML",
+  ".zig": "Zig",
+});
+
+const CONTRIBUTION_SPECIAL_FILENAMES = Object.freeze({
+  dockerfile: "Dockerfile",
+  makefile: "Makefile",
+  "cmakelists.txt": "CMake",
+  "jenkinsfile": "Groovy",
+});
+
+const CONTRIBUTION_IGNORED_BASENAMES = new Set([
+  "bun.lock",
+  "cargo.lock",
+  "composer.lock",
+  "package-lock.json",
+  "pnpm-lock.yaml",
+  "poetry.lock",
+  "pubspec.lock",
+  "yarn.lock",
+]);
+
+const CONTRIBUTION_IGNORED_PATH_PARTS = [
+  "/.dart_tool/",
+  "/.gradle/",
+  "/.idea/",
+  "/.next/",
+  "/.nuxt/",
+  "/build/",
+  "/coverage/",
+  "/dist/",
+  "/generated/",
+  "/node_modules/",
+  "/target/",
+  "/vendor/",
+];
+
 
 function requiredEnvironment(name) {
   const value = process.env[name]?.trim();
@@ -312,6 +438,12 @@ function compactNumber(value) {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(safeInteger(value));
+}
+
+function formatPercentage(value) {
+  if (!Number.isFinite(value) || value <= 0) return "0%";
+  if (value < 0.1) return "<0.1%";
+  return `${value.toFixed(1)}%`;
 }
 
 function formatDate(value) {
@@ -732,6 +864,120 @@ async function fetchAllRepositories() {
   return config.maxRepositories > 0
     ? repositories.slice(0, config.maxRepositories)
     : repositories;
+}
+
+
+async function fetchPublicContributedRepositories() {
+  if (config.maxPublicContributedRepositories === 0) return [];
+
+  const repositories = [];
+  let after = null;
+
+  while (repositories.length < config.maxPublicContributedRepositories) {
+    const query = `
+      query PublicContributedRepositories(
+        $login: String!
+        $after: String
+      ) {
+        user(login: $login) {
+          repositoriesContributedTo(
+            first: 100
+            after: $after
+            includeUserRepositories: false
+            contributionTypes: [COMMIT, PULL_REQUEST]
+            privacy: PUBLIC
+            orderBy: { field: UPDATED_AT, direction: DESC }
+          ) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            nodes {
+              name
+              nameWithOwner
+              isArchived
+              isFork
+              isPrivate
+              pushedAt
+              stargazerCount
+              url
+              owner {
+                login
+                __typename
+              }
+              defaultBranchRef {
+                name
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await graphql(
+      query,
+      { login: username, after },
+      "Public contributed-repository query",
+    );
+
+    const connection = data?.user?.repositoriesContributedTo;
+    const nodes = connection?.nodes ?? [];
+
+    for (const node of nodes) {
+      if (node?.owner?.__typename !== "Organization") continue;
+      if (node.isPrivate) continue;
+      if (!node.defaultBranchRef?.name) continue;
+
+      repositories.push({
+        name: node.name,
+        full_name: node.nameWithOwner,
+        owner: {
+          login: node.owner.login,
+          type: "Organization",
+        },
+        private: false,
+        visibility: "public",
+        archived: Boolean(node.isArchived),
+        fork: Boolean(node.isFork),
+        disabled: false,
+        default_branch: node.defaultBranchRef.name,
+        languages_url: `${REST_ENDPOINT}/repos/${node.nameWithOwner}/languages`,
+        pushed_at: node.pushedAt,
+        stargazers_count: safeInteger(node.stargazerCount),
+        html_url: node.url,
+        discovered_from_contributions: true,
+      });
+
+      if (repositories.length >= config.maxPublicContributedRepositories) {
+        break;
+      }
+    }
+
+    if (!connection?.pageInfo?.hasNextPage) break;
+    after = connection.pageInfo.endCursor;
+    if (!after) break;
+  }
+
+  return repositories;
+}
+
+function mergeRepositories(...repositoryLists) {
+  const merged = new Map();
+
+  for (const repository of repositoryLists.flat()) {
+    if (!repository?.full_name) continue;
+    const key = repository.full_name.toLowerCase();
+    const existing = merged.get(key);
+
+    // Prefer REST repository objects because they contain the richest metadata.
+    if (!existing || (!existing.id && repository.id)) {
+      merged.set(key, repository);
+    }
+  }
+
+  return [...merged.values()].sort((first, second) =>
+    first.full_name.localeCompare(second.full_name),
+  );
 }
 
 function repositoryIsExcluded(repository) {
@@ -1227,6 +1473,281 @@ async function safeSearchCount(query, label, fallback) {
   }
 }
 
+
+function contributionLanguageForPath(filePath) {
+  const normalized = String(filePath ?? "").replaceAll("\\", "/");
+  const lowerPath = normalized.toLowerCase();
+  const baseName = lowerPath.split("/").at(-1) ?? "";
+
+  if (CONTRIBUTION_IGNORED_BASENAMES.has(baseName)) return null;
+  if (lowerPath.endsWith(".min.js") || lowerPath.endsWith(".min.css")) {
+    return null;
+  }
+
+  const paddedPath = `/${lowerPath}`;
+  if (
+    CONTRIBUTION_IGNORED_PATH_PARTS.some((part) =>
+      paddedPath.includes(part),
+    )
+  ) {
+    return null;
+  }
+
+  if (CONTRIBUTION_SPECIAL_FILENAMES[baseName]) {
+    return CONTRIBUTION_SPECIAL_FILENAMES[baseName];
+  }
+
+  const extension = path.extname(baseName);
+  return CONTRIBUTION_LANGUAGE_BY_EXTENSION[extension] ?? null;
+}
+
+async function fetchAuthoredCommitReferences(selection) {
+  const { repository, scope } = selection;
+  const allowAnonymousFallback = repositorySupportsAnonymousFallback(scope);
+  const since = new Date();
+  since.setUTCFullYear(since.getUTCFullYear() - config.codeActivityYears);
+
+  const commits = [];
+
+  for (let pageNumber = 1; ; pageNumber += 1) {
+    const remaining = config.maxCommitsPerRepository - commits.length;
+    if (remaining <= 0) break;
+
+    const perPage = Math.min(100, remaining);
+    const response = await rest(
+      `/repos/${repository.full_name}/commits?sha=${encodeURIComponent(repository.default_branch)}&author=${encodeURIComponent(username)}&since=${encodeURIComponent(since.toISOString())}&per_page=${perPage}&page=${pageNumber}`,
+      {
+        label: "Authored-commit listing",
+        optionalStatuses: [404, 409, 422],
+        allowAnonymousFallback,
+      },
+    );
+
+    const pageItems = Array.isArray(response) ? response : [];
+    for (const commit of pageItems) {
+      if (!commit?.sha) continue;
+      commits.push({
+        sha: commit.sha,
+        date:
+          commit.commit?.author?.date ??
+          commit.commit?.committer?.date ??
+          null,
+      });
+    }
+
+    if (pageItems.length < perPage) break;
+    if (commits.length >= config.maxCommitsPerRepository) break;
+  }
+
+  return {
+    selection,
+    commits,
+    capped: commits.length >= config.maxCommitsPerRepository,
+  };
+}
+
+function allocateCommitReferences(repositoryCommitLists) {
+  const queues = repositoryCommitLists
+    .filter((item) => item.commits.length > 0)
+    .map((item) => ({ ...item, index: 0 }));
+  const allocated = [];
+
+  // Round-robin prevents one large repository from consuming the global cap
+  // before smaller repositories and public contribution repositories appear.
+  while (
+    allocated.length < config.maxAnalyzedCommits &&
+    queues.some((queue) => queue.index < queue.commits.length)
+  ) {
+    for (const queue of queues) {
+      if (allocated.length >= config.maxAnalyzedCommits) break;
+      if (queue.index >= queue.commits.length) continue;
+
+      allocated.push({
+        selection: queue.selection,
+        commit: queue.commits[queue.index],
+      });
+      queue.index += 1;
+    }
+  }
+
+  return {
+    allocated,
+    discoveredCount: repositoryCommitLists.reduce(
+      (sum, item) => sum + item.commits.length,
+      0,
+    ),
+    cappedRepositories: repositoryCommitLists.filter((item) => item.capped)
+      .length,
+  };
+}
+
+async function fetchCommitDetails(selection, sha) {
+  const { repository, scope } = selection;
+  const allowAnonymousFallback = repositorySupportsAnonymousFallback(scope);
+  const files = [];
+  let statistics = null;
+
+  for (let pageNumber = 1; pageNumber <= 30; pageNumber += 1) {
+    const response = await rest(
+      `/repos/${repository.full_name}/commits/${encodeURIComponent(sha)}?per_page=100&page=${pageNumber}`,
+      {
+        label: "Commit-detail request",
+        optionalStatuses: [404, 409, 422],
+        allowAnonymousFallback,
+      },
+    );
+
+    if (!response) break;
+    if (pageNumber === 1) statistics = response.stats ?? null;
+
+    const pageFiles = Array.isArray(response.files) ? response.files : [];
+    files.push(...pageFiles);
+    if (pageFiles.length < 100) break;
+  }
+
+  return {
+    repositoryFullName: repository.full_name,
+    sha,
+    statistics,
+    files,
+  };
+}
+
+function createContributionAccumulator() {
+  return {
+    additions: 0,
+    deletions: 0,
+    changedLines: 0,
+    commitShas: new Set(),
+    repositories: new Set(),
+    files: new Set(),
+  };
+}
+
+function finalizeContributionAccumulator(accumulator) {
+  return {
+    additions: accumulator.additions,
+    deletions: accumulator.deletions,
+    changedLines: accumulator.changedLines,
+    commits: accumulator.commitShas.size,
+    repositories: accumulator.repositories.size,
+    files: accumulator.files.size,
+  };
+}
+
+async function analyzePersonalCodeContributions(repositorySelections) {
+  console.log(
+    `Discovering GitHub-attributed commits from the last ${config.codeActivityYears} years...`,
+  );
+
+  const listResults = await mapLimit(
+    repositorySelections,
+    config.commitListConcurrency,
+    fetchAuthoredCommitReferences,
+  );
+
+  const repositoryCommitLists = [];
+  let failedCommitLists = 0;
+
+  for (const result of listResults) {
+    if (result.status === "fulfilled") {
+      repositoryCommitLists.push(result.value);
+    } else {
+      failedCommitLists += 1;
+      console.warn(`Authored-commit listing failed: ${result.reason.message}`);
+    }
+  }
+
+  const allocation = allocateCommitReferences(repositoryCommitLists);
+  console.log(
+    `Authored commits discovered: ${allocation.discoveredCount}; selected for detailed analysis: ${allocation.allocated.length}; repository caps reached: ${allocation.cappedRepositories}; listing failures: ${failedCommitLists}.`,
+  );
+
+  const detailResults = await mapLimit(
+    allocation.allocated,
+    config.commitDetailConcurrency,
+    ({ selection, commit }) => fetchCommitDetails(selection, commit.sha),
+  );
+
+  const languages = new Map();
+  const repositories = new Map();
+  let failedCommitDetails = 0;
+
+  for (const result of detailResults) {
+    if (result.status === "rejected") {
+      failedCommitDetails += 1;
+      console.warn(`Commit-detail analysis failed: ${result.reason.message}`);
+      continue;
+    }
+
+    const detail = result.value;
+    const repositoryAccumulator = repositories.get(detail.repositoryFullName) ??
+      createContributionAccumulator();
+    repositoryAccumulator.commitShas.add(detail.sha);
+    repositoryAccumulator.repositories.add(detail.repositoryFullName);
+
+    for (const file of detail.files) {
+      const language = contributionLanguageForPath(file.filename);
+      if (!language) continue;
+
+      const additions = safeInteger(file.additions);
+      const deletions = safeInteger(file.deletions);
+      const changedLines = additions + deletions;
+      if (changedLines <= 0) continue;
+
+      const languageAccumulator = languages.get(language) ??
+        createContributionAccumulator();
+      languageAccumulator.additions += additions;
+      languageAccumulator.deletions += deletions;
+      languageAccumulator.changedLines += changedLines;
+      languageAccumulator.commitShas.add(detail.sha);
+      languageAccumulator.repositories.add(detail.repositoryFullName);
+      languageAccumulator.files.add(
+        `${detail.repositoryFullName}:${file.filename}`,
+      );
+      languages.set(language, languageAccumulator);
+
+      repositoryAccumulator.additions += additions;
+      repositoryAccumulator.deletions += deletions;
+      repositoryAccumulator.changedLines += changedLines;
+      repositoryAccumulator.files.add(file.filename);
+    }
+
+    repositories.set(detail.repositoryFullName, repositoryAccumulator);
+  }
+
+  const languageItems = [...languages.entries()]
+    .map(([language, accumulator]) => ({
+      language,
+      color: LANGUAGE_COLORS[language] ?? fallbackColor(language),
+      ...finalizeContributionAccumulator(accumulator),
+    }))
+    .sort(
+      (first, second) =>
+        second.changedLines - first.changedLines ||
+        second.commits - first.commits ||
+        first.language.localeCompare(second.language),
+    );
+
+  const repositoryItems = new Map(
+    [...repositories.entries()].map(([fullName, accumulator]) => [
+      fullName.toLowerCase(),
+      finalizeContributionAccumulator(accumulator),
+    ]),
+  );
+
+  return {
+    languages: languageItems,
+    repositories: repositoryItems,
+    analyzedCommits: detailResults.length - failedCommitDetails,
+    discoveredCommits: allocation.discoveredCount,
+    globalCapReached:
+      allocation.discoveredCount > allocation.allocated.length,
+    cappedRepositories: allocation.cappedRepositories,
+    failedCommitDetails,
+  };
+}
+
 function aggregateLanguages(repositoryDetails) {
   const totals = new Map();
 
@@ -1509,17 +2030,75 @@ function detectTechnologies(profile) {
   return found;
 }
 
-function aggregateTechnologies(repositoryDetails) {
+function buildTechnologyDetection(repositoryDetails) {
   const counts = new Map();
+  const byRepository = new Map();
 
   for (const detail of repositoryDetails) {
     const profile = buildRepositoryProfile(detail);
-    for (const technology of detectTechnologies(profile)) {
+    const technologies = detectTechnologies(profile);
+    const key = detail.repository.full_name.toLowerCase();
+    byRepository.set(key, technologies);
+
+    for (const technology of technologies) {
       counts.set(technology, (counts.get(technology) ?? 0) + 1);
     }
   }
 
-  return counts;
+  return { counts, byRepository };
+}
+
+function buildTechnologyImpact(
+  technologyDetection,
+  personalCodeContributions,
+) {
+  const impact = new Map();
+
+  for (const [repositoryName, technologies] of
+    technologyDetection.byRepository) {
+    const repositoryContribution =
+      personalCodeContributions.repositories.get(repositoryName) ?? {
+        commits: 0,
+        changedLines: 0,
+        files: 0,
+      };
+
+    for (const technology of technologies) {
+      const current = impact.get(technology) ?? {
+        name: technology,
+        repositories: 0,
+        activeRepositories: 0,
+        commits: 0,
+        changedLines: 0,
+        files: 0,
+      };
+
+      current.repositories += 1;
+      if (repositoryContribution.commits > 0) {
+        current.activeRepositories += 1;
+      }
+      current.commits += repositoryContribution.commits;
+      current.changedLines += repositoryContribution.changedLines;
+      current.files += repositoryContribution.files;
+      impact.set(technology, current);
+    }
+  }
+
+  return [...impact.values()]
+    .map((item) => ({
+      ...item,
+      color: TECHNOLOGY_COLORS[item.name] ?? fallbackColor(item.name),
+      score:
+        Math.log1p(item.changedLines) * 0.55 +
+        Math.log1p(item.commits) * 0.30 +
+        Math.log1p(item.files) * 0.15,
+    }))
+    .sort(
+      (first, second) =>
+        second.score - first.score ||
+        second.repositories - first.repositories ||
+        first.name.localeCompare(second.name),
+    );
 }
 
 function classifyDomains(technologyCounts, languages) {
@@ -1956,6 +2535,175 @@ function renderActivity(days) {
   });
 }
 
+
+function renderContributionGraph(days) {
+  const width = 900;
+  const cell = 11;
+  const gap = 3;
+  const graphX = 52;
+  const graphY = 88;
+  const today = dateFromIso(isoDate(new Date()));
+  const currentWeekStart = addUtcDays(today, -today.getUTCDay());
+  const graphStart = addUtcDays(currentWeekStart, -52 * 7);
+  const contributionByDate = new Map(
+    days.map((day) => [day.date, day.contributionCount]),
+  );
+  const graphDays = [];
+
+  for (let week = 0; week < 53; week += 1) {
+    for (let weekday = 0; weekday < 7; weekday += 1) {
+      const date = addUtcDays(graphStart, week * 7 + weekday);
+      const dateText = isoDate(date);
+      graphDays.push({
+        week,
+        weekday,
+        date: dateText,
+        count:
+          date.getTime() <= today.getTime()
+            ? safeInteger(contributionByDate.get(dateText))
+            : 0,
+        future: date.getTime() > today.getTime(),
+      });
+    }
+  }
+
+  const nonZero = graphDays
+    .filter((day) => day.count > 0)
+    .map((day) => day.count)
+    .sort((first, second) => first - second);
+  const quantile = (ratio) =>
+    nonZero.length === 0
+      ? 1
+      : nonZero[Math.min(
+          nonZero.length - 1,
+          Math.floor((nonZero.length - 1) * ratio),
+        )];
+  const thresholds = [quantile(0.25), quantile(0.50), quantile(0.75)];
+  const levelColor = (count, future) => {
+    if (future || count <= 0) return THEME.track;
+    if (count <= thresholds[0]) return "#0E4429";
+    if (count <= thresholds[1]) return "#006D32";
+    if (count <= thresholds[2]) return "#26A641";
+    return "#39D353";
+  };
+
+  const cells = graphDays
+    .map((day) => {
+      const x = graphX + day.week * (cell + gap);
+      const y = graphY + day.weekday * (cell + gap);
+      return `<rect x="${x}" y="${y}" width="${cell}" height="${cell}" rx="2" fill="${levelColor(day.count, day.future)}"><title>${escapeXml(day.date)}: ${day.count} contributions</title></rect>`;
+    })
+    .join("");
+
+  const weekdayLabels = [
+    [1, "Mon"],
+    [3, "Wed"],
+    [5, "Fri"],
+  ]
+    .map(([weekday, label]) =>
+      `<text x="42" y="${graphY + weekday * (cell + gap) + 9}" text-anchor="end" class="tiny">${label}</text>`,
+    )
+    .join("");
+
+  const monthLabels = [];
+  let previousMonth = "";
+  let previousX = Number.NEGATIVE_INFINITY;
+  for (let week = 0; week < 53; week += 1) {
+    const date = addUtcDays(graphStart, week * 7);
+    const month = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+    if (month === previousMonth) continue;
+    previousMonth = month;
+    const x = graphX + week * (cell + gap);
+    if (x - previousX < 42) continue;
+    previousX = x;
+    const label = new Intl.DateTimeFormat("en", {
+      month: "short",
+      timeZone: "UTC",
+    }).format(date);
+    monthLabels.push(
+      `<text x="${x}" y="75" class="tiny">${escapeXml(label)}</text>`,
+    );
+  }
+
+  const total = graphDays.reduce((sum, day) => sum + day.count, 0);
+  const legendX = width - 178;
+  const legend = [THEME.track, "#0E4429", "#006D32", "#26A641", "#39D353"]
+    .map((color, index) =>
+      `<rect x="${legendX + 35 + index * 15}" y="198" width="11" height="11" rx="2" fill="${color}"/>`,
+    )
+    .join("");
+
+  return cardShell({
+    width,
+    height: 224,
+    title: "Contribution Graph",
+    iconName: "calendar",
+    accent: THEME.green,
+    subtitle: `${compactNumber(total)} contributions across the latest 53 contribution weeks`,
+    body: `
+      ${monthLabels.join("")}
+      ${weekdayLabels}
+      ${cells}
+      <text x="${legendX}" y="207" class="tiny">Less</text>
+      ${legend}
+      <text x="${width - 25}" y="207" text-anchor="end" class="tiny">More</text>
+    `,
+  });
+}
+
+function renderPersonalLanguageContributions(data) {
+  const width = 1000;
+  const languages = data.languages;
+  const columns = 2;
+  const rows = Math.max(1, Math.ceil(languages.length / columns));
+  const height = 112 + rows * 56;
+  const totalChangedLines = languages.reduce(
+    (sum, item) => sum + item.changedLines,
+    0,
+  );
+  const maximum = Math.max(
+    1,
+    ...languages.map((item) => item.changedLines),
+  );
+
+  const body = languages.length > 0
+    ? languages.map((item, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const x = 26 + column * 490;
+        const y = 84 + row * 56;
+        const share = totalChangedLines > 0
+          ? (item.changedLines / totalChangedLines) * 100
+          : 0;
+        const barWidth = Math.max(
+          item.changedLines > 0 ? 1 : 0,
+          (item.changedLines / maximum) * 165,
+        );
+
+        return `<circle cx="${x + 5}" cy="${y - 5}" r="5" fill="${item.color}"/>
+      <text x="${x + 18}" y="${y}" class="small">${escapeXml(truncate(item.language, 19))}</text>
+      <text x="${x + 170}" y="${y}" class="label">${formatPercentage(share)}</text>
+      <rect x="${x + 230}" y="${y - 12}" width="165" height="8" rx="4" fill="${THEME.track}"/>
+      <rect x="${x + 230}" y="${y - 12}" width="${barWidth.toFixed(1)}" height="8" rx="4" fill="${item.color}"/>
+      <text x="${x + 18}" y="${y + 20}" class="tiny">${compactNumber(item.changedLines)} changed lines · ${compactNumber(item.commits)} commits · ${compactNumber(item.files)} files</text>`;
+      }).join("")
+    : `<text x="28" y="88" class="empty">No attributable source-file changes were available for analysis.</text>`;
+
+  const capNote = data.globalCapReached
+    ? ` · safety cap used: ${compactNumber(config.maxAnalyzedCommits)} commits`
+    : "";
+
+  return cardShell({
+    width,
+    height,
+    title: "Personal Code Contribution",
+    iconName: "branch",
+    accent: THEME.cyan,
+    subtitle: `GitHub-attributed default-branch changes · last ${config.codeActivityYears} years${capNote}`,
+    body,
+  });
+}
+
 function renderLanguages(languages, scannedRepositoryCount) {
   const width = 900;
   const columns = 3;
@@ -1998,19 +2746,19 @@ function renderLanguages(languages, scannedRepositoryCount) {
 
             return `<circle cx="${x + 5}" cy="${y - 4}" r="5" fill="${language.color}"/>
       <text x="${x + 18}" y="${y}" class="small">${escapeXml(truncate(language.language, 18))}</text>
-      <text x="${x + 158}" y="${y}" class="label">${percentage.toFixed(1)}%</text>
+      <text x="${x + 158}" y="${y}" class="label">${formatPercentage(percentage)}</text>
       <text x="${x + 218}" y="${y}" class="tiny">${escapeXml(plural(language.repositories, "repo"))}</text>`;
           })
           .join("")
-      : `<text x="28" y="110" class="empty">No language bytes were reported for the scanned repositories.</text>`;
+      : `<text x="28" y="110" class="empty">No repository language composition data was reported for the scanned repositories.</text>`;
 
   return cardShell({
     width,
     height,
-    title: "Language Spectrum",
+    title: "Repository Language Composition",
     iconName: "code",
     accent: THEME.cyan,
-    subtitle: `All detected languages · GitHub Linguist bytes across ${scannedRepositoryCount} scanned repositories`,
+    subtitle: `Current codebase composition across ${scannedRepositoryCount} scanned repositories · repository-level, not personal authorship`,
     body: `
       <defs>
         <clipPath id="language-bar">
@@ -2025,49 +2773,35 @@ function renderLanguages(languages, scannedRepositoryCount) {
 }
 
 function renderTechnologies(
-  technologyCounts,
+  technologyImpact,
   scannedRepositoryCount,
 ) {
-  const width = 900;
-  const items = [...technologyCounts.entries()]
-    .map(([name, repositoryCount]) => ({
-      name,
-      repositoryCount,
-      color: TECHNOLOGY_COLORS[name] ?? fallbackColor(name),
-    }))
-    .sort(
-      (first, second) =>
-        second.repositoryCount - first.repositoryCount ||
-        first.name.localeCompare(second.name),
-    );
-
-  const columns = 3;
+  const width = 1000;
+  const items = technologyImpact;
+  const columns = 2;
   const rows = Math.max(1, Math.ceil(items.length / columns));
-  const height = 100 + rows * 42;
-  const maximum = Math.max(
-    1,
-    ...items.map((item) => item.repositoryCount),
-  );
+  const height = 112 + rows * 58;
+  const maximumScore = Math.max(1, ...items.map((item) => item.score));
 
-  const body =
-    items.length > 0
-      ? items
-          .map((item, index) => {
-            const column = index % columns;
-            const row = Math.floor(index / columns);
-            const x = 24 + column * 292;
-            const y = 82 + row * 42;
-            const widthValue =
-              (item.repositoryCount / maximum) * 118;
+  const body = items.length > 0
+    ? items.map((item, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const x = 26 + column * 490;
+        const y = 84 + row * 58;
+        const barWidth = Math.max(
+          item.score > 0 ? 1 : 0,
+          (item.score / maximumScore) * 165,
+        );
 
-            return `<circle cx="${x + 5}" cy="${y - 5}" r="5" fill="${item.color}"/>
-      <text x="${x + 18}" y="${y}" class="small">${escapeXml(truncate(item.name, 18))}</text>
-      <rect x="${x + 140}" y="${y - 12}" width="118" height="7" rx="3.5" fill="${THEME.track}"/>
-      <rect x="${x + 140}" y="${y - 12}" width="${widthValue.toFixed(1)}" height="7" rx="3.5" fill="${item.color}"/>
-      <text x="${x + 270}" y="${y}" text-anchor="end" class="tiny">${item.repositoryCount}</text>`;
-          })
-          .join("")
-      : `<text x="28" y="86" class="empty">No supported frameworks or platforms were detected.</text>`;
+        return `<circle cx="${x + 5}" cy="${y - 5}" r="5" fill="${item.color}"/>
+      <text x="${x + 18}" y="${y}" class="small">${escapeXml(truncate(item.name, 20))}</text>
+      <text x="${x + 180}" y="${y}" class="label">${escapeXml(plural(item.repositories, "repo"))}</text>
+      <rect x="${x + 255}" y="${y - 12}" width="165" height="8" rx="4" fill="${THEME.track}"/>
+      <rect x="${x + 255}" y="${y - 12}" width="${barWidth.toFixed(1)}" height="8" rx="4" fill="${item.color}"/>
+      <text x="${x + 18}" y="${y + 20}" class="tiny">${compactNumber(item.changedLines)} changed lines · ${compactNumber(item.commits)} commits · ${compactNumber(item.files)} files touched</text>`;
+      }).join("")
+    : `<text x="28" y="88" class="empty">No supported frameworks or platforms were detected.</text>`;
 
   return cardShell({
     width,
@@ -2075,7 +2809,7 @@ function renderTechnologies(
     title: "Frameworks & Platforms",
     iconName: "package",
     accent: THEME.purple,
-    subtitle: `Repository count where detected · manifests and project structure across ${scannedRepositoryCount} repositories`,
+    subtitle: `Contribution impact in projects where detected · overlapping metrics across ${scannedRepositoryCount} repositories`,
     body,
   });
 }
@@ -2244,6 +2978,123 @@ function renderPortfolio(data) {
   });
 }
 
+
+function trophyTier(value, thresholds) {
+  const tiers = [
+    { name: "Bronze", color: "#CD7F32" },
+    { name: "Silver", color: "#C0C0C0" },
+    { name: "Gold", color: "#D29922" },
+    { name: "Platinum", color: "#A371F7" },
+  ];
+  let achieved = null;
+
+  for (let index = 0; index < thresholds.length; index += 1) {
+    if (value >= thresholds[index]) {
+      achieved = { ...tiers[index], target: thresholds[index] };
+    }
+  }
+
+  return achieved ?? {
+    name: "Building",
+    color: THEME.muted,
+    target: thresholds[0],
+  };
+}
+
+function buildTrophies(metrics) {
+  const definitions = [
+    {
+      title: "Commit Builder",
+      value: metrics.commits,
+      thresholds: [100, 500, 1_000, 2_500],
+      icon: "commit",
+    },
+    {
+      title: "Pull Shark",
+      value: metrics.pullRequests,
+      thresholds: [10, 50, 100, 250],
+      icon: "pull",
+    },
+    {
+      title: "Code Reviewer",
+      value: metrics.reviews,
+      thresholds: [10, 50, 100, 250],
+      icon: "people",
+    },
+    {
+      title: "Polyglot",
+      value: metrics.languages,
+      thresholds: [5, 8, 12, 16],
+      icon: "code",
+    },
+    {
+      title: "Stack Architect",
+      value: metrics.technologies,
+      thresholds: [5, 10, 15, 20],
+      icon: "layers",
+    },
+    {
+      title: "Repository Builder",
+      value: metrics.ownedRepositories,
+      thresholds: [5, 10, 20, 30],
+      icon: "repo",
+    },
+    {
+      title: "Streak Keeper",
+      value: metrics.longestStreak,
+      thresholds: [7, 30, 100, 365],
+      icon: "flame",
+    },
+    {
+      title: "Open Source",
+      value: metrics.publicOrganizationRepositories,
+      thresholds: [1, 3, 5, 10],
+      icon: "branch",
+    },
+  ];
+
+  return definitions.map((definition) => ({
+    ...definition,
+    tier: trophyTier(definition.value, definition.thresholds),
+  }));
+}
+
+function renderTrophies(trophies) {
+  const width = 900;
+  const columns = 4;
+  const rows = Math.ceil(trophies.length / columns);
+  const tileWidth = 206;
+  const tileHeight = 112;
+  const height = 76 + rows * tileHeight + 20;
+
+  const body = trophies.map((trophy, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const x = 22 + column * 218;
+    const y = 70 + row * tileHeight;
+    const achieved = trophy.tier.name !== "Building";
+    const statusText = achieved
+      ? `${trophy.tier.name} · ${compactNumber(trophy.value)}`
+      : `${compactNumber(trophy.value)} / ${compactNumber(trophy.tier.target)}`;
+
+    return `<rect x="${x}" y="${y}" width="${tileWidth}" height="94" rx="10" fill="${THEME.track}" stroke="${THEME.border}"/>
+      ${icon(trophy.icon, x + 16, y + 16, trophy.tier.color, 22)}
+      <text x="${x + 50}" y="${y + 31}" class="small">${escapeXml(trophy.title)}</text>
+      <text x="${x + 16}" y="${y + 61}" class="value" style="fill:${trophy.tier.color}">${escapeXml(statusText)}</text>
+      <text x="${x + 16}" y="${y + 80}" class="tiny">Milestone-based GitHub analytics</text>`;
+  }).join("");
+
+  return cardShell({
+    width,
+    height,
+    title: "Engineering Trophies",
+    iconName: "trophy",
+    accent: THEME.yellow,
+    subtitle: "Bronze, Silver, Gold and Platinum milestones derived from generated analytics",
+    body,
+  });
+}
+
 async function writeCards(cards) {
   await fs.mkdir(config.outputDirectory, { recursive: true });
 
@@ -2269,8 +3120,16 @@ async function main() {
     );
   }
 
-  console.log("Fetching token-accessible repositories...");
-  const listedRepositories = await fetchAllRepositories();
+  console.log("Fetching token-accessible and public contributed repositories...");
+  const [accessibleRepositories, publicContributedRepositories] =
+    await Promise.all([
+      fetchAllRepositories(),
+      fetchPublicContributedRepositories(),
+    ]);
+  const listedRepositories = mergeRepositories(
+    accessibleRepositories,
+    publicContributedRepositories,
+  );
   const {
     selected: repositorySelections,
     summary: repositorySelectionSummary,
@@ -2387,9 +3246,17 @@ async function main() {
     ),
   ]);
 
+  console.log("Analyzing personal code contribution impact...");
+  const personalCodeContributions =
+    await analyzePersonalCodeContributions(repositorySelections);
+
   const languages = aggregateLanguages(repositoryDetails);
-  const technologyCounts = aggregateTechnologies(repositoryDetails);
-  const domains = classifyDomains(technologyCounts, languages);
+  const technologyDetection = buildTechnologyDetection(repositoryDetails);
+  const technologyImpact = buildTechnologyImpact(
+    technologyDetection,
+    personalCodeContributions,
+  );
+  const domains = classifyDomains(technologyDetection.counts, languages);
 
   const ninetyDaysAgo =
     Date.now() - 90 * 24 * 60 * 60 * 1_000;
@@ -2442,27 +3309,58 @@ async function main() {
     activeRepositories,
   };
 
+  const ownedRepositories = repositories.filter(
+    (repository) =>
+      String(repository.owner?.login ?? "").toLowerCase() ===
+      username.toLowerCase(),
+  ).length;
+  const publicOrganizationRepositories = repositories.filter(
+    (repository) =>
+      String(repository.owner?.type ?? "").toLowerCase() ===
+        "organization" &&
+      !repository.private &&
+      String(repository.owner?.login ?? "").toLowerCase() !==
+        username.toLowerCase(),
+  ).length;
+
+  const trophies = buildTrophies({
+    commits: contributionHistory.totals.commits,
+    pullRequests,
+    reviews: contributionHistory.totals.reviews,
+    languages: personalCodeContributions.languages.length,
+    technologies: technologyDetection.counts.size,
+    ownedRepositories,
+    longestStreak: streak.longest,
+    publicOrganizationRepositories,
+  });
+
   const cards = {
     "github-overview.svg": renderOverview(overview),
     "contribution-streak.svg": renderStreak(streak),
+    "contribution-graph.svg": renderContributionGraph(
+      contributionHistory.days,
+    ),
     "activity-timeline.svg": renderActivity(contributionHistory.days),
     "language-spectrum.svg": renderLanguages(
       languages,
       repositoryDetails.length,
     ),
+    "personal-code-contribution.svg":
+      renderPersonalLanguageContributions(personalCodeContributions),
     "frameworks-platforms.svg": renderTechnologies(
-      technologyCounts,
+      technologyImpact,
       repositoryDetails.length,
     ),
     "engineering-domains.svg": renderDomains(domains),
     "delivery-collaboration.svg": renderDelivery(delivery),
     "repository-portfolio.svg": renderPortfolio(portfolio),
+    "engineering-trophies.svg": renderTrophies(trophies),
   };
 
   await writeCards(cards);
 
   console.log(
-    `Analytics complete: ${languages.length} languages, ${technologyCounts.size} frameworks/platforms, ${repositoryDetails.length} repositories scanned.`,
+    `Analytics complete: ${languages.length} repository languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${repositoryDetails.length} repositories scanned.`,
   );
 }
 

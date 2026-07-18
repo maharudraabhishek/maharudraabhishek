@@ -106,6 +106,16 @@ jobs:
           MANIFEST_CONCURRENCY: "2"
           MAX_MANIFEST_FILES_PER_REPOSITORY: "40"
 
+          # Personal code-contribution analysis. It uses GitHub-attributed
+          # commits on selected default branches and excludes lock/generated
+          # files. Safety caps keep the workflow within REST API limits.
+          CODE_ACTIVITY_YEARS: "10"
+          MAX_COMMITS_PER_REPOSITORY: "250"
+          MAX_ANALYZED_COMMITS: "2500"
+          COMMIT_LIST_CONCURRENCY: "2"
+          COMMIT_DETAIL_CONCURRENCY: "3"
+          MAX_PUBLIC_CONTRIBUTED_REPOSITORIES: "100"
+
           # Include historical archived work, exclude forks and this profile repo
           # so generated README code does not distort language percentages.
           INCLUDE_ARCHIVED_REPOSITORIES: "true"
@@ -134,12 +144,15 @@ jobs:
           SVG_FILES=(
             "github-overview.svg"
             "contribution-streak.svg"
+            "contribution-graph.svg"
             "activity-timeline.svg"
             "language-spectrum.svg"
+            "personal-code-contribution.svg"
             "frameworks-platforms.svg"
             "engineering-domains.svg"
             "delivery-collaboration.svg"
             "repository-portfolio.svg"
+            "engineering-trophies.svg"
           )
 
           for filename in "${SVG_FILES[@]}"; do
@@ -175,12 +188,15 @@ jobs:
           SVG_FILES=(
             "github-overview.svg"
             "contribution-streak.svg"
+            "contribution-graph.svg"
             "activity-timeline.svg"
             "language-spectrum.svg"
+            "personal-code-contribution.svg"
             "frameworks-platforms.svg"
             "engineering-domains.svg"
             "delivery-collaboration.svg"
             "repository-portfolio.svg"
+            "engineering-trophies.svg"
           )
 
           for filename in "${SVG_FILES[@]}"; do
