@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="278" viewBox="0 0 1000 278" role="img" aria-label="Open-Source Stewardship">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="999" height="277" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
+  <text x="48" y="31" class="title">Open-Source Stewardship</text>
+  <text x="48" y="49" class="subtitle">Full repository composition is shown only for explicitly configured public projects; personal contribution metrics remain separately attributed</text>
+  <rect x="18" y="70" width="964" height="186" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(32 86) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="60" y="101" class="value">heremaps/here-sdk-examples</text>
+      <text x="32" y="125" class="small">Full public project: 409 project commits · 117 releases · 0 languages · 1.8K source files · 208 stars · 143 forks</text>
+      <text x="32" y="146" class="label">Attributed to maharudraabhishek: 4 attributed commits · 4K changed lines · 216 files touched · 0 authored PRs · 0 PRs reviewed</text>
+      <defs><clipPath id="steward-heremaps-here-sdk-examples"><rect x="28" y="154" width="944" height="12" rx="6"/></clipPath></defs>
+      <rect x="28" y="154" width="944" height="12" rx="6" fill="#0D1117"/>
+      <g clip-path="url(#steward-heremaps-here-sdk-examples)"></g>
+      <text x="32" y="200" class="empty">No language composition was reported.</text>
+</svg>

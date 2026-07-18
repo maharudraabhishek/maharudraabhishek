@@ -40,3 +40,57 @@
 [![](https://komarev.com/ghpvc/?username=maharudraabhishek&icon=2&color=0)](https://visitcount.itsvg.in)
 
 <!-- Proudly created with GPRM ( https://gprm.itsvg.in ) -->
+
+<!-- ENGINEERING_ANALYTICS:START -->
+## 📊 Engineering Analytics
+
+> Personal contribution cards count GitHub-attributed work. Full repository composition is included only for repositories owned by this profile and explicitly declared public stewardship projects.
+
+<p align="center">
+  <img src="./assets/github-overview.svg?v=231a9ceb69d4af5b" alt="GitHub overview" />
+</p>
+
+<p align="center">
+  <img src="./assets/github-trophies.svg?v=231a9ceb69d4af5b" alt="Custom GitHub engineering trophies" />
+</p>
+
+<p align="center">
+  <img src="./assets/contribution-streak.svg?v=231a9ceb69d4af5b" alt="Contribution streak" />
+</p>
+
+<p align="center">
+  <img src="./assets/contribution-graph.svg?v=231a9ceb69d4af5b" alt="GitHub contribution calendar" />
+</p>
+
+<p align="center">
+  <img src="./assets/github-activity-graph.svg?v=231a9ceb69d4af5b" alt="GitHub activity area graph for the last 12 months" />
+</p>
+
+<p align="center">
+  <img src="./assets/personal-code-contribution.svg?v=231a9ceb69d4af5b" alt="Personal code contribution by language" />
+</p>
+
+<p align="center">
+  <img src="./assets/language-spectrum.svg?v=231a9ceb69d4af5b" alt="Engineering language footprint across personal and stewarded projects" />
+</p>
+
+<p align="center">
+  <img src="./assets/open-source-stewardship.svg?v=231a9ceb69d4af5b" alt="Open-source stewardship and full public-project composition" />
+</p>
+
+<p align="center">
+  <img src="./assets/frameworks-platforms.svg?v=231a9ceb69d4af5b" alt="Framework and platform contribution impact" />
+</p>
+
+<p align="center">
+  <img src="./assets/engineering-domains.svg?v=231a9ceb69d4af5b" alt="Derived engineering domains" />
+</p>
+
+<p align="center">
+  <img src="./assets/delivery-collaboration.svg?v=231a9ceb69d4af5b" alt="Delivery and collaboration analytics" />
+</p>
+
+<p align="center">
+  <img src="./assets/repository-portfolio.svg?v=231a9ceb69d4af5b" alt="Repository portfolio analytics" />
+</p>
+<!-- ENGINEERING_ANALYTICS:END -->
