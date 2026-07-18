@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="342" viewBox="0 0 720 342" role="img" aria-label="AI Engineering Overview">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="719" height="341" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
+  <text x="48" y="31" class="title">AI Engineering Overview</text>
+  <text x="48" y="49" class="subtitle">5 public + 6 private AI-enabled repositories · configuration evidence, not AI-generated-code claims</text>
+  <g transform="translate(20 69) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
+      <text x="46" y="82" class="value">11</text>
+      <text x="46" y="100" class="label">AI-enabled repositories</text><g transform="translate(360 69) scale(1)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+      <text x="386" y="82" class="value">6</text>
+      <text x="386" y="100" class="label">Claude-configured repositories</text><g transform="translate(20 131) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="46" y="144" class="value">5</text>
+      <text x="46" y="162" class="label">Codex-configured repositories</text><g transform="translate(360 131) scale(1)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <text x="386" y="144" class="value">5</text>
+      <text x="386" y="162" class="label">Claude + Codex repositories</text><g transform="translate(20 193) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
+      <text x="46" y="206" class="value">5</text>
+      <text x="46" y="224" class="label">MCP-enabled repositories</text><g transform="translate(360 193) scale(1)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+      <text x="386" y="206" class="value">4</text>
+      <text x="386" y="224" class="label">Repositories with agents</text><g transform="translate(20 255) scale(1)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="46" y="268" class="value">9</text>
+      <text x="46" y="286" class="label">Repositories with AI automation</text><g transform="translate(360 255) scale(1)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <text x="386" y="268" class="value">3</text>
+      <text x="386" y="286" class="label">Governed AI repositories</text>
+</svg>
