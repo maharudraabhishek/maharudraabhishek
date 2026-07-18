@@ -12,6 +12,12 @@ const MAX_CONTENT_BYTES = 1_000_000;
 const token = requiredEnvironment("PRIVATE_STATS_TOKEN");
 const username = requiredEnvironment("GITHUB_USERNAME");
 
+// Use the workflow's built-in GitHub App installation token for public
+// organization repositories. This avoids organization-specific PAT policies
+// while preserving an authenticated public-API rate limit.
+const publicGithubToken =
+  process.env.PUBLIC_GITHUB_TOKEN?.trim() ?? "";
+
 const config = Object.freeze({
   outputDirectory: path.resolve(
     process.env.OUTPUT_DIRECTORY?.trim() || "assets",
@@ -83,13 +89,6 @@ const config = Object.freeze({
     100,
     { min: 0, max: 500 },
   ),
-  // Explicit public projects whose complete repository composition may be
-  // included because the profile owner had an end-to-end stewardship role.
-  // This is intentionally opt-in so full third-party codebases are never
-  // presented as personal work merely because of a single contribution.
-  stewardedPublicRepositories: parseCsv(
-    process.env.STEWARDED_PUBLIC_REPOSITORIES,
-  ),
 });
 
 const REST_HEADERS = Object.freeze({
@@ -101,6 +100,9 @@ const REST_HEADERS = Object.freeze({
 
 const PUBLIC_REST_HEADERS = Object.freeze({
   Accept: "application/vnd.github+json",
+  ...(publicGithubToken
+    ? { Authorization: `Bearer ${publicGithubToken}` }
+    : {}),
   "X-GitHub-Api-Version": API_VERSION,
   "User-Agent": `${username}-public-readme-analytics`,
 });
@@ -112,8 +114,7 @@ const PUBLIC_RAW_HEADERS = Object.freeze({
 
 const REPOSITORY_SCOPE = Object.freeze({
   PERSONAL: "personal",
-  EXTERNAL_ORGANIZATION_PUBLIC: "external-organization-public",
-  STEWARDED_PUBLIC: "stewarded-public",
+  PUBLIC_CONTRIBUTED: "public-contributed",
 });
 
 const THEME = Object.freeze({
@@ -797,11 +798,16 @@ async function rest(pathOrUrl, options = {}) {
   return requestJson(url, options);
 }
 
-async function graphql(query, variables, label) {
+async function graphql(
+  query,
+  variables,
+  label,
+  { headers = REST_HEADERS } = {},
+) {
   const payload = await requestJson(GRAPHQL_ENDPOINT, {
     method: "POST",
     headers: {
-      ...REST_HEADERS,
+      ...headers,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ query, variables }),
@@ -932,8 +938,9 @@ async function fetchPublicContributedRepositories() {
     const nodes = connection?.nodes ?? [];
 
     for (const node of nodes) {
-      if (node?.owner?.__typename !== "Organization") continue;
+      if (!node?.owner?.login) continue;
       if (node.isPrivate) continue;
+      if (node.owner.login.toLowerCase() === username.toLowerCase()) continue;
       if (!node.defaultBranchRef?.name) continue;
 
       repositories.push({
@@ -941,7 +948,7 @@ async function fetchPublicContributedRepositories() {
         full_name: node.nameWithOwner,
         owner: {
           login: node.owner.login,
-          type: "Organization",
+          type: node.owner.__typename,
         },
         private: false,
         visibility: "public",
@@ -969,71 +976,6 @@ async function fetchPublicContributedRepositories() {
   return repositories;
 }
 
-async function fetchConfiguredStewardedRepositories() {
-  if (config.stewardedPublicRepositories.size === 0) return [];
-
-  const names = [...config.stewardedPublicRepositories];
-  const results = await mapLimit(names, 2, async (fullName) => {
-    const parts = fullName.split("/").filter(Boolean);
-    if (parts.length !== 2) {
-      throw new Error(
-        `Invalid STEWARDED_PUBLIC_REPOSITORIES entry '${fullName}'. Use owner/repository.`,
-      );
-    }
-
-    const [owner, repositoryName] = parts;
-    const repository = await rest(
-      `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repositoryName)}`,
-      {
-        label: `Stewarded public repository request (${fullName})`,
-        allowAnonymousFallback: true,
-      },
-    );
-
-    const visibility = String(
-      repository?.visibility ??
-        (repository?.private ? "private" : "public"),
-    ).toLowerCase();
-
-    if (!repository || repository.private || visibility !== "public") {
-      throw new Error(
-        `Configured stewardship repository '${fullName}' is not public or is not accessible.`,
-      );
-    }
-
-    if (!repository.default_branch) {
-      throw new Error(
-        `Configured stewardship repository '${fullName}' has no default branch.`,
-      );
-    }
-
-    return {
-      ...repository,
-      explicitly_stewarded: true,
-      discovered_from_stewardship: true,
-    };
-  });
-
-  const repositories = [];
-  const failures = [];
-
-  for (const [index, result] of results.entries()) {
-    if (result.status === "fulfilled") {
-      repositories.push(result.value);
-    } else {
-      failures.push(`${names[index]}: ${result.reason.message}`);
-    }
-  }
-
-  if (failures.length > 0) {
-    throw new Error(
-      `Configured stewardship repositories could not be loaded: ${failures.join("; ")}`,
-    );
-  }
-
-  return repositories;
-}
-
 function mergeRepositories(...repositoryLists) {
   const merged = new Map();
 
@@ -1047,8 +989,8 @@ function mergeRepositories(...repositoryLists) {
       continue;
     }
 
-    // Prefer the richer REST object while preserving discovery/stewardship
-    // flags contributed by GraphQL or explicit configuration sources.
+    // Prefer the richer REST object while preserving contribution discovery
+    // flags contributed by the GraphQL repository relationship query.
     const richer = existing.id
       ? existing
       : repository.id
@@ -1057,12 +999,6 @@ function mergeRepositories(...repositoryLists) {
 
     merged.set(key, {
       ...richer,
-      explicitly_stewarded:
-        Boolean(existing.explicitly_stewarded) ||
-        Boolean(repository.explicitly_stewarded),
-      discovered_from_stewardship:
-        Boolean(existing.discovered_from_stewardship) ||
-        Boolean(repository.discovered_from_stewardship),
       discovered_from_contributions:
         Boolean(existing.discovered_from_contributions) ||
         Boolean(repository.discovered_from_contributions),
@@ -1086,7 +1022,6 @@ function repositoryIsExcluded(repository) {
 
 function classifyRepositoryScope(repository) {
   const ownerLogin = String(repository.owner?.login ?? "").toLowerCase();
-  const ownerType = String(repository.owner?.type ?? "").toLowerCase();
   const visibility = String(
     repository.visibility ??
       (repository.private ? "private" : "public"),
@@ -1096,15 +1031,13 @@ function classifyRepositoryScope(repository) {
     return REPOSITORY_SCOPE.PERSONAL;
   }
 
-  if (repository.explicitly_stewarded && visibility === "public") {
-    return REPOSITORY_SCOPE.STEWARDED_PUBLIC;
-  }
-
+  // Full public-project composition is included only when GitHub reports a
+  // concrete commit, pull-request, or pull-request-review relationship.
   if (
-    ownerType === "organization" &&
-    visibility === "public"
+    visibility === "public" &&
+    repository.discovered_from_contributions
   ) {
-    return REPOSITORY_SCOPE.EXTERNAL_ORGANIZATION_PUBLIC;
+    return REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED;
   }
 
   return null;
@@ -1124,10 +1057,9 @@ function selectRepositoriesForAnalytics(repositories) {
   const summary = {
     personalPublic: 0,
     personalPrivate: 0,
-    externalOrganizationPublic: 0,
-    explicitlyStewardedPublic: 0,
-    excludedExternalOrganizationPrivateOrInternal: 0,
-    excludedExternalUserOwned: 0,
+    publicContributed: 0,
+    excludedExternalPrivateOrInternal: 0,
+    excludedExternalWithoutContributionRelationship: 0,
     excludedByAnalyticsFilters: 0,
   };
 
@@ -1137,13 +1069,12 @@ function selectRepositoriesForAnalytics(repositories) {
       repository.visibility ??
         (repository.private ? "private" : "public"),
     ).toLowerCase();
-    const ownerType = String(repository.owner?.type ?? "").toLowerCase();
 
     if (!scope) {
-      if (ownerType === "organization" && visibility !== "public") {
-        summary.excludedExternalOrganizationPrivateOrInternal += 1;
+      if (visibility !== "public") {
+        summary.excludedExternalPrivateOrInternal += 1;
       } else {
-        summary.excludedExternalUserOwned += 1;
+        summary.excludedExternalWithoutContributionRelationship += 1;
       }
       continue;
     }
@@ -1153,7 +1084,8 @@ function selectRepositoriesForAnalytics(repositories) {
       continue;
     }
 
-    const stewarded = Boolean(repository.explicitly_stewarded);
+    const publicContribution =
+      scope === REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED;
 
     if (scope === REPOSITORY_SCOPE.PERSONAL) {
       if (visibility === "public") {
@@ -1161,23 +1093,18 @@ function selectRepositoriesForAnalytics(repositories) {
       } else {
         summary.personalPrivate += 1;
       }
-    } else if (scope === REPOSITORY_SCOPE.STEWARDED_PUBLIC) {
-      summary.explicitlyStewardedPublic += 1;
     } else {
-      summary.externalOrganizationPublic += 1;
+      summary.publicContributed += 1;
     }
 
-    selected.push({ repository, scope, stewarded });
+    selected.push({ repository, scope, publicContribution });
   }
 
   return { selected, summary };
 }
 
 function repositorySupportsAnonymousFallback(scope) {
-  return (
-    scope === REPOSITORY_SCOPE.EXTERNAL_ORGANIZATION_PUBLIC ||
-    scope === REPOSITORY_SCOPE.STEWARDED_PUBLIC
-  );
+  return scope === REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED;
 }
 
 function manifestCandidate(entry) {
@@ -1254,13 +1181,16 @@ async function fetchRepositoryContent(
 }
 
 async function fetchRepositoryDetails(selection) {
-  const { repository, scope, stewarded = false } = selection;
-  const allowAnonymousFallback =
+  const { repository, scope, publicContribution = false } = selection;
+  const publicRepository =
     repositorySupportsAnonymousFallback(scope);
+  const requestHeaders = publicRepository
+    ? PUBLIC_REST_HEADERS
+    : REST_HEADERS;
 
   const languagesPromise = rest(repository.languages_url, {
     label: "Repository languages request",
-    allowAnonymousFallback,
+    headers: requestHeaders,
   });
 
   const treePromise = rest(
@@ -1268,7 +1198,7 @@ async function fetchRepositoryDetails(selection) {
     {
       label: "Repository tree request",
       optionalStatuses: [404, 409, 422],
-      allowAnonymousFallback,
+      headers: requestHeaders,
     },
   );
 
@@ -1314,7 +1244,7 @@ async function fetchRepositoryDetails(selection) {
   return {
     repository,
     scope,
-    stewarded,
+    publicContribution,
     languages: languages ?? {},
     paths,
     manifests,
@@ -1563,19 +1493,28 @@ function calculateStreak(days) {
   };
 }
 
-async function searchCount(query, label) {
+async function searchCount(
+  query,
+  label,
+  { headers = REST_HEADERS } = {},
+) {
   const response = await rest(
     `/search/issues?q=${encodeURIComponent(query)}&per_page=1`,
-    { label },
+    { label, headers },
   );
   return safeInteger(response?.total_count);
 }
 
-async function safeSearchCount(query, label, fallback) {
+async function safeSearchCount(
+  query,
+  label,
+  fallback,
+  options = {},
+) {
   try {
-    return await searchCount(query, label);
+    return await searchCount(query, label, options);
   } catch (error) {
-    console.warn(`${label} unavailable; using contribution-history fallback.`);
+    console.warn(`${label} unavailable; using the fallback value.`);
     return fallback;
   }
 }
@@ -1610,7 +1549,9 @@ function contributionLanguageForPath(filePath) {
 
 async function fetchAuthoredCommitReferences(selection) {
   const { repository, scope } = selection;
-  const allowAnonymousFallback = repositorySupportsAnonymousFallback(scope);
+  const requestHeaders = repositorySupportsAnonymousFallback(scope)
+    ? PUBLIC_REST_HEADERS
+    : REST_HEADERS;
   const since = new Date();
   since.setUTCFullYear(since.getUTCFullYear() - config.codeActivityYears);
 
@@ -1626,7 +1567,7 @@ async function fetchAuthoredCommitReferences(selection) {
       {
         label: "Authored-commit listing",
         optionalStatuses: [404, 409, 422],
-        allowAnonymousFallback,
+        headers: requestHeaders,
       },
     );
 
@@ -1690,7 +1631,9 @@ function allocateCommitReferences(repositoryCommitLists) {
 
 async function fetchCommitDetails(selection, sha) {
   const { repository, scope } = selection;
-  const allowAnonymousFallback = repositorySupportsAnonymousFallback(scope);
+  const requestHeaders = repositorySupportsAnonymousFallback(scope)
+    ? PUBLIC_REST_HEADERS
+    : REST_HEADERS;
   const files = [];
   let statistics = null;
 
@@ -1700,7 +1643,7 @@ async function fetchCommitDetails(selection, sha) {
       {
         label: "Commit-detail request",
         optionalStatuses: [404, 409, 422],
-        allowAnonymousFallback,
+        headers: requestHeaders,
       },
     );
 
@@ -1891,10 +1834,10 @@ function splitRepositoryFullName(fullName) {
   return { owner: parts[0], name: parts[1] };
 }
 
-async function fetchStewardedRepositoryLifecycle(repository) {
+async function fetchPublicRepositoryLifecycle(repository) {
   const { owner, name } = splitRepositoryFullName(repository.full_name);
   const query = `
-    query StewardedRepositoryLifecycle(
+    query PublicRepositoryLifecycle(
       $owner: String!
       $name: String!
     ) {
@@ -1921,7 +1864,8 @@ async function fetchStewardedRepositoryLifecycle(repository) {
     const data = await graphql(
       query,
       { owner, name },
-      `Stewarded repository lifecycle query (${repository.full_name})`,
+      `Public contribution repository lifecycle query (${repository.full_name})`,
+      { headers: PUBLIC_REST_HEADERS },
     );
     const result = data?.repository;
 
@@ -1935,9 +1879,9 @@ async function fetchStewardedRepositoryLifecycle(repository) {
     };
   } catch (error) {
     // Lifecycle counts improve the card but must not block language/code
-    // composition for an otherwise accessible public stewardship project.
+    // composition for an otherwise accessible public contribution project.
     console.warn(
-      `Stewarded lifecycle metrics unavailable for ${repository.full_name}: ${error.message}`,
+      `Public repository lifecycle metrics unavailable for ${repository.full_name}: ${error.message}`,
     );
     return {
       commits: 0,
@@ -1988,16 +1932,16 @@ function repositoryLanguageComposition(detail) {
   };
 }
 
-async function buildOpenSourceStewardship(
+async function buildPublicContributionPortfolio(
   repositoryDetails,
   personalCodeContributions,
 ) {
-  const stewardedDetails = repositoryDetails.filter(
-    (detail) => detail.stewarded,
+  const publicContributionDetails = repositoryDetails.filter(
+    (detail) => detail.publicContribution,
   );
 
   const results = await mapLimit(
-    stewardedDetails,
+    publicContributionDetails,
     2,
     async (detail) => {
       const repository = detail.repository;
@@ -2015,16 +1959,18 @@ async function buildOpenSourceStewardship(
 
       const [lifecycle, authoredPullRequests, reviewedPullRequests] =
         await Promise.all([
-          fetchStewardedRepositoryLifecycle(repository),
+          fetchPublicRepositoryLifecycle(repository),
           safeSearchCount(
             `repo:${repository.full_name} author:${username} is:pr`,
-            `Stewarded authored-PR search (${repository.full_name})`,
+            `Public contribution authored-PR search (${repository.full_name})`,
             0,
+            { headers: PUBLIC_REST_HEADERS },
           ),
           safeSearchCount(
             `repo:${repository.full_name} reviewed-by:${username} is:pr`,
-            `Stewarded reviewed-PR search (${repository.full_name})`,
+            `Public contribution reviewed-PR search (${repository.full_name})`,
             0,
+            { headers: PUBLIC_REST_HEADERS },
           ),
         ]);
 
@@ -2051,18 +1997,23 @@ async function buildOpenSourceStewardship(
       projects.push(result.value);
     } else {
       failures.push(
-        `${stewardedDetails[index].repository.full_name}: ${result.reason.message}`,
+        `${publicContributionDetails[index].repository.full_name}: ${result.reason.message}`,
       );
     }
   }
 
   if (failures.length > 0) {
     throw new Error(
-      `Open-source stewardship analytics failed: ${failures.join("; ")}`,
+      `Public contribution portfolio analytics failed: ${failures.join("; ")}`,
     );
   }
 
-  return projects;
+  return projects.sort(
+    (first, second) =>
+      second.sourceFiles - first.sourceFiles ||
+      second.lifecycle.commits - first.lifecycle.commits ||
+      first.fullName.localeCompare(second.fullName),
+  );
 }
 
 function buildRepositoryProfile(detail) {
@@ -3047,7 +2998,7 @@ function renderLanguages(languages, scopeSummary) {
     title: "Engineering Language Footprint",
     iconName: "code",
     accent: THEME.cyan,
-    subtitle: `Current composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.stewarded} explicitly stewarded public projects · not all code is personal authorship`,
+    subtitle: `Current composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} public projects contributed to · project composition is separate from personal authorship`,
     body: `
       <defs>
         <clipPath id="language-bar">
@@ -3103,35 +3054,40 @@ function renderTechnologies(
   });
 }
 
-function renderOpenSourceStewardship(projects) {
+function renderPublicContributionPortfolio(projects) {
   const width = 1000;
 
   if (projects.length === 0) {
     return cardShell({
       width,
       height: 132,
-      title: "Open-Source Stewardship",
+      title: "Public Open-Source Contributions",
       iconName: "branch",
       accent: THEME.green,
-      subtitle: "Explicitly declared public projects with full lifecycle or review stewardship",
-      body: `<text x="28" y="92" class="empty">No STEWARDED_PUBLIC_REPOSITORIES were configured.</text>`,
+      subtitle: "Public repositories discovered from commits, pull requests, or reviews",
+      body: `<text x="28" y="92" class="empty">No public contributed repositories were returned by GitHub.</text>`,
     });
   }
 
+  // Keep the README readable. All discovered repositories still contribute
+  // to aggregate language/framework cards; this card lists the largest 12.
+  const visibleProjects = projects.slice(0, 12);
+  const hiddenCount = Math.max(0, projects.length - visibleProjects.length);
   const layouts = [];
   let cursorY = 70;
 
-  for (const project of projects) {
+  for (const project of visibleProjects) {
     const languageRows = Math.max(
       1,
       Math.ceil(project.languages.length / 4),
     );
     const blockHeight = 158 + languageRows * 28;
-    layouts.push({ project, y: cursorY, blockHeight, languageRows });
+    layouts.push({ project, y: cursorY, blockHeight });
     cursorY += blockHeight + 14;
   }
 
-  const height = cursorY + 8;
+  const footerHeight = hiddenCount > 0 ? 34 : 8;
+  const height = cursorY + footerHeight;
   const body = layouts.map(({ project, y, blockHeight }) => {
     const barX = 28;
     const barY = y + 84;
@@ -3162,7 +3118,7 @@ function renderOpenSourceStewardship(projects) {
         }).join("")
       : `<text x="32" y="${y + 130}" class="empty">No language composition was reported.</text>`;
 
-    const lifecycleParts = [
+    const projectParts = [
       `${compactNumber(project.lifecycle.commits)} project commits`,
       `${compactNumber(project.lifecycle.releases)} releases`,
       plural(project.languages.length, "language"),
@@ -3179,25 +3135,31 @@ function renderOpenSourceStewardship(projects) {
       `${compactNumber(project.reviewedPullRequests)} PRs reviewed`,
     ];
 
+    const clipId = `public-${project.fullName.replace(/[^a-z0-9]/gi, "-")}`;
+
     return `<rect x="18" y="${y}" width="${width - 36}" height="${blockHeight}" rx="10" fill="${THEME.track}" stroke="${THEME.border}"/>
       ${icon("repo", 32, y + 16, THEME.green, 19)}
       <text x="60" y="${y + 31}" class="value">${escapeXml(project.fullName)}</text>
-      <text x="32" y="${y + 55}" class="small">Full public project: ${escapeXml(lifecycleParts.join(" · "))}</text>
+      <text x="32" y="${y + 55}" class="small">Full public project composition: ${escapeXml(projectParts.join(" · "))}</text>
       <text x="32" y="${y + 76}" class="label">Attributed to ${escapeXml(username)}: ${escapeXml(personalParts.join(" · "))}</text>
-      <defs><clipPath id="steward-${escapeXml(project.fullName.replace(/[^a-z0-9]/gi, "-"))}"><rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6"/></clipPath></defs>
+      <defs><clipPath id="${escapeXml(clipId)}"><rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6"/></clipPath></defs>
       <rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6" fill="${THEME.background}"/>
-      <g clip-path="url(#steward-${escapeXml(project.fullName.replace(/[^a-z0-9]/gi, "-"))})">${segments}</g>
+      <g clip-path="url(#${escapeXml(clipId)})">${segments}</g>
       ${legend}`;
   }).join("");
+
+  const footer = hiddenCount > 0
+    ? `<text x="28" y="${height - 16}" class="subtitle">${hiddenCount} additional contributed public repositories are included in aggregate language and framework statistics.</text>`
+    : "";
 
   return cardShell({
     width,
     height,
-    title: "Open-Source Stewardship",
+    title: "Public Open-Source Contributions",
     iconName: "branch",
     accent: THEME.green,
-    subtitle: "Full repository composition is shown only for explicitly configured public projects; personal contribution metrics remain separately attributed",
-    body,
+    subtitle: "Full project composition for public repositories GitHub links to your commits, pull requests, or reviews · not a personal-authorship claim",
+    body: `${body}${footer}`,
   });
 }
 
@@ -3433,8 +3395,8 @@ function buildTrophies(metrics) {
       icon: "flame",
     },
     {
-      title: "Open Source Steward",
-      value: metrics.stewardedRepositories,
+      title: "Open Source Contributor",
+      value: metrics.publicContributedRepositories,
       thresholds: [1, 2, 3, 5],
       icon: "branch",
     },
@@ -3508,21 +3470,16 @@ async function main() {
   }
 
   console.log(
-    "Fetching token-accessible, public contributed and explicitly stewarded repositories...",
+    "Fetching token-accessible repositories and public repositories linked to commits, pull requests, or reviews...",
   );
-  const [
-    accessibleRepositories,
-    publicContributedRepositories,
-    configuredStewardedRepositories,
-  ] = await Promise.all([
-    fetchAllRepositories(),
-    fetchPublicContributedRepositories(),
-    fetchConfiguredStewardedRepositories(),
-  ]);
+  const [accessibleRepositories, publicContributedRepositories] =
+    await Promise.all([
+      fetchAllRepositories(),
+      fetchPublicContributedRepositories(),
+    ]);
   const listedRepositories = mergeRepositories(
     accessibleRepositories,
     publicContributedRepositories,
-    configuredStewardedRepositories,
   );
   const {
     selected: repositorySelections,
@@ -3540,10 +3497,9 @@ async function main() {
     [
       `Selection policy: ${repositorySelectionSummary.personalPublic} personal public`,
       `${repositorySelectionSummary.personalPrivate} personal private`,
-      `${repositorySelectionSummary.externalOrganizationPublic} external organization public`,
-      `${repositorySelectionSummary.explicitlyStewardedPublic} explicitly stewarded public`,
-      `${repositorySelectionSummary.excludedExternalOrganizationPrivateOrInternal} external organization private/internal excluded`,
-      `${repositorySelectionSummary.excludedExternalUserOwned} external user-owned excluded`,
+      `${repositorySelectionSummary.publicContributed} public contributed`,
+      `${repositorySelectionSummary.excludedExternalPrivateOrInternal} external private/internal excluded`,
+      `${repositorySelectionSummary.excludedExternalWithoutContributionRelationship} external public without contribution relationship excluded`,
       `${repositorySelectionSummary.excludedByAnalyticsFilters} excluded by fork/archive/disabled/profile filters`,
     ].join("; "),
   );
@@ -3645,21 +3601,22 @@ async function main() {
   const personalCodeContributions =
     await analyzePersonalCodeContributions(repositorySelections);
 
-  // Full codebase composition is included for repositories owned by the
-  // profile user and for explicitly declared public stewardship projects.
-  // Other public organization repositories remain eligible for attributable
-  // personal commit/PR/review analytics but their entire codebase is not
-  // presented as part of the user's engineering footprint.
+  // Full project composition is included for repositories owned by the
+  // profile user and for public repositories GitHub links to the user through
+  // commits, pull requests, or pull-request reviews. Personal contribution
+  // cards still count only attributable commits and review activity.
   const engineeringFootprintDetails = repositoryDetails.filter(
     (detail) =>
-      detail.scope === REPOSITORY_SCOPE.PERSONAL || detail.stewarded,
+      detail.scope === REPOSITORY_SCOPE.PERSONAL ||
+      detail.publicContribution,
   );
   const personalFootprintCount = engineeringFootprintDetails.filter(
     (detail) => detail.scope === REPOSITORY_SCOPE.PERSONAL,
   ).length;
-  const stewardedFootprintCount = engineeringFootprintDetails.filter(
-    (detail) => detail.stewarded,
-  ).length;
+  const publicContributedFootprintCount =
+    engineeringFootprintDetails.filter(
+      (detail) => detail.publicContribution,
+    ).length;
 
   const languages = aggregateLanguages(engineeringFootprintDetails);
   const technologyDetection = buildTechnologyDetection(
@@ -3670,7 +3627,7 @@ async function main() {
     personalCodeContributions,
   );
   const domains = classifyDomains(technologyDetection.counts, languages);
-  const openSourceStewardship = await buildOpenSourceStewardship(
+  const publicContributionPortfolio = await buildPublicContributionPortfolio(
     repositoryDetails,
     personalCodeContributions,
   );
@@ -3749,7 +3706,7 @@ async function main() {
     ownedRepositories,
     longestStreak: streak.longest,
     publicOrganizationRepositories,
-    stewardedRepositories: stewardedFootprintCount,
+    publicContributedRepositories: publicContributedFootprintCount,
   });
 
   const cards = {
@@ -3765,7 +3722,7 @@ async function main() {
       languages,
       {
         personal: personalFootprintCount,
-        stewarded: stewardedFootprintCount,
+        publicContributed: publicContributedFootprintCount,
       },
     ),
     "personal-code-contribution.svg":
@@ -3774,8 +3731,8 @@ async function main() {
       technologyImpact,
       engineeringFootprintDetails.length,
     ),
-    "open-source-stewardship.svg": renderOpenSourceStewardship(
-      openSourceStewardship,
+    "public-contribution-portfolio.svg": renderPublicContributionPortfolio(
+      publicContributionPortfolio,
     ),
     "engineering-domains.svg": renderDomains(domains),
     "delivery-collaboration.svg": renderDelivery(delivery),
@@ -3786,7 +3743,7 @@ async function main() {
   await writeCards(cards);
 
   console.log(
-    `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${openSourceStewardship.length} explicitly stewarded public projects, ${repositoryDetails.length} repositories scanned.`,
+    `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${publicContributionPortfolio.length} public projects contributed to, ${repositoryDetails.length} repositories scanned.`,
   );
 }
 

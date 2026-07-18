@@ -61,7 +61,6 @@ jobs:
 
           if [ -z "${PRIVATE_STATS_TOKEN:-}" ]; then
             echo "::error::PRIVATE_STATS_TOKEN is missing."
-            echo "Add it under Settings → Secrets and variables → Actions."
             exit 1
           fi
 
@@ -94,32 +93,25 @@ jobs:
       - name: Generate analytics into a temporary directory
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
+          PUBLIC_GITHUB_TOKEN: ${{ github.token }}
           GITHUB_USERNAME: maharudraabhishek
 
-          # Repository policy:
-          # - all public/private repositories owned by the profile user;
-          # - public repositories owned by organizations;
-          # - no private/internal repositories owned by other organizations;
-          # - no repositories owned by other individual users.
+          # Includes all repositories owned by the profile user and public
+          # repositories GitHub links to the user through commits, pull
+          # requests, or pull-request reviews. External private/internal
+          # repositories are excluded.
           REPOSITORY_AFFILIATIONS: owner,collaborator,organization_member
           MAX_REPOSITORIES: "500"
+          MAX_PUBLIC_CONTRIBUTED_REPOSITORIES: "100"
           REPOSITORY_CONCURRENCY: "3"
           MANIFEST_CONCURRENCY: "2"
           MAX_MANIFEST_FILES_PER_REPOSITORY: "40"
 
-          # Personal contribution analysis.
           CODE_ACTIVITY_YEARS: "10"
           MAX_COMMITS_PER_REPOSITORY: "250"
           MAX_ANALYZED_COMMITS: "2500"
           COMMIT_LIST_CONCURRENCY: "2"
           COMMIT_DETAIL_CONCURRENCY: "3"
-          MAX_PUBLIC_CONTRIBUTED_REPOSITORIES: "100"
-
-          # Full codebase/language composition is included for these public
-          # projects because they are explicitly declared as end-to-end
-          # stewardship responsibilities. Separate personal metrics still
-          # count only commits/PRs/reviews attributable to the profile user.
-          STEWARDED_PUBLIC_REPOSITORIES: heremaps/here-sdk-examples
 
           INCLUDE_ARCHIVED_REPOSITORIES: "true"
           INCLUDE_FORKED_REPOSITORIES: "false"
@@ -143,17 +135,17 @@ jobs:
 
           SVG_FILES=(
             "github-overview.svg"
+            "github-trophies.svg"
             "contribution-streak.svg"
             "contribution-graph.svg"
             "github-activity-graph.svg"
-            "language-spectrum.svg"
             "personal-code-contribution.svg"
+            "language-spectrum.svg"
+            "public-contribution-portfolio.svg"
             "frameworks-platforms.svg"
-            "open-source-stewardship.svg"
             "engineering-domains.svg"
             "delivery-collaboration.svg"
             "repository-portfolio.svg"
-            "github-trophies.svg"
           )
 
           for filename in "${SVG_FILES[@]}"; do
@@ -186,50 +178,57 @@ jobs:
 
           mkdir -p assets
 
-          SVG_FILES=(
+          CURRENT_SVG_FILES=(
             "github-overview.svg"
+            "github-trophies.svg"
             "contribution-streak.svg"
             "contribution-graph.svg"
             "github-activity-graph.svg"
-            "language-spectrum.svg"
             "personal-code-contribution.svg"
+            "language-spectrum.svg"
+            "public-contribution-portfolio.svg"
             "frameworks-platforms.svg"
-            "open-source-stewardship.svg"
             "engineering-domains.svg"
             "delivery-collaboration.svg"
             "repository-portfolio.svg"
-            "github-trophies.svg"
           )
 
-          for filename in "${SVG_FILES[@]}"; do
-            install -m 0644 "generated-analytics/$filename" "assets/$filename"
+          LEGACY_SVG_FILES=(
+            "github-languages.svg"
+            "activity-timeline.svg"
+            "engineering-trophies.svg"
+            "open-source-stewardship.svg"
+          )
+
+          # Remove every current and legacy managed card before installing the
+          # validated new set. Unrelated SVG assets are not touched.
+          for filename in "${CURRENT_SVG_FILES[@]}" "${LEGACY_SVG_FILES[@]}"; do
+            rm -f "assets/$filename"
           done
 
-          rm -f \
-            assets/github-languages.svg \
-            assets/engineering-trophies.svg \
-            assets/activity-timeline.svg
+          for filename in "${CURRENT_SVG_FILES[@]}"; do
+            install -m 0644 "generated-analytics/$filename" "assets/$filename"
+          done
 
           echo "Fresh analytics cards installed:"
           ls -lh assets/*.svg
 
-      - name: Update profile README
+      - name: Replace profile README analytics section
         shell: bash
         env:
           README_FILE: README.md
           ANALYTICS_ASSET_DIRECTORY: assets
+          GITHUB_USERNAME: maharudraabhishek
         run: |
           set -euo pipefail
 
           node scripts/update-readme-analytics.mjs
 
-          if ! grep -q "<!-- ENGINEERING_ANALYTICS:START -->" README.md; then
-            echo "::error::README.md is missing the analytics start marker."
-            exit 1
-          fi
+          START_COUNT=$(grep -Fc "<!-- ENGINEERING_ANALYTICS:START -->" README.md || true)
+          END_COUNT=$(grep -Fc "<!-- ENGINEERING_ANALYTICS:END -->" README.md || true)
 
-          if ! grep -q "<!-- ENGINEERING_ANALYTICS:END -->" README.md; then
-            echo "::error::README.md is missing the analytics end marker."
+          if [ "$START_COUNT" -ne 1 ] || [ "$END_COUNT" -ne 1 ]; then
+            echo "::error::README.md must contain exactly one managed analytics block."
             exit 1
           fi
 
@@ -241,7 +240,7 @@ jobs:
             "assets/github-activity-graph.svg"
             "assets/personal-code-contribution.svg"
             "assets/language-spectrum.svg"
-            "assets/open-source-stewardship.svg"
+            "assets/public-contribution-portfolio.svg"
             "assets/frameworks-platforms.svg"
             "assets/engineering-domains.svg"
             "assets/delivery-collaboration.svg"
@@ -249,13 +248,21 @@ jobs:
           )
 
           for reference in "${REQUIRED_REFERENCES[@]}"; do
-            if ! grep -q "$reference" README.md; then
-              echo "::error::README.md does not reference $reference."
+            COUNT=$(grep -Fo "$reference" README.md | wc -l || true)
+            COUNT=$(echo "$COUNT" | tr -d '[:space:]')
+
+            if [ "$COUNT" -ne 1 ]; then
+              echo "::error::README.md must reference $reference exactly once; found $COUNT."
               exit 1
             fi
           done
 
-          echo "README analytics section validated."
+          if ! grep -Fq "hits.sh/github.com/maharudraabhishek.svg" README.md; then
+            echo "::error::README.md is missing the profile-view badge."
+            exit 1
+          fi
+
+          echo "README analytics section replaced without duplicates."
 
       - name: Commit and push refreshed analytics
         shell: bash
