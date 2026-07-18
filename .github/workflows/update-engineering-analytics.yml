@@ -13,10 +13,12 @@ concurrency:
   group: update-github-analytics
   cancel-in-progress: true
 
-# The workflow knows only the config path. Usernames and historical
-# public contributor identities are loaded from this file at runtime.
+# Repository identity and generated-directory paths are centralized here so
+# every workflow step uses the same configuration.
 env:
   ANALYTICS_CONFIG_FILE: .github/github-analytics.config.mjs
+  ANALYTICS_STAGING_DIRECTORY: generated-analytics
+  ANALYTICS_ASSET_DIRECTORY: assets
 
 jobs:
   generate:
@@ -46,6 +48,7 @@ jobs:
             "scripts/update-readme-analytics.mjs"
             "scripts/ai-engineering-analytics.mjs"
             "scripts/github-analytics-config.mjs"
+            "scripts/manage-analytics-assets.mjs"
             "$ANALYTICS_CONFIG_FILE"
           )
 
@@ -63,6 +66,18 @@ jobs:
           # username format, aliases, and repository exclusions.
           node scripts/github-analytics-config.mjs --validate
 
+      - name: Reset generated asset directories
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # assets/ is generated-only. Remove its complete previous contents at
+          # workflow start so no stale or unrelated file can survive this run.
+          #
+          # generated-analytics/ is a clean staging area. Nothing is published
+          # from it until the complete expected SVG set passes validation.
+          node scripts/manage-analytics-assets.mjs reset
+
       - name: Validate private GitHub token
         shell: bash
         env:
@@ -76,10 +91,21 @@ jobs:
           fi
 
           PROFILE_USERNAME=$(
-            node scripts/github-analytics-config.mjs                       --print-profile-username
+            node scripts/github-analytics-config.mjs \
+              --print-profile-username
           )
 
-          STATUS=$(curl                     --silent                     --show-error                     --output /tmp/github-user.json                     --write-out "%{http_code}"                     --header "Accept: application/vnd.github+json"                     --header "Authorization: Bearer $PRIVATE_STATS_TOKEN"                     --header "X-GitHub-Api-Version: 2022-11-28"                     https://api.github.com/user)
+          STATUS=$(
+            curl \
+              --silent \
+              --show-error \
+              --output /tmp/github-user.json \
+              --write-out "%{http_code}" \
+              --header "Accept: application/vnd.github+json" \
+              --header "Authorization: Bearer $PRIVATE_STATS_TOKEN" \
+              --header "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/user
+          )
 
           if [ "$STATUS" != "200" ]; then
             echo "::error::GitHub rejected PRIVATE_STATS_TOKEN with HTTP $STATUS."
@@ -87,7 +113,10 @@ jobs:
             exit 1
           fi
 
-          AUTHENTICATED_LOGIN=$(node -e                     "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('/tmp/github-user.json','utf8')); process.stdout.write(data.login ?? '')")
+          AUTHENTICATED_LOGIN=$(
+            node -e \
+              "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('/tmp/github-user.json','utf8')); process.stdout.write(data.login ?? '')"
+          )
 
           if [ "${AUTHENTICATED_LOGIN,,}" != "${PROFILE_USERNAME,,}" ]; then
             echo "::error::PRIVATE_STATS_TOKEN belongs to '$AUTHENTICATED_LOGIN', not '$PROFILE_USERNAME'."
@@ -96,14 +125,13 @@ jobs:
 
           echo "GitHub authentication succeeded for $AUTHENTICATED_LOGIN."
 
-      - name: Generate analytics into a temporary directory
+      - name: Generate analytics into clean staging
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
           PUBLIC_GITHUB_TOKEN: ${{ github.token }}
 
-          # Includes personal repositories available to the token and
-          # public repositories linked to any configured historical
-          # identity through commits, pull requests, or reviews.
+          # Includes personal repositories available to the token and public
+          # repositories linked to configured contributor identities.
           REPOSITORY_AFFILIATIONS: owner,collaborator,organization_member
           MAX_REPOSITORIES: "500"
           MAX_PUBLIC_CONTRIBUTED_REPOSITORIES: "100"
@@ -128,174 +156,81 @@ jobs:
         run: |
           set -euo pipefail
 
-          rm -rf generated-analytics
-          mkdir -p generated-analytics
-
-          # Generation writes only to the temporary directory. Repository
-          # assets are replaced later, after every SVG has been validated.
+          # The reset step created an empty staging directory. The generator
+          # writes the complete replacement set there and never writes directly
+          # to the repository's published assets directory.
           node scripts/generate-engineering-analytics.mjs
 
-      - name: Validate generated SVG cards
+      - name: Validate complete generated asset set
         shell: bash
         run: |
           set -euo pipefail
 
-          # This list is the workflow-side card contract. Every generated card
-          # must exist and pass secret-safety checks before assets are replaced.
-          SVG_FILES=(
-            "github-overview.svg"
-            "github-trophies.svg"
-            "contribution-streak.svg"
-            "contribution-graph.svg"
-            "github-activity-graph.svg"
-            "personal-code-contribution.svg"
-            "language-spectrum.svg"
-            "public-contribution-portfolio.svg"
-            "frameworks-platforms.svg"
-            "engineering-domains.svg"
-            "delivery-collaboration.svg"
-            "repository-portfolio.svg"
-            "ai-engineering-overview.svg"
-            "agentic-workflow-maturity.svg"
-            "ai-engineering-capabilities.svg"
-            "mcp-tool-integration.svg"
-            "context-governance.svg"
-            "ai-workflow-activity.svg"
-            "ai-engineering-trophies.svg"
-            "context-engineering.svg"
-            "memory-engineering.svg"
-            "ai-harness-engineering.svg"
-            "agentic-orchestration.svg"
-          )
+          # Exact-set validation rejects missing cards, unexpected files,
+          # malformed SVG output, empty files, and potential secret material.
+          node scripts/manage-analytics-assets.mjs validate-staging
 
-          for filename in "${SVG_FILES[@]}"; do
-            svg="generated-analytics/$filename"
-
-            if [ ! -s "$svg" ]; then
-              echo "::error::$svg is missing or empty."
-              exit 1
-            fi
-
-            if ! grep -q "<svg" "$svg"; then
-              echo "::error::$svg does not contain SVG markup."
-              exit 1
-            fi
-
-            if grep -qiE                       "github_pat_|ghp_|PRIVATE_STATS_TOKEN|Authorization: Bearer"                       "$svg"; then
-              echo "::error::Potential secret material was found in $svg."
-              exit 1
-            fi
-
-            echo "Validated: $svg"
-          done
-
-      - name: Replace repository analytics cards
+      - name: Publish newly generated assets
         shell: bash
         run: |
           set -euo pipefail
 
-          mkdir -p assets
+          # Publication copies the validated set into a temporary sibling
+          # directory, validates it again, and then replaces assets/ through a
+          # directory rename. The resulting assets/ directory is entirely new.
+          node scripts/manage-analytics-assets.mjs publish
 
-          CURRENT_SVG_FILES=(
-            "github-overview.svg"
-            "github-trophies.svg"
-            "contribution-streak.svg"
-            "contribution-graph.svg"
-            "github-activity-graph.svg"
-            "personal-code-contribution.svg"
-            "language-spectrum.svg"
-            "public-contribution-portfolio.svg"
-            "frameworks-platforms.svg"
-            "engineering-domains.svg"
-            "delivery-collaboration.svg"
-            "repository-portfolio.svg"
-            "ai-engineering-overview.svg"
-            "agentic-workflow-maturity.svg"
-            "ai-engineering-capabilities.svg"
-            "mcp-tool-integration.svg"
-            "context-governance.svg"
-            "ai-workflow-activity.svg"
-            "ai-engineering-trophies.svg"
-            "context-engineering.svg"
-            "memory-engineering.svg"
-            "ai-harness-engineering.svg"
-            "agentic-orchestration.svg"
-          )
-
-          LEGACY_SVG_FILES=(
-            "github-languages.svg"
-            "activity-timeline.svg"
-            "engineering-trophies.svg"
-            "open-source-stewardship.svg"
-            "prompt-engineering.svg"
-            "rag-retrieval-engineering.svg"
-            "ai-evaluation-observability.svg"
-            "ai-governance-safety.svg"
-          )
-
-          # Remove all managed current and legacy cards before the
-          # validated replacement set is installed. Unrelated SVG
-          # assets are intentionally preserved.
-          for filename in                     "${CURRENT_SVG_FILES[@]}"                     "${LEGACY_SVG_FILES[@]}"; do
-            rm -f "assets/$filename"
-          done
-
-          for filename in "${CURRENT_SVG_FILES[@]}"; do
-            install -m 0644                       "generated-analytics/$filename"                       "assets/$filename"
-          done
-
-          echo "Fresh analytics cards installed:"
-          ls -lh assets/*.svg
+          echo "Fresh generated assets:"
+          find "$ANALYTICS_ASSET_DIRECTORY" \
+            -maxdepth 1 \
+            -type f \
+            -printf "%f\n" \
+            | sort
 
       - name: Replace profile README analytics section
         shell: bash
         env:
           README_FILE: README.md
-          ANALYTICS_ASSET_DIRECTORY: assets
         run: |
           set -euo pipefail
 
-          # The updater owns presentation order and duplicate removal. The
-          # workflow then verifies one marker pair and one reference per card.
+          # The updater owns presentation order and duplicate removal. It reads
+          # only the freshly published assets when calculating cache hashes.
           node scripts/update-readme-analytics.mjs
 
-          START_COUNT=$(grep -Fc "<!-- ENGINEERING_ANALYTICS:START -->" README.md || true)
-          END_COUNT=$(grep -Fc "<!-- ENGINEERING_ANALYTICS:END -->" README.md || true)
+          START_COUNT=$(
+            grep -Fc \
+              "<!-- ENGINEERING_ANALYTICS:START -->" \
+              README.md \
+              || true
+          )
+          END_COUNT=$(
+            grep -Fc \
+              "<!-- ENGINEERING_ANALYTICS:END -->" \
+              README.md \
+              || true
+          )
 
           if [ "$START_COUNT" -ne 1 ] || [ "$END_COUNT" -ne 1 ]; then
             echo "::error::README.md must contain exactly one managed analytics block."
             exit 1
           fi
 
-          REQUIRED_REFERENCES=(
-            "assets/github-overview.svg"
-            "assets/github-trophies.svg"
-            "assets/contribution-streak.svg"
-            "assets/contribution-graph.svg"
-            "assets/github-activity-graph.svg"
-            "assets/personal-code-contribution.svg"
-            "assets/language-spectrum.svg"
-            "assets/public-contribution-portfolio.svg"
-            "assets/frameworks-platforms.svg"
-            "assets/engineering-domains.svg"
-            "assets/delivery-collaboration.svg"
-            "assets/repository-portfolio.svg"
-            "assets/ai-engineering-overview.svg"
-            "assets/agentic-workflow-maturity.svg"
-            "assets/ai-engineering-capabilities.svg"
-            "assets/mcp-tool-integration.svg"
-            "assets/context-governance.svg"
-            "assets/ai-workflow-activity.svg"
-            "assets/ai-engineering-trophies.svg"
-            "assets/context-engineering.svg"
-            "assets/memory-engineering.svg"
-            "assets/ai-harness-engineering.svg"
-            "assets/agentic-orchestration.svg"
+          mapfile -t REQUIRED_ASSETS < <(
+            node scripts/manage-analytics-assets.mjs list
           )
 
-          for reference in "${REQUIRED_REFERENCES[@]}"; do
-            COUNT=$(grep -Fo "$reference" README.md | wc -l || true)
-            COUNT=$(echo "$COUNT" | tr -d '[:space:]')
+          for filename in "${REQUIRED_ASSETS[@]}"; do
+            reference="assets/$filename"
+            COUNT=$(
+              grep -Fo "$reference" README.md \
+                | wc -l \
+                || true
+            )
+            COUNT=$(
+              echo "$COUNT" \
+                | tr -d '[:space:]'
+            )
 
             if [ "$COUNT" -ne 1 ]; then
               echo "::error::README.md must reference $reference exactly once; found $COUNT."
@@ -304,13 +239,20 @@ jobs:
           done
 
           PROFILE_USERNAME=$(
-            node scripts/github-analytics-config.mjs                       --print-profile-username
+            node scripts/github-analytics-config.mjs \
+              --print-profile-username
           )
 
-          if ! grep -Fq                     "hits.sh/github.com/${PROFILE_USERNAME}.svg"                     README.md; then
+          if ! grep -Fq \
+            "hits.sh/github.com/${PROFILE_USERNAME}.svg" \
+            README.md; then
             echo "::error::README.md is missing the configured profile-view badge."
             exit 1
           fi
+
+          # Final target validation proves README generation did not mutate or
+          # introduce files beneath assets/.
+          node scripts/manage-analytics-assets.mjs validate-assets
 
           echo "README analytics section replaced without duplicates."
 
@@ -320,8 +262,11 @@ jobs:
           set -euo pipefail
 
           git config user.name "github-actions[bot]"
-          git config user.email                     "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # -A records deletion of every old asset and addition of the freshly
+          # generated replacement directory.
           git add -A assets README.md
 
           if git diff --cached --quiet; then
