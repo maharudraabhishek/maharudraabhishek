@@ -24,10 +24,12 @@ const token = requiredEnvironment("PRIVATE_STATS_TOKEN");
 // The generator contains no profile-specific username or public alias.
 const analyticsConfig = await loadAnalyticsConfig();
 const username = analyticsConfig.profileUsername;
-const contributorAliases =
-  analyticsConfig.publicContributorAliases;
+const contributorProfiles =
+  analyticsConfig.publicContributorProfiles;
 const contributorIdentities =
   analyticsConfig.publicContributorIdentities;
+const globalContributorIdentities =
+  analyticsConfig.globalPublicContributorIdentities;
 
 // Use the workflow's built-in GitHub App installation token for public
 // organization repositories. This avoids organization-specific PAT policies
@@ -113,6 +115,16 @@ const config = Object.freeze({
     "MAX_PUBLIC_CONTRIBUTED_REPOSITORIES",
     100,
     { min: 0, max: 500 },
+  ),
+  maxPullRequestsPerPublicRepository: integerEnvironment(
+    "MAX_PULL_REQUESTS_PER_PUBLIC_REPOSITORY",
+    2000,
+    { min: 1, max: 10000 },
+  ),
+  pullRequestReviewConcurrency: integerEnvironment(
+    "PULL_REQUEST_REVIEW_CONCURRENCY",
+    4,
+    { min: 1, max: 10 },
   ),
 });
 
@@ -228,6 +240,8 @@ const TECHNOLOGY_COLORS = Object.freeze({
   Firebase: "#FFCA28",
   Flutter: "#02569B",
   GraphQL: "#E10098",
+  "HERE SDK": "#00AFAA",
+  iOS: "#A2AAAD",
   gRPC: "#244C5A",
   Hilt: "#A97BFF",
   "GitHub Actions": "#2088FF",
@@ -442,16 +456,27 @@ function parseCsv(value) {
       .filter(Boolean),
   );
 }
+/** Matches an exact owner/repository value or an owner/* scope. */
+function repositoryPatternMatches(pattern, fullName) {
+  const normalizedPattern = String(pattern ?? "").toLowerCase();
+  const normalizedName = String(fullName ?? "").toLowerCase();
+  if (normalizedPattern.endsWith("/*")) {
+    return normalizedName.startsWith(normalizedPattern.slice(0, -1));
+  }
+  return normalizedPattern === normalizedName;
+}
+
 /**
- * Returns the identities that may have authored activity in the selected
- * repository. Private/personal repositories use only the authenticated
- * profile identity. Historical aliases are queried only for public projects,
- * which prevents unnecessary alias queries against private repositories.
+ * Returns every configured identity for public contribution attribution.
+ *
+ * Historical usernames are GitHub accounts declared by the user as their own,
+ * so they are searched globally. Repository inclusion is decided later from
+ * verified commits, authored pull requests, or submitted reviews—not from a
+ * repository whitelist.
  */
 function contributionIdentitiesForScope(scope) {
-  return scope === REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED
-    ? contributorIdentities
-    : [username];
+  if (scope !== REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED) return [username];
+  return contributorIdentities;
 }
 
 function sleep(milliseconds) {
@@ -1024,7 +1049,7 @@ async function fetchRepositoriesContributedToConnection(
             first: 100
             after: $after
             includeUserRepositories: false
-            contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, PULL_REQUEST_REVIEW]
+            contributionTypes: [COMMIT, PULL_REQUEST, PULL_REQUEST_REVIEW]
             privacy: PUBLIC
             orderBy: { field: UPDATED_AT, direction: DESC }
           ) {
@@ -1065,7 +1090,7 @@ async function fetchContributionCollectionRepositories(
   sourceLabel,
 ) {
   const identityResults = await mapLimit(
-    contributorIdentities,
+    globalContributorIdentities,
     1,
     async (identity) => {
       const years = await fetchContributionYearsForLogin(
@@ -1097,9 +1122,6 @@ async function fetchContributionCollectionRepositories(
                 pullRequestReviewContributionsByRepository(maxRepositories: 100) {
                   repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
                 }
-                issueContributionsByRepository(maxRepositories: 100) {
-                  repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
-                }
               }
             }
           }
@@ -1119,7 +1141,6 @@ async function fetchContributionCollectionRepositories(
           [collection?.commitContributionsByRepository, "commit"],
           [collection?.pullRequestContributionsByRepository, "pull-request"],
           [collection?.pullRequestReviewContributionsByRepository, "pull-request-review"],
-          [collection?.issueContributionsByRepository, "issue"],
         ];
         const repositories = [];
         for (const [items, evidence] of groups) {
@@ -1238,12 +1259,15 @@ async function searchPublicContributionRepositoryNames(
   return [...repositories.values()];
 }
 
-async function fetchPublicRepositoryMetadata(fullName, evidence) {
+async function fetchPublicRepositoryMetadata(
+  fullName,
+  evidence,
+  identities = [],
+) {
   const encoded = fullName.split("/").map(encodeURIComponent).join("/");
   let repository;
-  const attempts = [REST_HEADERS, PUBLIC_REST_HEADERS, ANONYMOUS_REST_HEADERS];
   let lastError;
-  for (const headers of attempts) {
+  for (const headers of [PUBLIC_REST_HEADERS, REST_HEADERS, ANONYMOUS_REST_HEADERS]) {
     try {
       repository = await rest(`/repos/${encoded}`, {
         label: `Public repository metadata (${fullName})`,
@@ -1255,14 +1279,23 @@ async function fetchPublicRepositoryMetadata(fullName, evidence) {
     }
   }
   if (!repository) {
-    console.warn(`Could not load public repository metadata for ${fullName}: ${lastError?.message ?? "unknown error"}`);
+    console.warn(
+      `Could not load public repository metadata for ${fullName}: ` +
+      `${lastError?.message ?? "unknown error"}`,
+    );
     return null;
   }
-  return normalizePublicContributionRepository(repository, [evidence]);
+
+  const normalized = normalizePublicContributionRepository(
+    repository,
+    [evidence],
+    identities,
+  );
+  return normalized;
 }
 
 async function fetchSearchDiscoveredContributionRepositories() {
-  const searchSpecs = contributorIdentities.flatMap((identity) => [
+  const searchSpecs = globalContributorIdentities.flatMap((identity) => [
     {
       query: `author:${identity} is:pr`,
       evidence: "pull-request",
@@ -1271,11 +1304,6 @@ async function fetchSearchDiscoveredContributionRepositories() {
     {
       query: `reviewed-by:${identity} is:pr`,
       evidence: "pull-request-review",
-      identity,
-    },
-    {
-      query: `author:${identity} is:issue`,
-      evidence: "issue",
       identity,
     },
   ]);
@@ -1315,6 +1343,7 @@ async function fetchSearchDiscoveredContributionRepositories() {
       const repository = await fetchPublicRepositoryMetadata(
         item.fullName,
         [...item.evidence][0],
+        [...item.identities],
       );
       if (!repository) return null;
       repository.contribution_evidence = [...item.evidence];
@@ -1330,49 +1359,43 @@ async function fetchSearchDiscoveredContributionRepositories() {
 async function fetchPublicContributedRepositories() {
   if (config.maxPublicContributedRepositories === 0) return [];
 
-  // Query every configured GitHub identity independently, then merge by
-  // repository full name. Both authentication contexts are attempted:
-  // - PRIVATE_STATS_TOKEN can expose the profile's complete public history.
-  // - github.token avoids organization PAT policies for ordinary public data.
+  // Every configured identity uses ordinary GitHub-wide public contribution
+  // discovery. Candidates are verified later before affecting analytics.
   const sourceSpecs = [
-    ...contributorIdentities.flatMap((identity) => [
+    ...globalContributorIdentities.flatMap((identity) => [
       {
         name: `repository relationship via personal token (${identity})`,
-        run: () =>
-          fetchRepositoriesContributedToConnection(
-            identity,
-            REST_HEADERS,
-            `Public contributed-repository relationship query via personal token (${identity})`,
-          ),
+        run: () => fetchRepositoriesContributedToConnection(
+          identity,
+          REST_HEADERS,
+          `Public contributed-repository relationship via personal token (${identity})`,
+        ),
       },
       {
         name: `repository relationship via workflow token (${identity})`,
-        run: () =>
-          fetchRepositoriesContributedToConnection(
-            identity,
-            PUBLIC_REST_HEADERS,
-            `Public contributed-repository relationship query via workflow token (${identity})`,
-          ),
+        run: () => fetchRepositoriesContributedToConnection(
+          identity,
+          PUBLIC_REST_HEADERS,
+          `Public contributed-repository relationship via workflow token (${identity})`,
+        ),
       },
     ]),
     {
       name: "yearly contribution collections via personal token",
-      run: () =>
-        fetchContributionCollectionRepositories(
-          REST_HEADERS,
-          "Personal-token",
-        ),
+      run: () => fetchContributionCollectionRepositories(
+        REST_HEADERS,
+        "Personal-token",
+      ),
     },
     {
       name: "yearly contribution collections via workflow token",
-      run: () =>
-        fetchContributionCollectionRepositories(
-          PUBLIC_REST_HEADERS,
-          "Workflow-token",
-        ),
+      run: () => fetchContributionCollectionRepositories(
+        PUBLIC_REST_HEADERS,
+        "Workflow-token",
+      ),
     },
     {
-      name: "PR/review/issue searches",
+      name: "PR/review searches",
       run: fetchSearchDiscoveredContributionRepositories,
     },
   ];
@@ -1380,7 +1403,6 @@ async function fetchPublicContributedRepositories() {
   const sources = await Promise.allSettled(
     sourceSpecs.map((source) => source.run()),
   );
-
   const merged = new Map();
   sources.forEach((source, index) => {
     const sourceName = sourceSpecs[index].name;
@@ -1617,40 +1639,97 @@ async function fetchRepositoryContent(
   }
 }
 
+async function publicRestWithFallback(
+  endpoint,
+  { label, optionalStatuses = [] },
+) {
+  let lastError = null;
+  for (const headers of [PUBLIC_REST_HEADERS, REST_HEADERS, ANONYMOUS_REST_HEADERS]) {
+    try {
+      return await rest(endpoint, {
+        label,
+        optionalStatuses,
+        headers,
+      });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError ?? new Error(`${label} failed.`);
+}
+
+function inferLanguagesFromPaths(paths) {
+  const counts = new Map();
+  for (const filePath of paths) {
+    const language = contributionLanguageForPath(filePath);
+    if (!language) continue;
+    counts.set(language, safeInteger(counts.get(language)) + 1);
+  }
+  return Object.fromEntries(counts);
+}
+
 async function fetchRepositoryDetails(selection) {
   const { repository, scope, publicContribution = false } = selection;
-  const publicRepository =
-    repositorySupportsAnonymousFallback(scope);
-  const requestHeaders = publicRepository
-    ? PUBLIC_REST_HEADERS
-    : REST_HEADERS;
+  const publicRepository = repositorySupportsAnonymousFallback(scope);
 
-  const languagesPromise = rest(repository.languages_url, {
-    label: "Repository languages request",
-    headers: requestHeaders,
-  });
+  let languages = {};
+  let treeResponse = null;
 
-  const treePromise = rest(
-    `/repos/${repository.full_name}/git/trees/${encodeURIComponent(repository.default_branch)}?recursive=1`,
-    {
-      label: "Repository tree request",
-      optionalStatuses: [404, 409, 422],
-      headers: requestHeaders,
-    },
-  );
+  if (publicRepository) {
+    // Language and tree calls are independent. One failed endpoint must not
+    // discard the other data or remove the whole public project.
+    const [languageResult, treeResult] = await Promise.allSettled([
+      publicRestWithFallback(repository.languages_url, {
+        label: `Public repository languages (${repository.full_name})`,
+      }),
+      publicRestWithFallback(
+        `/repos/${repository.full_name}/git/trees/${encodeURIComponent(repository.default_branch)}?recursive=1`,
+        {
+          label: `Public repository tree (${repository.full_name})`,
+          optionalStatuses: [404, 409, 422],
+        },
+      ),
+    ]);
 
-  const [languages, treeResponse] = await Promise.all([
-    languagesPromise,
-    treePromise,
-  ]);
+    if (languageResult.status === "fulfilled") {
+      languages = languageResult.value ?? {};
+    } else {
+      console.warn(languageResult.reason.message);
+    }
+    if (treeResult.status === "fulfilled") {
+      treeResponse = treeResult.value;
+    } else {
+      console.warn(treeResult.reason.message);
+    }
+  } else {
+    [languages, treeResponse] = await Promise.all([
+      rest(repository.languages_url, {
+        label: "Repository languages request",
+        headers: REST_HEADERS,
+      }),
+      rest(
+        `/repos/${repository.full_name}/git/trees/${encodeURIComponent(repository.default_branch)}?recursive=1`,
+        {
+          label: "Repository tree request",
+          optionalStatuses: [404, 409, 422],
+          headers: REST_HEADERS,
+        },
+      ),
+    ]);
+  }
 
   const treeEntries = Array.isArray(treeResponse?.tree)
     ? treeResponse.tree
     : [];
-
   const paths = treeEntries
     .filter((entry) => entry.type === "blob" && entry.path)
     .map((entry) => entry.path);
+
+  let languageSource = "github-linguist";
+  if (Object.keys(languages ?? {}).length === 0 && paths.length > 0) {
+    languages = inferLanguagesFromPaths(paths);
+    languageSource = "source-file fallback";
+  }
 
   const manifestEntries = treeEntries
     .filter(manifestCandidate)
@@ -1665,20 +1744,14 @@ async function fetchRepositoryDetails(selection) {
     config.manifestConcurrency,
     async (entry) => ({
       path: entry.path,
-      content: await fetchRepositoryContent(
-        repository,
-        scope,
-        entry.path,
-      ),
+      content: await fetchRepositoryContent(repository, scope, entry.path),
     }),
   );
-
   const manifests = manifestResults
-    .filter(
-      (result) =>
-        result.status === "fulfilled" &&
-        result.value?.content !== null &&
-        result.value?.content !== undefined,
+    .filter((result) =>
+      result.status === "fulfilled" &&
+      result.value?.content !== null &&
+      result.value?.content !== undefined,
     )
     .map((result) => result.value);
 
@@ -1687,6 +1760,7 @@ async function fetchRepositoryDetails(selection) {
     scope,
     publicContribution,
     languages: languages ?? {},
+    languageSource,
     paths,
     manifests,
     treeTruncated: Boolean(treeResponse?.truncated),
@@ -1984,19 +2058,15 @@ async function searchCountsByContributorIdentity(
   queryFactory,
   label,
   primaryFallback = 0,
+  { identities = globalContributorIdentities } = {},
 ) {
   const results = await mapLimit(
-    contributorIdentities,
+    identities,
     2,
     async (identity) => {
-      const headers =
-        identity.toLowerCase() === username.toLowerCase()
-          ? REST_HEADERS
-          : PUBLIC_REST_HEADERS;
-      const fallback =
-        identity.toLowerCase() === username.toLowerCase()
-          ? primaryFallback
-          : 0;
+      const isPrimary = identity.toLowerCase() === username.toLowerCase();
+      const headers = isPrimary ? REST_HEADERS : PUBLIC_REST_HEADERS;
+      const fallback = isPrimary ? primaryFallback : 0;
       const count = await safeSearchCount(
         queryFactory(identity),
         `${label} (${identity})`,
@@ -2064,7 +2134,7 @@ async function fetchAuthoredCommitReferences(selection) {
   // Public organization projects may contain work authored through historical
   // GitHub accounts. Query every configured identity and merge by commit SHA
   // so one commit can never be counted twice.
-  const identities = contributionIdentitiesForScope(scope);
+  const identities = contributionIdentitiesForScope(scope, repository.full_name);
   const commitsBySha = new Map();
   let cappedIdentityListings = 0;
 
@@ -2398,32 +2468,50 @@ async function analyzePersonalCodeContributions(repositorySelections) {
   };
 }
 
+/**
+ * Builds a repository-normalized language footprint.
+ *
+ * Each repository contributes a total weight of 1 regardless of its size.
+ * This prevents a large monorepo from overwhelming every smaller project and
+ * makes the SVG represent breadth of engineering work rather than raw bytes.
+ */
 function aggregateLanguages(repositoryDetails) {
   const totals = new Map();
 
   for (const detail of repositoryDetails) {
-    for (const [language, bytesValue] of Object.entries(detail.languages)) {
-      const bytes = safeInteger(bytesValue);
-      if (bytes <= 0) continue;
-
-      const current = totals.get(language) ?? {
-        language,
-        bytes: 0,
+    const composition = repositoryLanguageComposition(detail);
+    for (const item of composition.languages) {
+      const current = totals.get(item.language) ?? {
+        language: item.language,
+        weight: 0,
+        rawUnits: 0,
         repositories: 0,
       };
-
-      current.bytes += bytes;
+      current.weight += item.percentage / 100;
+      current.rawUnits += item.bytes;
       current.repositories += 1;
-      totals.set(language, current);
+      totals.set(item.language, current);
     }
   }
+
+  const totalWeight = [...totals.values()].reduce(
+    (sum, item) => sum + item.weight,
+    0,
+  );
 
   return [...totals.values()]
     .map((item) => ({
       ...item,
+      percentage: totalWeight > 0
+        ? (item.weight / totalWeight) * 100
+        : 0,
       color: LANGUAGE_COLORS[item.language] ?? fallbackColor(item.language),
     }))
-    .sort((first, second) => second.bytes - first.bytes);
+    .sort((first, second) =>
+      second.weight - first.weight ||
+      second.repositories - first.repositories ||
+      first.language.localeCompare(second.language),
+    );
 }
 
 function splitRepositoryFullName(fullName) {
@@ -2532,6 +2620,132 @@ function repositoryLanguageComposition(detail) {
   };
 }
 
+async function fetchAttributedContributorCommits(repository, identities) {
+  const identitySet = new Set(identities.map((identity) => identity.toLowerCase()));
+  const matchedIdentities = new Set();
+  let commits = 0;
+
+  for (let page = 1; page <= 5; page += 1) {
+    const contributors = await publicRestWithFallback(
+      `/repos/${repository.full_name}/contributors?anon=1&per_page=100&page=${page}`,
+      {
+        label: `Repository contributors (${repository.full_name})`,
+        optionalStatuses: [204, 404, 409],
+      },
+    );
+    const items = Array.isArray(contributors) ? contributors : [];
+    for (const contributor of items) {
+      const login = String(contributor?.login ?? "").toLowerCase();
+      if (!identitySet.has(login)) continue;
+      commits += safeInteger(contributor.contributions);
+      matchedIdentities.add(contributor.login);
+    }
+    if (items.length < 100) break;
+  }
+
+  return { commits, identities: [...matchedIdentities] };
+}
+
+async function fetchPullRequestReviews(repository, pullRequestNumber) {
+  const reviews = [];
+  for (let page = 1; ; page += 1) {
+    const pageItems = await publicRestWithFallback(
+      `/repos/${repository.full_name}/pulls/${pullRequestNumber}/reviews?per_page=100&page=${page}`,
+      {
+        label: `Pull-request reviews (${repository.full_name}#${pullRequestNumber})`,
+        optionalStatuses: [404, 410, 422],
+      },
+    );
+    const items = Array.isArray(pageItems) ? pageItems : [];
+    reviews.push(...items);
+    if (items.length < 100) break;
+  }
+  return reviews;
+}
+
+/**
+ * Directly inspects historical pull requests and their submitted reviews.
+ * This is used when contribution evidence indicates review activity because
+ * search indexing can omit historical review records even though a repository's
+ * PR review timeline still contains them.
+ */
+async function fetchDirectPullRequestActivity(repository, identities) {
+  const identitySet = new Set(identities.map((identity) => identity.toLowerCase()));
+  const pullRequests = [];
+  let capped = false;
+
+  for (let page = 1; ; page += 1) {
+    const remaining = config.maxPullRequestsPerPublicRepository - pullRequests.length;
+    if (remaining <= 0) {
+      capped = true;
+      break;
+    }
+    const perPage = Math.min(100, remaining);
+    const pageItems = await publicRestWithFallback(
+      `/repos/${repository.full_name}/pulls?state=all&sort=updated&direction=desc&per_page=${perPage}&page=${page}`,
+      {
+        label: `Historical pull requests (${repository.full_name})`,
+        optionalStatuses: [404, 409],
+      },
+    );
+    const items = Array.isArray(pageItems) ? pageItems : [];
+    pullRequests.push(...items);
+    if (items.length < perPage) break;
+  }
+
+  const authored = new Set();
+  const reviewed = new Set();
+  const approved = new Set();
+  const matchedIdentities = new Set();
+  let reviewSubmissions = 0;
+
+  const reviewResults = await mapLimit(
+    pullRequests,
+    config.pullRequestReviewConcurrency,
+    async (pullRequest) => {
+      const authorLogin = String(pullRequest?.user?.login ?? "").toLowerCase();
+      const authoredByConfiguredIdentity = identitySet.has(authorLogin);
+      const reviews = await fetchPullRequestReviews(
+        repository,
+        pullRequest.number,
+      );
+      return { pullRequest, authoredByConfiguredIdentity, reviews };
+    },
+  );
+
+  for (const result of reviewResults) {
+    if (result.status === "rejected") {
+      console.warn(result.reason.message);
+      continue;
+    }
+    const { pullRequest, authoredByConfiguredIdentity, reviews } = result.value;
+    if (authoredByConfiguredIdentity) {
+      authored.add(pullRequest.number);
+      matchedIdentities.add(pullRequest.user.login);
+    }
+
+    for (const review of reviews) {
+      const login = String(review?.user?.login ?? "").toLowerCase();
+      if (!identitySet.has(login)) continue;
+      reviewed.add(pullRequest.number);
+      reviewSubmissions += 1;
+      matchedIdentities.add(review.user.login);
+      if (String(review.state ?? "").toUpperCase() === "APPROVED") {
+        approved.add(pullRequest.number);
+      }
+    }
+  }
+
+  return {
+    authoredPullRequests: authored.size,
+    reviewedPullRequests: reviewed.size,
+    approvedPullRequests: approved.size,
+    reviewSubmissions,
+    identities: [...matchedIdentities],
+    capped,
+  };
+}
+
 async function buildPublicContributionPortfolio(
   repositoryDetails,
   personalCodeContributions,
@@ -2545,53 +2759,123 @@ async function buildPublicContributionPortfolio(
     2,
     async (detail) => {
       const repository = detail.repository;
-      const personal =
-        personalCodeContributions.repositories.get(
-          repository.full_name.toLowerCase(),
-        ) ?? {
-          additions: 0,
-          deletions: 0,
-          changedLines: 0,
-          commits: 0,
-          repositories: 0,
-          files: 0,
-        };
+      const identities = contributionIdentitiesForScope(
+        detail.scope,
+        repository.full_name,
+      );
+      const personal = personalCodeContributions.repositories.get(
+        repository.full_name.toLowerCase(),
+      ) ?? {
+        additions: 0,
+        deletions: 0,
+        changedLines: 0,
+        commits: 0,
+        files: 0,
+      };
 
       const [
         lifecycle,
-        authoredPullRequestResult,
-        reviewedPullRequestResult,
+        contributorActivity,
+        authoredSearch,
+        reviewedSearch,
       ] = await Promise.all([
         fetchPublicRepositoryLifecycle(repository),
+        fetchAttributedContributorCommits(repository, identities),
         searchCountsByContributorIdentity(
           (identity) =>
             `repo:${repository.full_name} author:${identity} is:pr`,
           `Public contribution authored-PR search (${repository.full_name})`,
+          0,
+          { identities },
         ),
         searchCountsByContributorIdentity(
           (identity) =>
             `repo:${repository.full_name} reviewed-by:${identity} is:pr`,
           `Public contribution reviewed-PR search (${repository.full_name})`,
+          0,
+          { identities },
         ),
       ]);
 
+      const discoveryEvidence = new Set(
+        repository.contribution_evidence ?? [],
+      );
+
+      // Search indexes can under-report old review activity. Scan the actual
+      // pull-request review records when GitHub reports review evidence, when
+      // reviewed-by search finds activity, or when a repository relationship
+      // exists but neither commits nor authored PRs explain that relationship.
+      const shouldInspectHistoricalReviews =
+        discoveryEvidence.has("pull-request-review") ||
+        reviewedSearch.total > 0 ||
+        (discoveryEvidence.has("repository-relationship") &&
+          contributorActivity.commits === 0 &&
+          authoredSearch.total === 0);
+
+      const directPullRequestActivity = shouldInspectHistoricalReviews
+        ? await fetchDirectPullRequestActivity(repository, identities)
+        : {
+            authoredPullRequests: 0,
+            reviewedPullRequests: 0,
+            approvedPullRequests: 0,
+            reviewSubmissions: 0,
+            identities: [],
+            capped: false,
+          };
+
       const composition = repositoryLanguageComposition(detail);
+      const technologies = [...detectTechnologies(
+        buildRepositoryProfile(detail),
+      )].sort();
+      const attributedCommits = Math.max(
+        safeInteger(personal.commits),
+        safeInteger(contributorActivity.commits),
+      );
+      const authoredPullRequests = Math.max(
+        authoredSearch.total,
+        directPullRequestActivity.authoredPullRequests,
+      );
+      const reviewedPullRequests = Math.max(
+        reviewedSearch.total,
+        directPullRequestActivity.reviewedPullRequests,
+      );
+
+      // A public repository is included only when GitHub verifies actual
+      // engineering activity from at least one configured identity. Discovery
+      // relationships alone are not enough, preventing zero-contribution
+      // repositories from affecting language, framework, and portfolio stats.
+      const verified =
+        attributedCommits > 0 ||
+        authoredPullRequests > 0 ||
+        reviewedPullRequests > 0;
+
       const attributedIdentities = [...new Set([
         ...(repository.contribution_identities ?? []),
         ...(personal.attributedIdentities ?? []),
-        ...authoredPullRequestResult.identities,
-        ...reviewedPullRequestResult.identities,
+        ...contributorActivity.identities,
+        ...authoredSearch.identities,
+        ...reviewedSearch.identities,
+        ...directPullRequestActivity.identities,
       ])].sort();
 
       return {
+        verified,
         fullName: repository.full_name,
         url: repository.html_url,
         languages: composition.languages,
+        languageSource: detail.languageSource,
         sourceFiles: composition.sourceFiles,
+        technologies,
         lifecycle,
         personal,
-        authoredPullRequests: authoredPullRequestResult.total,
-        reviewedPullRequests: reviewedPullRequestResult.total,
+        attributedCommits,
+        authoredPullRequests,
+        reviewedPullRequests,
+        approvedPullRequests:
+          directPullRequestActivity.approvedPullRequests,
+        reviewSubmissions:
+          directPullRequestActivity.reviewSubmissions,
+        reviewScanCapped: directPullRequestActivity.capped,
         attributedIdentities,
         evidence: repository.contribution_evidence ?? [],
       };
@@ -2600,10 +2884,12 @@ async function buildPublicContributionPortfolio(
 
   const projects = [];
   const failures = [];
-
   for (const [index, result] of results.entries()) {
     if (result.status === "fulfilled") {
-      projects.push(result.value);
+      if (result.value.verified) projects.push(result.value);
+      else console.warn(
+        `Excluded unverified public contribution candidate: ${result.value.fullName}`,
+      );
     } else {
       failures.push(
         `${publicContributionDetails[index].repository.full_name}: ${result.reason.message}`,
@@ -2617,11 +2903,11 @@ async function buildPublicContributionPortfolio(
     );
   }
 
-  return projects.sort(
-    (first, second) =>
-      second.sourceFiles - first.sourceFiles ||
-      second.lifecycle.commits - first.lifecycle.commits ||
-      first.fullName.localeCompare(second.fullName),
+  return projects.sort((first, second) =>
+    second.attributedCommits - first.attributedCommits ||
+    second.reviewedPullRequests - first.reviewedPullRequests ||
+    second.sourceFiles - first.sourceFiles ||
+    first.fullName.localeCompare(second.fullName),
   );
 }
 
@@ -2680,6 +2966,11 @@ function detectTechnologies(profile) {
     manifestText,
     manifestTextsByPath,
   } = profile;
+  const topics = new Set(
+    (profile.detail.repository.topics ?? []).map((topic) =>
+      String(topic).toLowerCase(),
+    ),
+  );
 
   const hasPath = (value) => pathSet.has(value.toLowerCase());
   const pathEndsWith = (value) =>
@@ -2698,7 +2989,11 @@ function detectTechnologies(profile) {
     /com\.android\.(application|library|dynamic-feature|test)/,
   );
 
-  if (hasAndroidManifest || hasAndroidGradlePlugin) {
+  if (
+    hasAndroidManifest ||
+    hasAndroidGradlePlugin ||
+    topics.has("android")
+  ) {
     found.add("Android");
   }
 
@@ -2720,9 +3015,34 @@ function detectTechnologies(profile) {
 
   if (
     /sdk\s*:\s*flutter/.test(pubspecContent) ||
-    /^\s*flutter\s*:/m.test(pubspecContent)
+    /^\s*flutter\s*:/m.test(pubspecContent) ||
+    topics.has("flutter") ||
+    (pathEndsWith("pubspec.yaml") &&
+      lowerPaths.some((filePath) => filePath.endsWith(".dart")))
   ) {
     found.add("Flutter");
+  }
+
+  if (
+    topics.has("ios") ||
+    pathContains(".xcodeproj/project.pbxproj") ||
+    pathContains(".xcworkspace/") ||
+    pathEndsWith("podfile") ||
+    lowerPaths.some((filePath) =>
+      filePath.endsWith(".swift") ||
+      filePath.endsWith(".m") ||
+      filePath.endsWith(".mm"),
+    )
+  ) {
+    found.add("iOS");
+  }
+
+  if (
+    topics.has("here-sdk") ||
+    pathContains("here_sdk") ||
+    contentMatches(/\bhere[-_. ]sdk\b/)
+  ) {
+    found.add("HERE SDK");
   }
 
   if (lowerPaths.some((filePath) => filePath.endsWith("package.json"))) {
@@ -2938,9 +3258,10 @@ function buildTechnologyImpact(
       ...item,
       color: TECHNOLOGY_COLORS[item.name] ?? fallbackColor(item.name),
       score:
-        Math.log1p(item.changedLines) * 0.55 +
-        Math.log1p(item.commits) * 0.30 +
-        Math.log1p(item.files) * 0.15,
+        Math.log1p(item.changedLines) * 0.50 +
+        Math.log1p(item.commits) * 0.25 +
+        Math.log1p(item.files) * 0.10 +
+        Math.log1p(item.repositories) * 0.75,
     }))
     .sort(
       (first, second) =>
@@ -3036,7 +3357,7 @@ function classifyDomains(technologyCounts, languages) {
   }
 
   for (const language of languages.slice(0, 15)) {
-    const weight = Math.max(0.5, Math.log10(language.bytes + 1));
+    const weight = Math.max(0.5, language.percentage / 8);
 
     if (
       ["Kotlin", "Dart", "Swift", "Objective-C", "Java"].includes(
@@ -3558,8 +3879,8 @@ function renderLanguages(languages, scopeSummary) {
   const columns = 3;
   const rows = Math.max(1, Math.ceil(languages.length / columns));
   const height = 122 + rows * 34;
-  const totalBytes = languages.reduce(
-    (sum, language) => sum + language.bytes,
+  const totalWeight = languages.reduce(
+    (sum, language) => sum + language.weight,
     0,
   );
   const barX = 28;
@@ -3567,39 +3888,27 @@ function renderLanguages(languages, scopeSummary) {
   const barWidth = width - 56;
   let currentX = barX;
 
-  const segments = languages
-    .map((language) => {
-      const segmentWidth =
-        totalBytes > 0
-          ? (language.bytes / totalBytes) * barWidth
-          : 0;
+  const segments = languages.map((language) => {
+    const segmentWidth = totalWeight > 0
+      ? (language.weight / totalWeight) * barWidth
+      : 0;
+    const segment = `<rect x="${currentX.toFixed(3)}" y="${barY}" width="${Math.max(0, segmentWidth).toFixed(3)}" height="13" fill="${language.color}"/>`;
+    currentX += segmentWidth;
+    return segment;
+  }).join("");
 
-      const segment = `<rect x="${currentX.toFixed(3)}" y="${barY}" width="${Math.max(0, segmentWidth).toFixed(3)}" height="13" fill="${language.color}"/>`;
-      currentX += segmentWidth;
-      return segment;
-    })
-    .join("");
-
-  const legend =
-    languages.length > 0
-      ? languages
-          .map((language, index) => {
-            const column = index % columns;
-            const row = Math.floor(index / columns);
-            const x = 28 + column * 290;
-            const y = 110 + row * 34;
-            const percentage =
-              totalBytes > 0
-                ? (language.bytes / totalBytes) * 100
-                : 0;
-
-            return `<circle cx="${x + 5}" cy="${y - 4}" r="5" fill="${language.color}"/>
+  const legend = languages.length > 0
+    ? languages.map((language, index) => {
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        const x = 28 + column * 290;
+        const y = 110 + row * 34;
+        return `<circle cx="${x + 5}" cy="${y - 4}" r="5" fill="${language.color}"/>
       <text x="${x + 18}" y="${y}" class="small">${escapeXml(truncate(language.language, 18))}</text>
-      <text x="${x + 158}" y="${y}" class="label">${escapeXml(formatPercentage(percentage))}</text>
+      <text x="${x + 158}" y="${y}" class="label">${escapeXml(formatPercentage(language.percentage))}</text>
       <text x="${x + 218}" y="${y}" class="tiny">${escapeXml(plural(language.repositories, "repo"))}</text>`;
-          })
-          .join("")
-      : `<text x="28" y="110" class="empty">No repository language composition data was reported for the scanned repositories.</text>`;
+      }).join("")
+    : `<text x="28" y="110" class="empty">No repository language composition data was reported for the verified repositories.</text>`;
 
   return cardShell({
     width,
@@ -3607,13 +3916,9 @@ function renderLanguages(languages, scopeSummary) {
     title: "Engineering Language Footprint",
     iconName: "code",
     accent: THEME.cyan,
-    subtitle: `Current composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} public projects contributed to · project composition is separate from personal authorship`,
+    subtitle: `Repository-normalized composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} verified public contribution projects · each repository has equal total weight`,
     body: `
-      <defs>
-        <clipPath id="language-bar">
-          <rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5"/>
-        </clipPath>
-      </defs>
+      <defs><clipPath id="language-bar"><rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5"/></clipPath></defs>
       <rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5" fill="${THEME.track}"/>
       <g clip-path="url(#language-bar)">${segments}</g>
       ${legend}
@@ -3673,33 +3978,29 @@ function renderPublicContributionPortfolio(projects) {
       title: "Public Open-Source Contributions",
       iconName: "branch",
       accent: THEME.green,
-      subtitle: "Public repositories discovered from commits, pull requests, or reviews",
-      body: `<text x="28" y="92" class="empty">No public contributed repositories were returned by GitHub.</text>`,
+      subtitle: "Verified public repositories with attributed commits, authored PRs, submitted reviews, or an explicit repository-scoped identity",
+      body: `<text x="28" y="92" class="empty">No verified public contribution projects were returned by GitHub.</text>`,
     });
   }
 
-  // Keep the README readable. All discovered repositories still contribute
-  // to aggregate language/framework cards; this card lists the largest 12.
   const visibleProjects = projects.slice(0, 12);
   const hiddenCount = Math.max(0, projects.length - visibleProjects.length);
   const layouts = [];
   let cursorY = 70;
 
   for (const project of visibleProjects) {
-    const languageRows = Math.max(
-      1,
-      Math.ceil(project.languages.length / 4),
-    );
-    const blockHeight = 158 + languageRows * 28;
-    layouts.push({ project, y: cursorY, blockHeight });
+    const languageRows = Math.max(1, Math.ceil(project.languages.length / 4));
+    const technologyRows = Math.max(1, Math.ceil(project.technologies.length / 5));
+    const blockHeight = 184 + languageRows * 28 + technologyRows * 24;
+    layouts.push({ project, y: cursorY, blockHeight, languageRows });
     cursorY += blockHeight + 14;
   }
 
   const footerHeight = hiddenCount > 0 ? 34 : 8;
   const height = cursorY + footerHeight;
-  const body = layouts.map(({ project, y, blockHeight }) => {
+  const body = layouts.map(({ project, y, blockHeight, languageRows }) => {
     const barX = 28;
-    const barY = y + 84;
+    const barY = y + 105;
     const barWidth = width - 56;
     let currentX = barX;
 
@@ -3715,17 +4016,29 @@ function renderPublicContributionPortfolio(projects) {
           const column = index % 4;
           const row = Math.floor(index / 4);
           const x = 32 + column * 238;
-          const legendY = y + 124 + row * 28;
+          const legendY = y + 145 + row * 28;
           const fileText = language.files > 0
             ? plural(language.files, "file")
-            : "GitHub detected";
-
+            : project.languageSource;
           return `<circle cx="${x + 5}" cy="${legendY - 4}" r="5" fill="${language.color}"/>
       <text x="${x + 18}" y="${legendY}" class="small">${escapeXml(truncate(language.language, 15))}</text>
       <text x="${x + 126}" y="${legendY}" class="label">${escapeXml(formatPercentage(language.percentage))}</text>
       <text x="${x + 180}" y="${legendY}" class="tiny">${escapeXml(fileText)}</text>`;
         }).join("")
-      : `<text x="32" y="${y + 130}" class="empty">No language composition was reported.</text>`;
+      : `<text x="32" y="${y + 151}" class="empty">No language composition was available.</text>`;
+
+    const technologyY = y + 157 + languageRows * 28;
+    const technologyBadges = project.technologies.length > 0
+      ? project.technologies.map((technology, index) => {
+          const column = index % 5;
+          const row = Math.floor(index / 5);
+          const x = 32 + column * 188;
+          const badgeY = technologyY + row * 24;
+          const color = TECHNOLOGY_COLORS[technology] ?? fallbackColor(technology);
+          return `<circle cx="${x + 5}" cy="${badgeY - 4}" r="4" fill="${color}"/>
+      <text x="${x + 16}" y="${badgeY}" class="tiny">${escapeXml(truncate(technology, 20))}</text>`;
+        }).join("")
+      : `<text x="32" y="${technologyY}" class="tiny">No supported framework/platform signature detected.</text>`;
 
     const projectParts = [
       `${compactNumber(project.lifecycle.commits)} project commits`,
@@ -3735,31 +4048,33 @@ function renderPublicContributionPortfolio(projects) {
       `${compactNumber(project.lifecycle.stars)} stars`,
       `${compactNumber(project.lifecycle.forks)} forks`,
     ];
-
+    const reviewCapNote = project.reviewScanCapped ? " (scan capped)" : "";
     const personalParts = [
-      `${compactNumber(project.personal.commits)} attributed commits`,
-      `${compactNumber(project.personal.changedLines)} changed lines`,
+      `${compactNumber(project.attributedCommits)} attributed commits`,
+      `${compactNumber(project.personal.changedLines)} analyzed changed lines`,
       `${compactNumber(project.personal.files)} files touched`,
       `${compactNumber(project.authoredPullRequests)} authored PRs`,
       `${compactNumber(project.reviewedPullRequests)} PRs reviewed`,
-      `evidence: ${(project.evidence ?? []).join(", ") || "GitHub contribution record"}`,
+      `${compactNumber(project.approvedPullRequests)} PRs approved`,
+      `${compactNumber(project.reviewSubmissions)} review submissions${reviewCapNote}`,
     ];
-
     const clipId = `public-${project.fullName.replace(/[^a-z0-9]/gi, "-")}`;
 
     return `<rect x="18" y="${y}" width="${width - 36}" height="${blockHeight}" rx="10" fill="${THEME.track}" stroke="${THEME.border}"/>
       ${icon("repo", 32, y + 16, THEME.green, 19)}
       <text x="60" y="${y + 31}" class="value">${escapeXml(project.fullName)}</text>
       <text x="32" y="${y + 55}" class="small">Full public project composition: ${escapeXml(projectParts.join(" · "))}</text>
-      <text x="32" y="${y + 76}" class="label">Attributed identities: ${escapeXml((project.attributedIdentities ?? [username]).join(", "))} · ${escapeXml(personalParts.join(" · "))}</text>
+      <text x="32" y="${y + 76}" class="label">Attributed identities: ${escapeXml((project.attributedIdentities.length > 0 ? project.attributedIdentities : [username]).join(", "))}</text>
+      <text x="32" y="${y + 94}" class="tiny">${escapeXml(personalParts.join(" · "))} · evidence: ${escapeXml((project.evidence ?? []).join(", ") || "verified activity")}</text>
       <defs><clipPath id="${escapeXml(clipId)}"><rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6"/></clipPath></defs>
       <rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6" fill="${THEME.background}"/>
       <g clip-path="url(#${escapeXml(clipId)})">${segments}</g>
-      ${legend}`;
+      ${legend}
+      ${technologyBadges}`;
   }).join("");
 
   const footer = hiddenCount > 0
-    ? `<text x="28" y="${height - 16}" class="subtitle">${hiddenCount} additional contributed public repositories are included in aggregate language and framework statistics.</text>`
+    ? `<text x="28" y="${height - 16}" class="subtitle">${hiddenCount} additional verified public contribution projects are included in aggregate language and framework statistics.</text>`
     : "";
 
   return cardShell({
@@ -3768,7 +4083,7 @@ function renderPublicContributionPortfolio(projects) {
     title: "Public Open-Source Contributions",
     iconName: "branch",
     accent: THEME.green,
-    subtitle: "Full project composition for public repositories linked to the primary profile or configured contributor aliases · not a whole-project authorship claim",
+    subtitle: "Verified code, PR and review attribution · full project composition is not a whole-project authorship claim",
     body: `${body}${footer}`,
   });
 }
@@ -4067,7 +4382,7 @@ async function writeCards(cards) {
 async function main() {
   console.log("Fetching authenticated account...");
   console.log(
-    `Contributor identities used for public attribution: ${contributorIdentities.join(", ")}`,
+    `Configured public identities: ${contributorIdentities.join(", ")} · global discovery: ${globalContributorIdentities.join(", ")}`,
   );
   const authenticatedUser = await rest("/user", {
     label: "Authenticated-user request",
@@ -4218,22 +4533,37 @@ async function main() {
   const personalCodeContributions =
     await analyzePersonalCodeContributions(repositorySelections);
 
-  // Full project composition is included for repositories owned by the
-  // profile user and for public repositories GitHub links to the primary
-  // profile or a configured historical contributor alias. Personal code
-  // metrics still count only commits attributable to those identities.
+  // Verify public candidates before allowing them to affect project, language,
+  // framework, domain, or trophy totals. This removes repositories discovered
+  // only through a weak/stale relationship but showing zero actual activity.
+  const publicContributionPortfolio = await buildPublicContributionPortfolio(
+    repositoryDetails,
+    personalCodeContributions,
+  );
+  const verifiedPublicRepositoryNames = new Set(
+    publicContributionPortfolio.map((project) => project.fullName.toLowerCase()),
+  );
+
   const engineeringFootprintDetails = repositoryDetails.filter(
     (detail) =>
       detail.scope === REPOSITORY_SCOPE.PERSONAL ||
-      detail.publicContribution,
+      (detail.publicContribution &&
+        verifiedPublicRepositoryNames.has(
+          detail.repository.full_name.toLowerCase(),
+        )),
   );
+  const verifiedRepositories = repositorySelections
+    .filter((selection) =>
+      selection.scope === REPOSITORY_SCOPE.PERSONAL ||
+      verifiedPublicRepositoryNames.has(
+        selection.repository.full_name.toLowerCase(),
+      ),
+    )
+    .map((selection) => selection.repository);
   const personalFootprintCount = engineeringFootprintDetails.filter(
     (detail) => detail.scope === REPOSITORY_SCOPE.PERSONAL,
   ).length;
-  const publicContributedFootprintCount =
-    engineeringFootprintDetails.filter(
-      (detail) => detail.publicContribution,
-    ).length;
+  const publicContributedFootprintCount = publicContributionPortfolio.length;
 
   const languages = aggregateLanguages(engineeringFootprintDetails);
   const technologyDetection = buildTechnologyDetection(
@@ -4244,50 +4574,46 @@ async function main() {
     personalCodeContributions,
   );
   const aiCards = buildAiEngineeringCards(
-    repositoryDetails,
+    engineeringFootprintDetails,
     personalCodeContributions.aiWorkflowActivity,
   );
   const domains = classifyDomains(technologyDetection.counts, languages);
-  const publicContributionPortfolio = await buildPublicContributionPortfolio(
-    repositoryDetails,
-    personalCodeContributions,
-  );
 
   const ninetyDaysAgo =
     Date.now() - 90 * 24 * 60 * 60 * 1_000;
 
-  const activeRepositories = repositories.filter(
+  const activeRepositories = verifiedRepositories.filter(
     (repository) =>
       repository.pushed_at &&
       new Date(repository.pushed_at).getTime() >= ninetyDaysAgo,
   ).length;
 
-  const stars = repositories.reduce(
+  const stars = verifiedRepositories.reduce(
     (sum, repository) =>
       sum + safeInteger(repository.stargazers_count),
     0,
   );
 
   const portfolio = {
-    total: repositories.length,
-    public: repositories.filter((repository) => !repository.private).length,
-    private: repositories.filter((repository) => repository.private).length,
+    total: verifiedRepositories.length,
+    public: verifiedRepositories.filter((repository) => !repository.private).length,
+    private: verifiedRepositories.filter((repository) => repository.private).length,
     active: activeRepositories,
-    archived: repositories.filter((repository) => repository.archived).length,
-    documented: repositoryDetails.filter((detail) =>
+    archived: verifiedRepositories.filter((repository) => repository.archived).length,
+    documented: engineeringFootprintDetails.filter((detail) =>
       hasReadme(detail.paths),
     ).length,
-    withTests: repositoryDetails.filter((detail) =>
+    withTests: engineeringFootprintDetails.filter((detail) =>
       hasTests(detail.paths),
     ).length,
-    withCi: repositoryDetails.filter((detail) =>
+    withCi: engineeringFootprintDetails.filter((detail) =>
       hasCi(detail.paths),
     ).length,
-    scanned: repositoryDetails.length,
+    scanned: engineeringFootprintDetails.length,
   };
 
   const overview = {
-    repositories: repositories.length,
+    repositories: verifiedRepositories.length,
     stars,
     recentContributions: recentContributionTotal,
     allTimeCommitContributions: contributionHistory.totals.commits,
@@ -4304,12 +4630,12 @@ async function main() {
     activeRepositories,
   };
 
-  const ownedRepositories = repositories.filter(
+  const ownedRepositories = verifiedRepositories.filter(
     (repository) =>
       String(repository.owner?.login ?? "").toLowerCase() ===
       username.toLowerCase(),
   ).length;
-  const publicOrganizationRepositories = repositories.filter(
+  const publicOrganizationRepositories = verifiedRepositories.filter(
     (repository) =>
       String(repository.owner?.type ?? "").toLowerCase() ===
         "organization" &&

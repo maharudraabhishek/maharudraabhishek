@@ -102,11 +102,13 @@ jobs:
           PUBLIC_GITHUB_TOKEN: ${{ github.token }}
 
           # Includes personal repositories available to the token and
-          # public repositories linked to configured contributor
-          # identities through commits, pull requests, or reviews.
+          # public repositories linked to any configured historical
+          # identity through commits, pull requests, or reviews.
           REPOSITORY_AFFILIATIONS: owner,collaborator,organization_member
           MAX_REPOSITORIES: "500"
           MAX_PUBLIC_CONTRIBUTED_REPOSITORIES: "100"
+          MAX_PULL_REQUESTS_PER_PUBLIC_REPOSITORY: "2000"
+          PULL_REQUEST_REVIEW_CONCURRENCY: "4"
           REPOSITORY_CONCURRENCY: "3"
           MANIFEST_CONCURRENCY: "2"
           MAX_MANIFEST_FILES_PER_REPOSITORY: "80"

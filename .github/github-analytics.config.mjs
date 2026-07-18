@@ -1,30 +1,34 @@
 /**
  * GitHub Analytics user configuration.
  *
- * This is the only runtime file where GitHub usernames should be
- * declared. The workflow and generator scripts load these values at
- * runtime, so they remain reusable across different GitHub profiles.
+ * This is the only runtime file containing profile-specific GitHub names.
+ * The workflow and scripts remain reusable for any GitHub profile.
  *
  * Security:
- * - Do not place tokens, email addresses, or other secrets here.
- * - Only public historical GitHub usernames belong in aliases.
+ * - Never place tokens, email addresses, or private repository names here.
+ * - Add only GitHub accounts that belong to the same person.
  */
 export default {
   profile: {
     /**
-     * GitHub profile whose README and private repository analytics are
-     * generated. PRIVATE_STATS_TOKEN must authenticate as this user.
+     * Primary GitHub profile. PRIVATE_STATS_TOKEN must authenticate as this
+     * account because it is used for private/personal repository analytics.
      */
     username: "maharudraabhishek",
   },
 
   publicContributions: {
     /**
-     * Historical or alternate GitHub usernames used for public work.
+     * Historical or alternate GitHub usernames owned by the same person.
      *
-     * The generator searches public commits, pull requests, reviews,
-     * issues, and contributed-repository relationships for each alias.
-     * The primary profile username is included automatically.
+     * Every identity is searched globally across public repositories for:
+     * - default-branch commits;
+     * - authored pull requests;
+     * - submitted pull-request reviews and approvals;
+     * - GitHub contributed-repository relationships.
+     *
+     * A repository is included only after the generator verifies at least one
+     * commit, authored pull request, or submitted review from these identities.
      */
     aliases: [
       "abkumar",
@@ -32,15 +36,12 @@ export default {
   },
 
   repositories: {
-    /**
-     * Exclude the profile README repository from engineering metrics.
-     * For a profile named "octocat", this excludes "octocat/octocat".
-     */
+    /** Exclude the username/username profile README repository. */
     excludeProfileRepository: true,
 
     /**
-     * Additional repositories to exclude, written as "owner/name".
-     * Matching is case-insensitive.
+     * Optional public or personal repositories to exclude explicitly.
+     * Values use case-insensitive "owner/repository" format.
      */
     exclude: [],
   },
