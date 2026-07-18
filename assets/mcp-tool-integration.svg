@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="477" viewBox="0 0 760 477" role="img" aria-label="MCP &amp; Tool Integration">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="759" height="476" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
+  <text x="48" y="31" class="title">MCP &amp; Tool Integration</text>
+  <text x="48" y="49" class="subtitle">Aggregate tool categories only · private server names, URLs and credentials are never rendered</text>
+  <g transform="translate(20 67) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
+      <text x="46" y="80" class="value">5</text>
+      <text x="46" y="98" class="label">MCP-enabled repositories</text><g transform="translate(380 67) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
+      <text x="406" y="80" class="value">20</text>
+      <text x="406" y="98" class="label">MCP configuration signals</text><g transform="translate(20 129) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+      <text x="46" y="142" class="value">86</text>
+      <text x="46" y="160" class="label">Agent definition files</text><g transform="translate(380 129) scale(1)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="406" y="142" class="value">7</text>
+      <text x="406" y="160" class="label">Connected tool categories</text><text x="28" y="164" class="title" style="font-size:14px">Detected tool categories</text><g transform="translate(28 168) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="184" class="small">Git hosting</text>
+      <rect x="300" y="173" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="173" width="300" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="184" text-anchor="end" class="label">7 repos</text><g transform="translate(28 205) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="221" class="small">Databases</text>
+      <rect x="300" y="210" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="210" width="288" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="221" text-anchor="end" class="label">6 repos</text><g transform="translate(28 242) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="258" class="small">Filesystem</text>
+      <rect x="300" y="247" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="247" width="288" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="258" text-anchor="end" class="label">6 repos</text><g transform="translate(28 279) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="295" class="small">Browser &amp; web</text>
+      <rect x="300" y="284" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="284" width="240" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="295" text-anchor="end" class="label">5 repos</text><g transform="translate(28 316) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="332" class="small">Cloud &amp; deployment</text>
+      <rect x="300" y="321" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="321" width="192" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="332" text-anchor="end" class="label">4 repos</text><g transform="translate(28 353) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="369" class="small">Custom APIs</text>
+      <rect x="300" y="358" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="358" width="96" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="369" text-anchor="end" class="label">2 repos</text><g transform="translate(28 390) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="52" y="406" class="small">Productivity</text>
+      <rect x="300" y="395" width="300" height="8" rx="4" fill="#21262D"/>
+      <rect x="300" y="395" width="96" height="8" rx="4" fill="#39C5CF"/>
+      <text x="700" y="406" text-anchor="end" class="label">2 repos</text>
+</svg>
