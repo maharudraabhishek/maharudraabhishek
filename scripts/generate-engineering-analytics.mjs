@@ -532,6 +532,113 @@ function formatDate(value) {
   }).format(dateFromIso(value));
 }
 
+/**
+ * Formats the elapsed contribution history as a compact calendar duration.
+ *
+ * The result is intentionally concise because it is displayed as a primary
+ * value inside the GitHub Overview metric grid.
+ */
+function formatContributionTenure(firstContributionDate) {
+  if (!firstContributionDate) return "—";
+
+  const start = dateFromIso(firstContributionDate);
+  const today = dateFromIso(isoDate(new Date()));
+
+  let months =
+    (today.getUTCFullYear() - start.getUTCFullYear()) * 12 +
+    today.getUTCMonth() -
+    start.getUTCMonth();
+
+  if (today.getUTCDate() < start.getUTCDate()) {
+    months -= 1;
+  }
+
+  months = Math.max(0, months);
+
+  if (months === 0) return "<1 month";
+  if (months < 12) return plural(months, "month");
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+
+  return remainingMonths > 0
+    ? `${years}y ${remainingMonths}m`
+    : plural(years, "year");
+}
+
+/**
+ * Counts distinct Monday-based calendar weeks containing contributions.
+ *
+ * This provides a more meaningful recent-consistency signal than only showing
+ * the current streak, which can reset after one inactive day.
+ */
+function countActiveContributionWeeks(days) {
+  const activeWeeks = new Set();
+
+  for (const day of days) {
+    if (safeInteger(day.contributionCount) <= 0) continue;
+
+    const date = dateFromIso(day.date);
+    const mondayOffset = (date.getUTCDay() + 6) % 7;
+    activeWeeks.add(
+      isoDate(addUtcDays(date, -mondayOffset)),
+    );
+  }
+
+  return activeWeeks.size;
+}
+
+/**
+ * Enriches the all-time streak result with recent contribution consistency.
+ *
+ * All recent metrics use the same 365-day calendar slice as GitHub Overview,
+ * ensuring the two cards remain directly comparable.
+ */
+function buildStreakInsights(
+  streak,
+  recentContributionDays,
+  recentContributionTotal,
+) {
+  const activeDays = recentContributionDays.filter(
+    (day) => safeInteger(day.contributionCount) > 0,
+  );
+
+  const peakDay = recentContributionDays.reduce(
+    (currentPeak, day) =>
+      safeInteger(day.contributionCount) >
+      safeInteger(currentPeak?.contributionCount)
+        ? day
+        : currentPeak,
+    null,
+  );
+
+  return {
+    ...streak,
+    recentContributions: recentContributionTotal,
+    recentActiveDays: activeDays.length,
+    recentActiveWeeks:
+      countActiveContributionWeeks(recentContributionDays),
+    averagePerActiveDay:
+      activeDays.length > 0
+        ? recentContributionTotal / activeDays.length
+        : 0,
+    activeDayRate:
+      recentContributionDays.length > 0
+        ? (
+            activeDays.length /
+            recentContributionDays.length
+          ) *
+          100
+        : 0,
+    peakContributionCount:
+      safeInteger(peakDay?.contributionCount),
+    peakContributionDate:
+      safeInteger(peakDay?.contributionCount) > 0
+        ? peakDay.date
+        : null,
+  };
+}
+
 function plural(value, singular, pluralForm = `${singular}s`) {
   return `${value} ${value === 1 ? singular : pluralForm}`;
 }
@@ -3544,25 +3651,32 @@ function metricGrid(metrics, startY = 78, columns = 2, width = 560) {
     .join("");
 }
 
+/**
+ * Renders the top-level GitHub engineering summary.
+ *
+ * The card is full width and uses a 4×3 metric grid. Metrics intentionally
+ * cover scale, current activity, delivery, collaboration, public impact and
+ * repository health without duplicating language or framework cards.
+ */
 function renderOverview(data) {
   const metrics = [
     {
       icon: "repo",
       color: THEME.blue,
       value: compactNumber(data.repositories),
-      label: "Token-accessible repositories",
+      label: "Verified repositories",
     },
     {
-      icon: "star",
-      color: THEME.yellow,
-      value: compactNumber(data.stars),
-      label: "Stars received · current",
+      icon: "activity",
+      color: THEME.orange,
+      value: compactNumber(data.activeRepositories),
+      label: "Active repositories · 90d",
     },
     {
       icon: "activity",
       color: THEME.green,
       value: compactNumber(data.recentContributions),
-      label: "Contributions · last 12 months",
+      label: "Contributions · 12 months",
     },
     {
       icon: "commit",
@@ -3572,30 +3686,85 @@ function renderOverview(data) {
     },
     {
       icon: "pull",
-      color: THEME.purple,
-      value: compactNumber(data.allTimePullRequests),
-      label: "Pull requests opened · all time",
+      color: THEME.green,
+      value: compactNumber(data.mergedPullRequests),
+      label: "Merged PRs · all time",
     },
     {
       icon: "people",
       color: THEME.pink,
-      value: compactNumber(data.followers),
-      label: "Followers · current",
+      value: compactNumber(data.reviewContributions),
+      label: "PR reviews · all time",
+    },
+    {
+      icon: "branch",
+      color: THEME.purple,
+      value: compactNumber(
+        data.publicContributedRepositories,
+      ),
+      label: "Verified public contribution repos",
+    },
+    {
+      icon: "people",
+      color: THEME.blue,
+      value: compactNumber(
+        data.publicOrganizationsContributed,
+      ),
+      label: "Public organizations",
+    },
+    {
+      icon: "workflow",
+      color: THEME.cyan,
+      value: formatPercentage(data.ciCoverage),
+      label: "CI/CD coverage",
+    },
+    {
+      icon: "test",
+      color: THEME.green,
+      value: formatPercentage(data.testCoverage),
+      label: "Test coverage",
+    },
+    {
+      icon: "calendar",
+      color: THEME.orange,
+      value: data.contributionTenure,
+      label: "Contribution tenure",
+    },
+    {
+      icon: "star",
+      color: THEME.yellow,
+      value: compactNumber(data.ownedRepositoryStars),
+      label: "Owned repository stars",
     },
   ];
 
   return cardShell({
-    width: 560,
-    height: 280,
+    width: 1000,
+    height: 286,
     title: "GitHub Overview",
     iconName: "star",
     accent: THEME.yellow,
-    subtitle: "Public + token-accessible private engineering activity",
-    body: metricGrid(metrics, 78, 2, 560),
+    subtitle:
+      "Scale, current activity, delivery, collaboration, public impact and repository health",
+    body: metricGrid(metrics, 78, 4, 1000),
   });
 }
 
+/**
+ * Renders all-time streak history together with recent consistency signals.
+ *
+ * A current streak alone can reset after one inactive day, so the card also
+ * shows active weeks, active-day rate, contribution density and the peak day
+ * across the same rolling 12-month window used by GitHub Overview.
+ */
 function renderStreak(streak) {
+  const peakDayLabel =
+    streak.peakContributionDate
+      ? `Peak day · ${formatDate(
+          streak.peakContributionDate,
+        )}`
+      : "Peak day · 12 months";
+
   const metrics = [
     {
       icon: "flame",
@@ -3613,7 +3782,7 @@ function renderStreak(streak) {
       icon: "activity",
       color: THEME.green,
       value: compactNumber(streak.activeDays),
-      label: "Active contribution days",
+      label: "Active days · all time",
     },
     {
       icon: "calendar",
@@ -3633,16 +3802,59 @@ function renderStreak(streak) {
       value: streak.mostActiveWeekday,
       label: "Most active weekday",
     },
+    {
+      icon: "commit",
+      color: THEME.green,
+      value: compactNumber(streak.recentContributions),
+      label: "Contributions · 12 months",
+    },
+    {
+      icon: "calendar",
+      color: THEME.cyan,
+      value: compactNumber(streak.recentActiveDays),
+      label: "Active days · 12 months",
+    },
+    {
+      icon: "calendar",
+      color: THEME.purple,
+      value: plural(
+        streak.recentActiveWeeks,
+        "week",
+      ),
+      label: "Active weeks · latest 53",
+    },
+    {
+      icon: "activity",
+      color: THEME.blue,
+      value: streak.averagePerActiveDay.toFixed(1),
+      label: "Average per active day",
+    },
+    {
+      icon: "star",
+      color: THEME.yellow,
+      value: plural(
+        streak.peakContributionCount,
+        "contribution",
+      ),
+      label: peakDayLabel,
+    },
+    {
+      icon: "activity",
+      color: THEME.orange,
+      value: formatPercentage(streak.activeDayRate),
+      label: "Active-day rate · 12 months",
+    },
   ];
 
   return cardShell({
-    width: 560,
-    height: 280,
+    width: 1000,
+    height: 286,
     title: "Contribution Streak",
     iconName: "flame",
     accent: THEME.orange,
-    subtitle: "Calculated from available GitHub contribution calendars",
-    body: metricGrid(metrics, 78, 2, 560),
+    subtitle:
+      "All-time streak history plus rolling 12-month contribution consistency",
+    body: metricGrid(metrics, 78, 4, 1000),
   });
 }
 
@@ -4987,11 +5199,21 @@ async function main() {
 
   console.log("Fetching contribution history...");
   const contributionHistory = await fetchAllContributionHistory();
-  const streak = calculateStreak(contributionHistory.days);
-  const recent365 = recentDays(contributionHistory.days, 365);
+  const baseStreak = calculateStreak(
+    contributionHistory.days,
+  );
+  const recent365 = recentDays(
+    contributionHistory.days,
+    365,
+  );
   const recentContributionTotal = recent365.reduce(
     (sum, day) => sum + day.contributionCount,
     0,
+  );
+  const streak = buildStreakInsights(
+    baseStreak,
+    recent365,
+    recentContributionTotal,
   );
 
   console.log("Fetching all-time collaboration counts...");
@@ -5080,12 +5302,6 @@ async function main() {
       new Date(repository.pushed_at).getTime() >= ninetyDaysAgo,
   ).length;
 
-  const stars = verifiedRepositories.reduce(
-    (sum, repository) =>
-      sum + safeInteger(repository.stargazers_count),
-    0,
-  );
-
   const portfolio = {
     total: verifiedRepositories.length,
     public: verifiedRepositories.filter((repository) => !repository.private).length,
@@ -5104,13 +5320,79 @@ async function main() {
     scanned: engineeringFootprintDetails.length,
   };
 
+  // Overview metrics are derived from already-fetched repository and
+  // contribution data, so the richer card adds no extra GitHub API requests.
+  const ownedRepositoryStars = verifiedRepositories
+    .filter(
+      (repository) =>
+        String(
+          repository.owner?.login ?? "",
+        ).toLowerCase() ===
+        username.toLowerCase(),
+    )
+    .reduce(
+      (sum, repository) =>
+        sum +
+        safeInteger(
+          repository.stargazers_count,
+        ),
+      0,
+    );
+
+  const publicOrganizationsContributed =
+    new Set(
+      verifiedRepositories
+        .filter(
+          (repository) =>
+            verifiedPublicRepositoryNames.has(
+              String(
+                repository.full_name ?? "",
+              ).toLowerCase(),
+            ) &&
+            String(
+              repository.owner?.type ?? "",
+            ).toLowerCase() ===
+              "organization",
+        )
+        .map((repository) =>
+          String(
+            repository.owner?.login ?? "",
+          ).toLowerCase(),
+        )
+        .filter(Boolean),
+    ).size;
+
+  const repositoryCoverageDenominator =
+    Math.max(1, portfolio.scanned);
+
   const overview = {
     repositories: verifiedRepositories.length,
-    stars,
-    recentContributions: recentContributionTotal,
-    allTimeCommitContributions: contributionHistory.totals.commits,
-    allTimePullRequests: pullRequests,
-    followers: safeInteger(authenticatedUser.followers),
+    activeRepositories,
+    recentContributions:
+      recentContributionTotal,
+    allTimeCommitContributions:
+      contributionHistory.totals.commits,
+    mergedPullRequests,
+    reviewContributions:
+      contributionHistory.totals.reviews,
+    publicContributedRepositories:
+      publicContributedFootprintCount,
+    publicOrganizationsContributed,
+    ciCoverage:
+      (
+        portfolio.withCi /
+        repositoryCoverageDenominator
+      ) *
+      100,
+    testCoverage:
+      (
+        portfolio.withTests /
+        repositoryCoverageDenominator
+      ) *
+      100,
+    contributionTenure:
+      formatContributionTenure(streak.first),
+    ownedRepositoryStars,
   };
 
   const delivery = {

@@ -696,25 +696,122 @@ function renderCapabilities(data) {
   return cardShell({ width, height, title: "AI Engineering Capabilities", iconName: "spark", accent: THEME.cyan, subtitle: "Repository coverage plus evidence signals · weak keyword mentions cannot independently award capabilities", body });
 }
 
+/**
+ * Renders MCP metrics and detected tool categories in separate layout zones.
+ *
+ * The previous renderer placed the section heading four pixels below the
+ * second metric-row label. Fixed section coordinates and pill-style category
+ * rows now guarantee readable spacing regardless of category count.
+ */
 function renderMcpTools(data) {
   const width = 760;
-  const categoryRows = data.toolCategories.length ? data.toolCategories.map((item, index) => {
-    const y = 184 + index * 37;
-    const barWidth = Math.min(300, item.repositories * 48);
-    return `${icon("tool", 28, y - 16, THEME.cyan, 14)}
-      <text x="52" y="${y}" class="small">${escapeXml(item.name)}</text>
-      <rect x="300" y="${y - 11}" width="300" height="8" rx="4" fill="${THEME.track}"/>
-      <rect x="300" y="${y - 11}" width="${barWidth}" height="8" rx="4" fill="${THEME.cyan}"/>
-      <text x="700" y="${y}" text-anchor="end" class="label">${item.repositories} repos</text>`;
-  }).join("") : `<text x="28" y="194" class="empty">No generic MCP tool categories were identified.</text>`;
-  const height = 218 + Math.max(1, data.toolCategories.length) * 37;
+  const metricStartY = 80;
+  const metricColumns = 2;
+  const metricRows = 2;
+  const metricRowPitch = 62;
+  const metricsBottom =
+    metricStartY +
+    (metricRows - 1) * metricRowPitch +
+    18;
+
+  const sectionTitleY = metricsBottom + 38;
+  const categoryStartY = sectionTitleY + 20;
+  const categoryColumns = 2;
+  const categoryGap = 12;
+  const categoryRowPitch = 42;
+  const categoryCellWidth =
+    (
+      width -
+      56 -
+      categoryGap
+    ) /
+    categoryColumns;
+  const categoryRows = Math.max(
+    1,
+    Math.ceil(
+      data.toolCategories.length /
+      categoryColumns,
+    ),
+  );
+  const height =
+    categoryStartY +
+    categoryRows * categoryRowPitch +
+    28;
+
   const metrics = [
-    { icon: "network", color: THEME.green, value: compactNumber(data.mcpRepositories), label: "MCP-enabled repositories" },
-    { icon: "docs", color: THEME.blue, value: compactNumber(data.totals.mcpConfigs), label: "MCP configuration signals" },
-    { icon: "bot", color: THEME.purple, value: compactNumber(data.totals.agentFiles), label: "Agent definition files" },
-    { icon: "tool", color: THEME.cyan, value: compactNumber(data.toolCategories.length), label: "Connected tool categories" },
+    {
+      icon: "network",
+      color: THEME.green,
+      value: compactNumber(data.mcpRepositories),
+      label: "MCP-enabled repositories",
+    },
+    {
+      icon: "docs",
+      color: THEME.blue,
+      value: compactNumber(data.totals.mcpConfigs),
+      label: "MCP configuration signals",
+    },
+    {
+      icon: "bot",
+      color: THEME.purple,
+      value: compactNumber(data.totals.agentFiles),
+      label: "Agent definition files",
+    },
+    {
+      icon: "tool",
+      color: THEME.cyan,
+      value: compactNumber(data.toolCategories.length),
+      label: "Connected tool categories",
+    },
   ];
-  return cardShell({ width, height, title: "MCP & Tool Integration", iconName: "network", accent: THEME.green, subtitle: "Aggregate tool categories only · private server names, URLs and credentials are never rendered", body: `${metricGrid(metrics, width, 80, 2)}<text x="28" y="164" class="title" style="font-size:14px">Detected tool categories</text>${categoryRows}` });
+
+  const categoryCards =
+    data.toolCategories.length > 0
+      ? data.toolCategories
+          .map((item, index) => {
+            const column =
+              index % categoryColumns;
+            const row = Math.floor(
+              index / categoryColumns,
+            );
+            const x =
+              28 +
+              column *
+                (
+                  categoryCellWidth +
+                  categoryGap
+                );
+            const y =
+              categoryStartY +
+              row * categoryRowPitch;
+
+            return `<rect x="${x}" y="${y}" width="${categoryCellWidth}" height="32" rx="8" fill="${THEME.cyan}" fill-opacity=".08" stroke="${THEME.cyan}" stroke-opacity=".45"/>
+      ${icon("tool", x + 11, y + 8, THEME.cyan, 14)}
+      <text x="${x + 34}" y="${y + 20}" class="small">${escapeXml(item.name)}</text>
+      <text x="${x + categoryCellWidth - 12}" y="${y + 20}" text-anchor="end" class="label">${item.repositories} repos</text>`;
+          })
+          .join("")
+      : `<rect x="28" y="${categoryStartY}" width="${width - 56}" height="32" rx="8" fill="${THEME.track}" stroke="${THEME.border}"/>
+      <text x="44" y="${categoryStartY + 21}" class="empty">No generic MCP tool categories were identified.</text>`;
+
+  return cardShell({
+    width,
+    height,
+    title: "MCP & Tool Integration",
+    iconName: "network",
+    accent: THEME.green,
+    subtitle:
+      "Aggregate tool categories only · private server names, URLs and credentials are never rendered",
+    body: `${metricGrid(
+      metrics,
+      width,
+      metricStartY,
+      metricColumns,
+    )}
+      <line x1="28" y1="${sectionTitleY - 17}" x2="${width - 28}" y2="${sectionTitleY - 17}" stroke="${THEME.border}"/>
+      <text x="28" y="${sectionTitleY}" class="title" style="font-size:14px">Detected tool categories</text>
+      ${categoryCards}`,
+  });
 }
 
 function renderContextGovernance(data) {

@@ -347,13 +347,21 @@ function profileViewBadge() {
 </p>`;
 }
 
+/**
+ * Builds the single managed README block in its approved presentation order.
+ *
+ * GitHub Overview and Contribution Streak intentionally occupy independent
+ * full-width rows; all other card arrangements remain unchanged.
+ */
 function buildAnalyticsBlock(version) {
   return `${START_MARKER}
 ## 📊 GitHub Analytics
 
 > Personal contribution cards count GitHub-attributed work. Full public-project composition is shown separately and is not a personal-authorship claim.
 
-${twoColumnRow(CARD.overview, CARD.streak, version)}
+${fullWidthCard(CARD.overview, version)}
+
+${fullWidthCard(CARD.streak, version)}
 
 ${fullWidthCard(CARD.github_trophies, version)}
 

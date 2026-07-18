@@ -131,6 +131,8 @@ jobs:
           rm -rf generated-analytics
           mkdir -p generated-analytics
 
+          # Generation writes only to the temporary directory. Repository
+          # assets are replaced later, after every SVG has been validated.
           node scripts/generate-engineering-analytics.mjs
 
       - name: Validate generated SVG cards
@@ -138,6 +140,8 @@ jobs:
         run: |
           set -euo pipefail
 
+          # This list is the workflow-side card contract. Every generated card
+          # must exist and pass secret-safety checks before assets are replaced.
           SVG_FILES=(
             "github-overview.svg"
             "github-trophies.svg"
@@ -251,6 +255,8 @@ jobs:
         run: |
           set -euo pipefail
 
+          # The updater owns presentation order and duplicate removal. The
+          # workflow then verifies one marker pair and one reference per card.
           node scripts/update-readme-analytics.mjs
 
           START_COUNT=$(grep -Fc "<!-- ENGINEERING_ANALYTICS:START -->" README.md || true)
