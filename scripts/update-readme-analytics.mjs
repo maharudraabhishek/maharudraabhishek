@@ -22,7 +22,7 @@ const GITHUB_CARDS = Object.freeze([
   ["contribution-graph.svg", "GitHub contribution calendar"],
   ["github-activity-graph.svg", "GitHub activity graph for the last 12 months"],
   ["personal-code-contribution.svg", "Personal code contribution by language"],
-  ["language-spectrum.svg", "Engineering language footprint across personal and public contributed projects"],
+  ["language-spectrum.svg", "Engineering language footprint across personal and verified public contributed projects"],
   ["public-contribution-portfolio.svg", "Public open-source contribution portfolio"],
   ["frameworks-platforms.svg", "Framework and platform contribution impact"],
   ["engineering-domains.svg", "Derived engineering domains"],
@@ -32,10 +32,15 @@ const GITHUB_CARDS = Object.freeze([
 
 const AI_CARDS = Object.freeze([
   ["ai-engineering-overview.svg", "AI engineering overview"],
-  ["agentic-workflow-maturity.svg", "Agentic workflow maturity"],
-  ["ai-engineering-capabilities.svg", "AI engineering capabilities"],
+  ["prompt-engineering.svg", "Prompt engineering"],
+  ["context-engineering.svg", "Context engineering"],
+  ["memory-engineering.svg", "Memory engineering"],
+  ["ai-harness-engineering.svg", "AI harness engineering"],
+  ["agentic-orchestration.svg", "Agentic orchestration"],
   ["mcp-tool-integration.svg", "MCP and tool integration"],
-  ["context-governance.svg", "Context engineering and governance"],
+  ["rag-retrieval-engineering.svg", "RAG and retrieval engineering"],
+  ["ai-evaluation-observability.svg", "AI evaluation and observability"],
+  ["ai-governance-safety.svg", "AI governance and safety"],
   ["ai-workflow-activity.svg", "AI workflow activity"],
   ["ai-engineering-trophies.svg", "AI engineering trophies"],
 ]);
@@ -47,6 +52,9 @@ const MANAGED_ASSET_FILENAMES = Object.freeze([...new Set([
   "activity-timeline.svg",
   "engineering-trophies.svg",
   "open-source-stewardship.svg",
+  "agentic-workflow-maturity.svg",
+  "ai-engineering-capabilities.svg",
+  "context-governance.svg",
 ])]);
 const MANAGED_EXTERNAL_HOSTS = Object.freeze([
   "github-readme-stats.shion.dev",
