@@ -18,6 +18,19 @@ const MAX_CONTENT_BYTES = 1_000_000;
 const token = requiredEnvironment("PRIVATE_STATS_TOKEN");
 const username = requiredEnvironment("GITHUB_USERNAME");
 
+// A single engineer can have historical GitHub identities from previous
+// employers or accounts. CONTRIBUTOR_ALIASES is a comma-separated list of
+// additional GitHub usernames whose public activity should be attributed to
+// the same profile owner. The primary profile remains GITHUB_USERNAME.
+const contributorAliases = parseContributorAliases(
+  process.env.CONTRIBUTOR_ALIASES,
+  username,
+);
+const contributorIdentities = Object.freeze([
+  username,
+  ...contributorAliases,
+]);
+
 // Use the workflow's built-in GitHub App installation token for public
 // organization repositories. This avoids organization-specific PAT policies
 // while preserving an authenticated public-API rate limit.
@@ -422,6 +435,31 @@ function parseCsv(value) {
       .map((item) => item.trim().toLowerCase())
       .filter(Boolean),
   );
+}
+
+/**
+ * Parses historical GitHub usernames used for public contribution attribution.
+ *
+ * GitHub usernames are case-insensitive, so values are normalized to lower
+ * case and deduplicated. The primary profile username is removed to prevent
+ * duplicate API queries and duplicate commit accounting.
+ */
+function parseContributorAliases(value, primaryUsername) {
+  const primary = String(primaryUsername ?? "").trim().toLowerCase();
+
+  return [...parseCsv(value)].filter((alias) => alias !== primary);
+}
+
+/**
+ * Returns the identities that may have authored activity in the selected
+ * repository. Private/personal repositories use only the authenticated
+ * profile identity. Historical aliases are queried only for public projects,
+ * which prevents unnecessary alias queries against private repositories.
+ */
+function contributionIdentitiesForScope(scope) {
+  return scope === REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED
+    ? contributorIdentities
+    : [username];
 }
 
 function sleep(milliseconds) {
@@ -893,7 +931,11 @@ async function fetchAllRepositories() {
 }
 
 
-function normalizePublicContributionRepository(repository, evidence = []) {
+function normalizePublicContributionRepository(
+  repository,
+  evidence = [],
+  identities = [],
+) {
   if (!repository?.full_name || !repository.owner?.login) return null;
   if (repository.private || String(repository.visibility ?? "public").toLowerCase() !== "public") return null;
   if (String(repository.owner.login).toLowerCase() === username.toLowerCase()) return null;
@@ -909,10 +951,13 @@ function normalizePublicContributionRepository(repository, evidence = []) {
     fork: Boolean(repository.fork),
     discovered_from_contributions: true,
     contribution_evidence: [...new Set(evidence.filter(Boolean))],
+    contribution_identities: [...new Set(
+      identities.map((identity) => String(identity).toLowerCase()).filter(Boolean),
+    )],
   };
 }
 
-function graphqlRepositoryToRestShape(node, evidence) {
+function graphqlRepositoryToRestShape(node, evidence, identity) {
   if (!node?.owner?.login || !node?.defaultBranchRef?.name) return null;
   return normalizePublicContributionRepository({
     name: node.name,
@@ -931,7 +976,7 @@ function graphqlRepositoryToRestShape(node, evidence) {
     pushed_at: node.pushedAt,
     stargazers_count: safeInteger(node.stargazerCount),
     html_url: node.url,
-  }, [evidence]);
+  }, [evidence], [identity]);
 }
 
 function mergeContributionCandidate(target, repository) {
@@ -950,6 +995,10 @@ function mergeContributionCandidate(target, repository) {
       ...(existing.contribution_evidence ?? []),
       ...(repository.contribution_evidence ?? []),
     ])],
+    contribution_identities: [...new Set([
+      ...(existing.contribution_identities ?? []),
+      ...(repository.contribution_identities ?? []),
+    ])],
     discovered_from_contributions: true,
   });
 }
@@ -967,7 +1016,11 @@ const PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS = `
   defaultBranchRef { name }
 `;
 
-async function fetchRepositoriesContributedToConnection(headers, label) {
+async function fetchRepositoriesContributedToConnection(
+  identity,
+  headers,
+  label,
+) {
   const repositories = new Map();
   let after = null;
 
@@ -990,10 +1043,19 @@ async function fetchRepositoriesContributedToConnection(headers, label) {
       }
     `;
 
-    const data = await graphql(query, { login: username, after }, label, { headers });
+    const data = await graphql(
+      query,
+      { login: identity, after },
+      label,
+      { headers },
+    );
     const connection = data?.user?.repositoriesContributedTo;
     for (const node of connection?.nodes ?? []) {
-      const repository = graphqlRepositoryToRestShape(node, "repository-relationship");
+      const repository = graphqlRepositoryToRestShape(
+        node,
+        "repository-relationship",
+        identity,
+      );
       if (repository) mergeContributionCandidate(repositories, repository);
       if (repositories.size >= config.maxPublicContributedRepositories) break;
     }
@@ -1006,68 +1068,106 @@ async function fetchRepositoriesContributedToConnection(headers, label) {
   return [...repositories.values()];
 }
 
-async function fetchContributionCollectionRepositories() {
-  const years = await fetchContributionYears();
-  const results = await mapLimit(years, 2, async (year) => {
-    const currentYear = new Date().getUTCFullYear();
-    const from = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
-    const to = year === currentYear
-      ? new Date()
-      : new Date(Date.UTC(year, 11, 31, 23, 59, 59));
-    const query = `
-      query PublicContributionRepositoriesByYear(
-        $login: String!
-        $from: DateTime!
-        $to: DateTime!
-      ) {
-        user(login: $login) {
-          contributionsCollection(from: $from, to: $to) {
-            commitContributionsByRepository(maxRepositories: 100) {
-              repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
-            }
-            pullRequestContributionsByRepository(maxRepositories: 100) {
-              repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
-            }
-            pullRequestReviewContributionsByRepository(maxRepositories: 100) {
-              repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
-            }
-            issueContributionsByRepository(maxRepositories: 100) {
-              repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
+async function fetchContributionCollectionRepositories(
+  headers,
+  sourceLabel,
+) {
+  const identityResults = await mapLimit(
+    contributorIdentities,
+    1,
+    async (identity) => {
+      const years = await fetchContributionYearsForLogin(
+        identity,
+        headers,
+        `${sourceLabel} contribution-year query (${identity})`,
+      );
+
+      const yearResults = await mapLimit(years, 2, async (year) => {
+        const currentYear = new Date().getUTCFullYear();
+        const from = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+        const to = year === currentYear
+          ? new Date()
+          : new Date(Date.UTC(year, 11, 31, 23, 59, 59));
+        const query = `
+          query PublicContributionRepositoriesByYear(
+            $login: String!
+            $from: DateTime!
+            $to: DateTime!
+          ) {
+            user(login: $login) {
+              contributionsCollection(from: $from, to: $to) {
+                commitContributionsByRepository(maxRepositories: 100) {
+                  repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
+                }
+                pullRequestContributionsByRepository(maxRepositories: 100) {
+                  repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
+                }
+                pullRequestReviewContributionsByRepository(maxRepositories: 100) {
+                  repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
+                }
+                issueContributionsByRepository(maxRepositories: 100) {
+                  repository { ${PUBLIC_CONTRIBUTION_REPOSITORY_FIELDS} }
+                }
+              }
             }
           }
+        `;
+        const data = await graphql(
+          query,
+          {
+            login: identity,
+            from: from.toISOString(),
+            to: to.toISOString(),
+          },
+          `${sourceLabel} contribution-repository query for ${identity} in ${year}`,
+          { headers },
+        );
+        const collection = data?.user?.contributionsCollection;
+        const groups = [
+          [collection?.commitContributionsByRepository, "commit"],
+          [collection?.pullRequestContributionsByRepository, "pull-request"],
+          [collection?.pullRequestReviewContributionsByRepository, "pull-request-review"],
+          [collection?.issueContributionsByRepository, "issue"],
+        ];
+        const repositories = [];
+        for (const [items, evidence] of groups) {
+          for (const item of items ?? []) {
+            const repository = graphqlRepositoryToRestShape(
+              item.repository,
+              evidence,
+              identity,
+            );
+            if (repository) repositories.push(repository);
+          }
         }
+        return repositories;
+      });
+
+      const repositories = [];
+      for (const result of yearResults) {
+        if (result.status === "rejected") {
+          console.warn(
+            `Contribution-repository year query failed for ${identity}: ${result.reason.message}`,
+          );
+          continue;
+        }
+        repositories.push(...result.value);
       }
-    `;
-    const data = await graphql(
-      query,
-      { login: username, from: from.toISOString(), to: to.toISOString() },
-      `Contribution-repository query for ${year}`,
-      { headers: REST_HEADERS },
-    );
-    const collection = data?.user?.contributionsCollection;
-    const groups = [
-      [collection?.commitContributionsByRepository, "commit"],
-      [collection?.pullRequestContributionsByRepository, "pull-request"],
-      [collection?.pullRequestReviewContributionsByRepository, "pull-request-review"],
-      [collection?.issueContributionsByRepository, "issue"],
-    ];
-    const repositories = [];
-    for (const [items, evidence] of groups) {
-      for (const item of items ?? []) {
-        const repository = graphqlRepositoryToRestShape(item.repository, evidence);
-        if (repository) repositories.push(repository);
-      }
-    }
-    return repositories;
-  });
+      return repositories;
+    },
+  );
 
   const repositories = new Map();
-  for (const result of results) {
+  for (const result of identityResults) {
     if (result.status === "rejected") {
-      console.warn(`Contribution-repository year query failed: ${result.reason.message}`);
+      console.warn(
+        `Contribution collection discovery failed: ${result.reason.message}`,
+      );
       continue;
     }
-    for (const repository of result.value) mergeContributionCandidate(repositories, repository);
+    for (const repository of result.value) {
+      mergeContributionCandidate(repositories, repository);
+    }
   }
   return [...repositories.values()];
 }
@@ -1077,27 +1177,69 @@ function repositoryNameFromApiUrl(value) {
   return match ? `${decodeURIComponent(match[1])}/${decodeURIComponent(match[2])}` : null;
 }
 
-async function searchPublicContributionRepositoryNames(query, evidence) {
+async function searchPublicContributionRepositoryNames(
+  query,
+  evidence,
+  identity,
+) {
   const repositories = new Map();
-  for (let page = 1; page <= 10 && repositories.size < config.maxPublicContributedRepositories; page += 1) {
-    let response;
-    try {
-      response = await rest(
-        `/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=100&page=${page}`,
-        { label: `Public contribution search (${evidence})`, headers: REST_HEADERS },
-      );
-    } catch (error) {
-      console.warn(`Public contribution search (${evidence}) failed with the personal token: ${error.message}`);
-      response = await rest(
-        `/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=100&page=${page}`,
-        { label: `Anonymous public contribution search (${evidence})`, headers: ANONYMOUS_REST_HEADERS },
+  for (
+    let page = 1;
+    page <= 10 &&
+    repositories.size < config.maxPublicContributedRepositories;
+    page += 1
+  ) {
+    const endpoint =
+      `/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=100&page=${page}`;
+    const attempts = [
+      {
+        headers: REST_HEADERS,
+        label: "personal token",
+      },
+      {
+        headers: PUBLIC_REST_HEADERS,
+        label: "workflow token",
+      },
+      {
+        headers: ANONYMOUS_REST_HEADERS,
+        label: "anonymous public API",
+      },
+    ];
+
+    let response = null;
+    let lastError = null;
+    for (const attempt of attempts) {
+      try {
+        response = await rest(endpoint, {
+          label:
+            `Public contribution search (${evidence}; ${identity}; ${attempt.label})`,
+          headers: attempt.headers,
+        });
+        break;
+      } catch (error) {
+        lastError = error;
+        console.warn(
+          `Public contribution search (${evidence}; ${identity}) failed with the ${attempt.label}: ${error.message}`,
+        );
+      }
+    }
+
+    if (!response) {
+      throw lastError ?? new Error(
+        `Public contribution search failed for ${identity}.`,
       );
     }
 
     const items = Array.isArray(response?.items) ? response.items : [];
     for (const item of items) {
       const fullName = repositoryNameFromApiUrl(item.repository_url);
-      if (fullName) repositories.set(fullName.toLowerCase(), { fullName, evidence });
+      if (fullName) {
+        repositories.set(fullName.toLowerCase(), {
+          fullName,
+          evidence,
+          identity,
+        });
+      }
     }
     if (items.length < 100) break;
   }
@@ -1128,23 +1270,48 @@ async function fetchPublicRepositoryMetadata(fullName, evidence) {
 }
 
 async function fetchSearchDiscoveredContributionRepositories() {
-  const searchSpecs = [
-    [`author:${username} is:pr`, "pull-request"],
-    [`reviewed-by:${username} is:pr`, "pull-request-review"],
-    [`author:${username} is:issue`, "issue"],
-  ];
-  const searchResults = await mapLimit(searchSpecs, 1, ([query, evidence]) =>
-    searchPublicContributionRepositoryNames(query, evidence),
+  const searchSpecs = contributorIdentities.flatMap((identity) => [
+    {
+      query: `author:${identity} is:pr`,
+      evidence: "pull-request",
+      identity,
+    },
+    {
+      query: `reviewed-by:${identity} is:pr`,
+      evidence: "pull-request-review",
+      identity,
+    },
+    {
+      query: `author:${identity} is:issue`,
+      evidence: "issue",
+      identity,
+    },
+  ]);
+
+  const searchResults = await mapLimit(searchSpecs, 1, (spec) =>
+    searchPublicContributionRepositoryNames(
+      spec.query,
+      spec.evidence,
+      spec.identity,
+    ),
   );
+
   const names = new Map();
   for (const result of searchResults) {
     if (result.status === "rejected") {
-      console.warn(`Public contribution search source failed: ${result.reason.message}`);
+      console.warn(
+        `Public contribution search source failed: ${result.reason.message}`,
+      );
       continue;
     }
     for (const item of result.value) {
-      const existing = names.get(item.fullName.toLowerCase()) ?? { fullName: item.fullName, evidence: new Set() };
+      const existing = names.get(item.fullName.toLowerCase()) ?? {
+        fullName: item.fullName,
+        evidence: new Set(),
+        identities: new Set(),
+      };
       existing.evidence.add(item.evidence);
+      existing.identities.add(item.identity);
       names.set(item.fullName.toLowerCase(), existing);
     }
   }
@@ -1153,9 +1320,13 @@ async function fetchSearchDiscoveredContributionRepositories() {
     [...names.values()].slice(0, config.maxPublicContributedRepositories),
     3,
     async (item) => {
-      const repository = await fetchPublicRepositoryMetadata(item.fullName, [...item.evidence][0]);
+      const repository = await fetchPublicRepositoryMetadata(
+        item.fullName,
+        [...item.evidence][0],
+      );
       if (!repository) return null;
       repository.contribution_evidence = [...item.evidence];
+      repository.contribution_identities = [...item.identities];
       return repository;
     },
   );
@@ -1167,22 +1338,70 @@ async function fetchSearchDiscoveredContributionRepositories() {
 async function fetchPublicContributedRepositories() {
   if (config.maxPublicContributedRepositories === 0) return [];
 
-  const sources = await Promise.allSettled([
-    fetchRepositoriesContributedToConnection(REST_HEADERS, "Public contributed-repository relationship query"),
-    fetchRepositoriesContributedToConnection(PUBLIC_REST_HEADERS, "Public contributed-repository public relationship query"),
-    fetchContributionCollectionRepositories(),
-    fetchSearchDiscoveredContributionRepositories(),
-  ]);
+  // Query every configured GitHub identity independently, then merge by
+  // repository full name. Both authentication contexts are attempted:
+  // - PRIVATE_STATS_TOKEN can expose the profile's complete public history.
+  // - github.token avoids organization PAT policies for ordinary public data.
+  const sourceSpecs = [
+    ...contributorIdentities.flatMap((identity) => [
+      {
+        name: `repository relationship via personal token (${identity})`,
+        run: () =>
+          fetchRepositoriesContributedToConnection(
+            identity,
+            REST_HEADERS,
+            `Public contributed-repository relationship query via personal token (${identity})`,
+          ),
+      },
+      {
+        name: `repository relationship via workflow token (${identity})`,
+        run: () =>
+          fetchRepositoriesContributedToConnection(
+            identity,
+            PUBLIC_REST_HEADERS,
+            `Public contributed-repository relationship query via workflow token (${identity})`,
+          ),
+      },
+    ]),
+    {
+      name: "yearly contribution collections via personal token",
+      run: () =>
+        fetchContributionCollectionRepositories(
+          REST_HEADERS,
+          "Personal-token",
+        ),
+    },
+    {
+      name: "yearly contribution collections via workflow token",
+      run: () =>
+        fetchContributionCollectionRepositories(
+          PUBLIC_REST_HEADERS,
+          "Workflow-token",
+        ),
+    },
+    {
+      name: "PR/review/issue searches",
+      run: fetchSearchDiscoveredContributionRepositories,
+    },
+  ];
+
+  const sources = await Promise.allSettled(
+    sourceSpecs.map((source) => source.run()),
+  );
 
   const merged = new Map();
-  const sourceNames = ["repository relationship", "public relationship", "yearly contribution collection", "PR/review/issue search"];
   sources.forEach((source, index) => {
+    const sourceName = sourceSpecs[index].name;
     if (source.status === "rejected") {
-      console.warn(`${sourceNames[index]} discovery failed: ${source.reason.message}`);
+      console.warn(`${sourceName} discovery failed: ${source.reason.message}`);
       return;
     }
-    console.log(`${sourceNames[index]} discovery returned ${source.value.length} public organization repositories.`);
-    for (const repository of source.value) mergeContributionCandidate(merged, repository);
+    console.log(
+      `${sourceName} discovery returned ${source.value.length} public organization repositories.`,
+    );
+    for (const repository of source.value) {
+      mergeContributionCandidate(merged, repository);
+    }
   });
 
   return [...merged.values()]
@@ -1222,6 +1441,10 @@ function mergeRepositories(...repositoryLists) {
       contribution_evidence: [...new Set([
         ...(existing.contribution_evidence ?? []),
         ...(repository.contribution_evidence ?? []),
+      ])],
+      contribution_identities: [...new Set([
+        ...(existing.contribution_identities ?? []),
+        ...(repository.contribution_identities ?? []),
       ])],
     });
   }
@@ -1478,7 +1701,11 @@ async function fetchRepositoryDetails(selection) {
   };
 }
 
-async function fetchContributionYears() {
+async function fetchContributionYearsForLogin(
+  login,
+  headers,
+  label,
+) {
   const query = `
     query ContributionYears($login: String!) {
       user(login: $login) {
@@ -1491,8 +1718,9 @@ async function fetchContributionYears() {
 
   const data = await graphql(
     query,
-    { login: username },
-    "Contribution-year query",
+    { login },
+    label,
+    { headers },
   );
 
   const years = data?.user?.contributionsCollection?.contributionYears ?? [];
@@ -1500,6 +1728,14 @@ async function fetchContributionYears() {
   return [...new Set([...years, currentYear])]
     .filter(Number.isInteger)
     .sort((first, second) => first - second);
+}
+
+async function fetchContributionYears() {
+  return fetchContributionYearsForLogin(
+    username,
+    REST_HEADERS,
+    "Contribution-year query",
+  );
 }
 
 async function fetchContributionYear(year) {
@@ -1745,6 +1981,58 @@ async function safeSearchCount(
   }
 }
 
+/**
+ * Runs the same issue/PR search for every configured contributor identity.
+ *
+ * The primary profile query uses the private PAT so token-accessible private
+ * activity can still be counted. Historical aliases use the public workflow
+ * token because they are intended only for public contribution attribution.
+ */
+async function searchCountsByContributorIdentity(
+  queryFactory,
+  label,
+  primaryFallback = 0,
+) {
+  const results = await mapLimit(
+    contributorIdentities,
+    2,
+    async (identity) => {
+      const headers =
+        identity.toLowerCase() === username.toLowerCase()
+          ? REST_HEADERS
+          : PUBLIC_REST_HEADERS;
+      const fallback =
+        identity.toLowerCase() === username.toLowerCase()
+          ? primaryFallback
+          : 0;
+      const count = await safeSearchCount(
+        queryFactory(identity),
+        `${label} (${identity})`,
+        fallback,
+        { headers },
+      );
+      return { identity, count };
+    },
+  );
+
+  const counts = [];
+  for (const result of results) {
+    if (result.status === "rejected") {
+      console.warn(`${label} identity search failed: ${result.reason.message}`);
+      continue;
+    }
+    counts.push(result.value);
+  }
+
+  return {
+    total: counts.reduce((sum, item) => sum + safeInteger(item.count), 0),
+    identities: counts
+      .filter((item) => safeInteger(item.count) > 0)
+      .map((item) => item.identity),
+    counts,
+  };
+}
+
 
 function contributionLanguageForPath(filePath) {
   const normalized = String(filePath ?? "").replaceAll("\\", "/");
@@ -1781,42 +2069,75 @@ async function fetchAuthoredCommitReferences(selection) {
   const since = new Date();
   since.setUTCFullYear(since.getUTCFullYear() - config.codeActivityYears);
 
-  const commits = [];
+  // Public organization projects may contain work authored through historical
+  // GitHub accounts. Query every configured identity and merge by commit SHA
+  // so one commit can never be counted twice.
+  const identities = contributionIdentitiesForScope(scope);
+  const commitsBySha = new Map();
+  let cappedIdentityListings = 0;
 
-  for (let pageNumber = 1; ; pageNumber += 1) {
-    const remaining = config.maxCommitsPerRepository - commits.length;
-    if (remaining <= 0) break;
+  for (const identity of identities) {
+    let identityCommitCount = 0;
 
-    const perPage = Math.min(100, remaining);
-    const response = await rest(
-      `/repos/${repository.full_name}/commits?sha=${encodeURIComponent(repository.default_branch)}&author=${encodeURIComponent(username)}&since=${encodeURIComponent(since.toISOString())}&per_page=${perPage}&page=${pageNumber}`,
-      {
-        label: "Authored-commit listing",
-        optionalStatuses: [404, 409, 422],
-        headers: requestHeaders,
-      },
-    );
+    for (let pageNumber = 1; ; pageNumber += 1) {
+      const remaining =
+        config.maxCommitsPerRepository - identityCommitCount;
+      if (remaining <= 0) {
+        cappedIdentityListings += 1;
+        break;
+      }
 
-    const pageItems = Array.isArray(response) ? response : [];
-    for (const commit of pageItems) {
-      if (!commit?.sha) continue;
-      commits.push({
-        sha: commit.sha,
-        date:
-          commit.commit?.author?.date ??
-          commit.commit?.committer?.date ??
-          null,
-      });
+      const perPage = Math.min(100, remaining);
+      const response = await rest(
+        `/repos/${repository.full_name}/commits?sha=${encodeURIComponent(repository.default_branch)}&author=${encodeURIComponent(identity)}&since=${encodeURIComponent(since.toISOString())}&per_page=${perPage}&page=${pageNumber}`,
+        {
+          label: `Authored-commit listing (${identity})`,
+          optionalStatuses: [404, 409, 422],
+          headers: requestHeaders,
+        },
+      );
+
+      const pageItems = Array.isArray(response) ? response : [];
+      for (const commit of pageItems) {
+        if (!commit?.sha) continue;
+
+        const existing = commitsBySha.get(commit.sha) ?? {
+          sha: commit.sha,
+          date:
+            commit.commit?.author?.date ??
+            commit.commit?.committer?.date ??
+            null,
+          attributedIdentities: new Set(),
+        };
+        existing.attributedIdentities.add(identity);
+        commitsBySha.set(commit.sha, existing);
+      }
+
+      identityCommitCount += pageItems.length;
+      if (pageItems.length < perPage) break;
+      if (identityCommitCount >= config.maxCommitsPerRepository) {
+        cappedIdentityListings += 1;
+        break;
+      }
     }
-
-    if (pageItems.length < perPage) break;
-    if (commits.length >= config.maxCommitsPerRepository) break;
   }
+
+  const discoveredCommits = [...commitsBySha.values()]
+    .map((commit) => ({
+      ...commit,
+      attributedIdentities: [...commit.attributedIdentities],
+    }))
+    .sort((first, second) =>
+      String(second.date ?? "").localeCompare(String(first.date ?? "")) ||
+      first.sha.localeCompare(second.sha),
+    );
 
   return {
     selection,
-    commits,
-    capped: commits.length >= config.maxCommitsPerRepository,
+    commits: discoveredCommits.slice(0, config.maxCommitsPerRepository),
+    capped:
+      discoveredCommits.length > config.maxCommitsPerRepository ||
+      cappedIdentityListings > 0,
   };
 }
 
@@ -1855,8 +2176,13 @@ function allocateCommitReferences(repositoryCommitLists) {
   };
 }
 
-async function fetchCommitDetails(selection, sha, discoveredDate = null) {
+async function fetchCommitDetails(selection, commitReference) {
   const { repository, scope } = selection;
+  const {
+    sha,
+    date: discoveredDate = null,
+    attributedIdentities = [],
+  } = commitReference;
   const requestHeaders = repositorySupportsAnonymousFallback(scope)
     ? PUBLIC_REST_HEADERS
     : REST_HEADERS;
@@ -1891,6 +2217,7 @@ async function fetchCommitDetails(selection, sha, discoveredDate = null) {
       null,
     statistics,
     files,
+    attributedIdentities: [...new Set(attributedIdentities)],
   };
 }
 
@@ -1902,6 +2229,7 @@ function createContributionAccumulator() {
     commitShas: new Set(),
     repositories: new Set(),
     files: new Set(),
+    attributedIdentities: new Set(),
   };
 }
 
@@ -1913,6 +2241,7 @@ function finalizeContributionAccumulator(accumulator) {
     commits: accumulator.commitShas.size,
     repositories: accumulator.repositories.size,
     files: accumulator.files.size,
+    attributedIdentities: [...accumulator.attributedIdentities].sort(),
   };
 }
 
@@ -1948,7 +2277,7 @@ async function analyzePersonalCodeContributions(repositorySelections) {
     allocation.allocated,
     config.commitDetailConcurrency,
     ({ selection, commit }) =>
-      fetchCommitDetails(selection, commit.sha, commit.date),
+      fetchCommitDetails(selection, commit),
   );
 
   const languages = new Map();
@@ -1976,6 +2305,9 @@ async function analyzePersonalCodeContributions(repositorySelections) {
       createContributionAccumulator();
     repositoryAccumulator.commitShas.add(detail.sha);
     repositoryAccumulator.repositories.add(detail.repositoryFullName);
+    for (const identity of detail.attributedIdentities ?? []) {
+      repositoryAccumulator.attributedIdentities.add(identity);
+    }
 
     let aiWorkflowCommitTouched = false;
 
@@ -2001,6 +2333,9 @@ async function analyzePersonalCodeContributions(repositorySelections) {
       languageAccumulator.changedLines += changedLines;
       languageAccumulator.commitShas.add(detail.sha);
       languageAccumulator.repositories.add(detail.repositoryFullName);
+      for (const identity of detail.attributedIdentities ?? []) {
+        languageAccumulator.attributedIdentities.add(identity);
+      }
       languageAccumulator.files.add(
         `${detail.repositoryFullName}:${file.filename}`,
       );
@@ -2230,24 +2565,31 @@ async function buildPublicContributionPortfolio(
           files: 0,
         };
 
-      const [lifecycle, authoredPullRequests, reviewedPullRequests] =
-        await Promise.all([
-          fetchPublicRepositoryLifecycle(repository),
-          safeSearchCount(
-            `repo:${repository.full_name} author:${username} is:pr`,
-            `Public contribution authored-PR search (${repository.full_name})`,
-            0,
-            { headers: PUBLIC_REST_HEADERS },
-          ),
-          safeSearchCount(
-            `repo:${repository.full_name} reviewed-by:${username} is:pr`,
-            `Public contribution reviewed-PR search (${repository.full_name})`,
-            0,
-            { headers: PUBLIC_REST_HEADERS },
-          ),
-        ]);
+      const [
+        lifecycle,
+        authoredPullRequestResult,
+        reviewedPullRequestResult,
+      ] = await Promise.all([
+        fetchPublicRepositoryLifecycle(repository),
+        searchCountsByContributorIdentity(
+          (identity) =>
+            `repo:${repository.full_name} author:${identity} is:pr`,
+          `Public contribution authored-PR search (${repository.full_name})`,
+        ),
+        searchCountsByContributorIdentity(
+          (identity) =>
+            `repo:${repository.full_name} reviewed-by:${identity} is:pr`,
+          `Public contribution reviewed-PR search (${repository.full_name})`,
+        ),
+      ]);
 
       const composition = repositoryLanguageComposition(detail);
+      const attributedIdentities = [...new Set([
+        ...(repository.contribution_identities ?? []),
+        ...(personal.attributedIdentities ?? []),
+        ...authoredPullRequestResult.identities,
+        ...reviewedPullRequestResult.identities,
+      ])].sort();
 
       return {
         fullName: repository.full_name,
@@ -2256,8 +2598,9 @@ async function buildPublicContributionPortfolio(
         sourceFiles: composition.sourceFiles,
         lifecycle,
         personal,
-        authoredPullRequests,
-        reviewedPullRequests,
+        authoredPullRequests: authoredPullRequestResult.total,
+        reviewedPullRequests: reviewedPullRequestResult.total,
+        attributedIdentities,
         evidence: repository.contribution_evidence ?? [],
       };
     },
@@ -3416,7 +3759,7 @@ function renderPublicContributionPortfolio(projects) {
       ${icon("repo", 32, y + 16, THEME.green, 19)}
       <text x="60" y="${y + 31}" class="value">${escapeXml(project.fullName)}</text>
       <text x="32" y="${y + 55}" class="small">Full public project composition: ${escapeXml(projectParts.join(" · "))}</text>
-      <text x="32" y="${y + 76}" class="label">Attributed to ${escapeXml(username)}: ${escapeXml(personalParts.join(" · "))}</text>
+      <text x="32" y="${y + 76}" class="label">Attributed identities: ${escapeXml((project.attributedIdentities ?? [username]).join(", "))} · ${escapeXml(personalParts.join(" · "))}</text>
       <defs><clipPath id="${escapeXml(clipId)}"><rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6"/></clipPath></defs>
       <rect x="${barX}" y="${barY}" width="${barWidth}" height="12" rx="6" fill="${THEME.background}"/>
       <g clip-path="url(#${escapeXml(clipId)})">${segments}</g>
@@ -3433,7 +3776,7 @@ function renderPublicContributionPortfolio(projects) {
     title: "Public Open-Source Contributions",
     iconName: "branch",
     accent: THEME.green,
-    subtitle: "Full project composition for public repositories GitHub links to your commits, pull requests, or reviews · not a personal-authorship claim",
+    subtitle: "Full project composition for public repositories linked to the primary profile or configured contributor aliases · not a whole-project authorship claim",
     body: `${body}${footer}`,
   });
 }
@@ -3731,6 +4074,9 @@ async function writeCards(cards) {
 
 async function main() {
   console.log("Fetching authenticated account...");
+  console.log(
+    `Contributor identities used for public attribution: ${contributorIdentities.join(", ")}`,
+  );
   const authenticatedUser = await rest("/user", {
     label: "Authenticated-user request",
   });
@@ -3851,35 +4197,39 @@ async function main() {
 
   console.log("Fetching all-time collaboration counts...");
   const [
-    pullRequests,
-    mergedPullRequests,
-    closedIssues,
+    pullRequestResult,
+    mergedPullRequestResult,
+    closedIssueResult,
   ] = await Promise.all([
-    safeSearchCount(
-      `author:${username} is:pr`,
+    searchCountsByContributorIdentity(
+      (identity) => `author:${identity} is:pr`,
       "Pull-request search",
       contributionHistory.totals.pullRequests,
     ),
-    safeSearchCount(
-      `author:${username} is:pr is:merged`,
+    searchCountsByContributorIdentity(
+      (identity) => `author:${identity} is:pr is:merged`,
       "Merged pull-request search",
       contributionHistory.totals.pullRequests,
     ),
-    safeSearchCount(
-      `author:${username} is:issue is:closed`,
+    searchCountsByContributorIdentity(
+      (identity) => `author:${identity} is:issue is:closed`,
       "Closed-issue search",
       contributionHistory.totals.issues,
     ),
   ]);
+
+  const pullRequests = pullRequestResult.total;
+  const mergedPullRequests = mergedPullRequestResult.total;
+  const closedIssues = closedIssueResult.total;
 
   console.log("Analyzing personal code contribution impact...");
   const personalCodeContributions =
     await analyzePersonalCodeContributions(repositorySelections);
 
   // Full project composition is included for repositories owned by the
-  // profile user and for public repositories GitHub links to the user through
-  // commits, pull requests, or pull-request reviews. Personal contribution
-  // cards still count only attributable commits and review activity.
+  // profile user and for public repositories GitHub links to the primary
+  // profile or a configured historical contributor alias. Personal code
+  // metrics still count only commits attributable to those identities.
   const engineeringFootprintDetails = repositoryDetails.filter(
     (detail) =>
       detail.scope === REPOSITORY_SCOPE.PERSONAL ||

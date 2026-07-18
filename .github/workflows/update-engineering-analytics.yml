@@ -97,6 +97,11 @@ jobs:
           PUBLIC_GITHUB_TOKEN: ${{ github.token }}
           GITHUB_USERNAME: maharudraabhishek
 
+          # Historical GitHub usernames used for public work attribution.
+          # Add future aliases as a comma-separated list. The generator merges
+          # matching repositories and deduplicates commits by SHA.
+          CONTRIBUTOR_ALIASES: abkumar
+
           # Includes all repositories owned by the profile user and public
           # repositories GitHub links to the user through commits, pull
           # requests, or pull-request reviews. External private/internal
