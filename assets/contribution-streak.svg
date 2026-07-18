@@ -23,6 +23,6 @@
       <text x="306" y="158" class="label">First recorded contribution</text><g transform="translate(20 189) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
       <text x="46" y="202" class="value">Jul 18, 2026</text>
       <text x="46" y="220" class="label">Latest recorded contribution</text><g transform="translate(280 189) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
-      <text x="306" y="202" class="value">Thursday</text>
+      <text x="306" y="202" class="value">Saturday</text>
       <text x="306" y="220" class="label">Most active weekday</text>
 </svg>
