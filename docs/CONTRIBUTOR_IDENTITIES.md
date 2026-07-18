@@ -1,63 +1,85 @@
-# Contributor identity attribution
+# Contributor identity configuration
 
-## Purpose
+## Single source of truth
 
-GitHub activity can be split across multiple usernames when an engineer changes employers or accounts. The analytics generator therefore supports one primary profile and optional historical contributor aliases.
-
-For this repository:
+GitHub profile names and historical public contributor aliases are
+configured only in:
 
 ```text
-Primary profile: maharudraabhishek
-Public alias:    abkumar
+.github/github-analytics.config.mjs
 ```
 
-The workflow supplies the alias through:
+The workflow, analytics generator, and README updater load that file
+through `scripts/github-analytics-config.mjs`. They do not contain a
+profile-specific username.
 
-```yaml
-CONTRIBUTOR_ALIASES: abkumar
+## Configuration fields
+
+```js
+export default {
+  profile: {
+    username: "your-primary-github-username",
+  },
+  publicContributions: {
+    aliases: [
+      "historical-work-username",
+    ],
+  },
+  repositories: {
+    excludeProfileRepository: true,
+    exclude: [],
+  },
+};
 ```
 
-Additional aliases can be added later as a comma-separated list.
+### `profile.username`
 
-## What aliases affect
+The primary GitHub profile:
 
-Aliases are used only for public contribution attribution. For every configured identity, the generator checks:
+- owns the profile README repository;
+- must match the account authenticated by `PRIVATE_STATS_TOKEN`;
+- is used for private/personal repository analytics;
+- is included automatically in public-contribution discovery.
 
-- GitHub's `repositoriesContributedTo` relationship;
-- yearly commit, pull-request, review, and issue contribution collections;
-- pull requests authored by the identity;
-- pull requests reviewed by the identity;
-- issues authored by the identity;
-- default-branch commits filtered by the identity.
+### `publicContributions.aliases`
 
-This allows organization repositories such as `heremaps/here-sdk-examples` to be discovered through the historical username while the profile repository remains owned by `maharudraabhishek`.
+Optional historical or alternate GitHub usernames used only for
+public contribution attribution.
 
-## Accuracy rules
+For every configured identity, the generator searches:
 
-The generator keeps two concepts separate:
+- contributed-repository relationships;
+- commit contribution collections;
+- authored pull requests;
+- submitted pull-request reviews;
+- authored issues;
+- public default-branch commits.
 
-1. **Full public project composition**  
-   Languages, frameworks, source files, releases, stars, forks, and total project commits describe the repository as a whole.
+Values are case-insensitively deduplicated. Repeating the primary
+username in the alias list has no effect.
 
-2. **Personally attributed activity**  
-   Commits, changed lines, files touched, authored pull requests, and reviewed pull requests are counted only when GitHub associates them with the primary username or a configured alias.
+### `repositories`
 
-The analytics never claims that the entire public repository was authored by one person.
+`excludeProfileRepository: true` automatically excludes the
+`username/username` profile repository.
 
-## Deduplication
+`exclude` accepts additional `owner/repository` values that should
+not affect analytics.
 
-A commit may be returned by more than one identity query. The generator merges commit results by SHA before calculating totals, so the same commit cannot be counted twice.
+## Accuracy boundaries
 
-Repositories are merged by case-insensitive `owner/name`, and their contribution evidence and attributed identities are combined.
+Full language and framework composition describes a public project as
+a whole. Personally attributed commits, changed lines, files, pull
+requests, and reviews count only activity GitHub associates with the
+configured identities.
 
-## Privacy and scope
+A single commit found through multiple identity queries is deduplicated
+by SHA. A repository found through multiple discovery routes is merged
+by case-insensitive `owner/name`.
 
-- Aliases are queried only for public contribution repositories.
-- Private personal repositories use only the authenticated primary profile.
-- Private organization repository names are not published.
-- Commit messages, email addresses, prompts, and private file paths are not rendered.
-- The public contribution card shows the identities GitHub used for attribution.
+## Privacy
 
-## Limitations
-
-GitHub must be able to resolve an alias as a GitHub username for relationship and contribution-collection discovery. If an old commit contains only an unlinked author name or email, GitHub may show it in repository history without exposing a searchable account relationship. Such activity cannot be safely attributed automatically without an explicit repository declaration.
+- Never put tokens or email addresses in the config.
+- Private repository names are not rendered.
+- Commit messages and private file paths are not rendered.
+- Aliases are used only for public contribution discovery.

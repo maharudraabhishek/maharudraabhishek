@@ -6,6 +6,9 @@ import {
   isAiEvidenceCandidatePath,
   isAiEvidencePath,
 } from "./ai-engineering-analytics.mjs";
+import {
+  loadAnalyticsConfig,
+} from "./github-analytics-config.mjs";
 
 const API_VERSION = "2022-11-28";
 const GRAPHQL_ENDPOINT = "https://api.github.com/graphql";
@@ -16,20 +19,15 @@ const REQUEST_RETRIES = 4;
 const MAX_CONTENT_BYTES = 1_000_000;
 
 const token = requiredEnvironment("PRIVATE_STATS_TOKEN");
-const username = requiredEnvironment("GITHUB_USERNAME");
 
-// A single engineer can have historical GitHub identities from previous
-// employers or accounts. CONTRIBUTOR_ALIASES is a comma-separated list of
-// additional GitHub usernames whose public activity should be attributed to
-// the same profile owner. The primary profile remains GITHUB_USERNAME.
-const contributorAliases = parseContributorAliases(
-  process.env.CONTRIBUTOR_ALIASES,
-  username,
-);
-const contributorIdentities = Object.freeze([
-  username,
-  ...contributorAliases,
-]);
+// Identity settings are loaded from the single user-editable config file.
+// The generator contains no profile-specific username or public alias.
+const analyticsConfig = await loadAnalyticsConfig();
+const username = analyticsConfig.profileUsername;
+const contributorAliases =
+  analyticsConfig.publicContributorAliases;
+const contributorIdentities =
+  analyticsConfig.publicContributorIdentities;
 
 // Use the workflow's built-in GitHub App installation token for public
 // organization repositories. This avoids organization-specific PAT policies
@@ -74,7 +72,15 @@ const config = Object.freeze({
   affiliations:
     process.env.REPOSITORY_AFFILIATIONS?.trim() ||
     "owner,collaborator,organization_member",
-  excludedRepositories: parseCsv(process.env.EXCLUDE_REPOSITORIES),
+  // Repository exclusions declared in the shared config are the source
+  // of truth. EXCLUDE_REPOSITORIES remains an optional runtime extension for
+  // advanced callers, but the reusable workflow does not set user names here.
+  excludedRepositories: new Set([
+    ...analyticsConfig.excludedRepositories.map(
+      (repository) => repository.toLowerCase(),
+    ),
+    ...parseCsv(process.env.EXCLUDE_REPOSITORIES),
+  ]),
   debugPrivateRepositories: booleanEnvironment(
     "DEBUG_PRIVATE_REPOSITORIES",
     false,
@@ -436,20 +442,6 @@ function parseCsv(value) {
       .filter(Boolean),
   );
 }
-
-/**
- * Parses historical GitHub usernames used for public contribution attribution.
- *
- * GitHub usernames are case-insensitive, so values are normalized to lower
- * case and deduplicated. The primary profile username is removed to prevent
- * duplicate API queries and duplicate commit accounting.
- */
-function parseContributorAliases(value, primaryUsername) {
-  const primary = String(primaryUsername ?? "").trim().toLowerCase();
-
-  return [...parseCsv(value)].filter((alias) => alias !== primary);
-}
-
 /**
  * Returns the identities that may have authored activity in the selected
  * repository. Private/personal repositories use only the authenticated

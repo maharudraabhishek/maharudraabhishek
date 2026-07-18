@@ -1,10 +1,16 @@
 import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import {
+  loadAnalyticsConfig,
+} from "./github-analytics-config.mjs";
 
 const README_FILE = path.resolve(process.env.README_FILE?.trim() || "README.md");
 const ASSET_DIRECTORY = path.resolve(process.env.ANALYTICS_ASSET_DIRECTORY?.trim() || "assets");
-const username = process.env.GITHUB_USERNAME?.trim() || "maharudraabhishek";
+// Profile-view links use the same validated profile identity as the
+// generator and workflow. No username is hardcoded in this script.
+const { profileUsername: username } =
+  await loadAnalyticsConfig();
 
 const START_MARKER = "<!-- ENGINEERING_ANALYTICS:START -->";
 const END_MARKER = "<!-- ENGINEERING_ANALYTICS:END -->";

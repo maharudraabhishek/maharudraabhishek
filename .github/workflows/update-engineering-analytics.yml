@@ -10,8 +10,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-engineering-analytics
+  group: update-github-analytics
   cancel-in-progress: true
+
+# The workflow knows only the config path. Usernames and historical
+# public contributor identities are loaded from this file at runtime.
+env:
+  ANALYTICS_CONFIG_FILE: .github/github-analytics.config.mjs
 
 jobs:
   generate:
@@ -31,32 +36,37 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Validate required scripts
+      - name: Validate scripts and user configuration
         shell: bash
         run: |
           set -euo pipefail
 
-          REQUIRED_SCRIPTS=(
+          REQUIRED_MODULES=(
             "scripts/generate-engineering-analytics.mjs"
             "scripts/update-readme-analytics.mjs"
             "scripts/ai-engineering-analytics.mjs"
+            "scripts/github-analytics-config.mjs"
+            "$ANALYTICS_CONFIG_FILE"
           )
 
-          for script in "${REQUIRED_SCRIPTS[@]}"; do
-            if [ ! -f "$script" ]; then
-              echo "::error::$script is missing from the repository."
+          for module in "${REQUIRED_MODULES[@]}"; do
+            if [ ! -f "$module" ]; then
+              echo "::error::$module is missing from the repository."
               exit 1
             fi
 
-            node --check "$script"
-            echo "Validated: $script"
+            node --check "$module"
+            echo "Syntax validated: $module"
           done
+
+          # Performs semantic validation after syntax validation:
+          # username format, aliases, and repository exclusions.
+          node scripts/github-analytics-config.mjs --validate
 
       - name: Validate private GitHub token
         shell: bash
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
-          GITHUB_USERNAME: maharudraabhishek
         run: |
           set -euo pipefail
 
@@ -65,15 +75,11 @@ jobs:
             exit 1
           fi
 
-          STATUS=$(curl \
-            --silent \
-            --show-error \
-            --output /tmp/github-user.json \
-            --write-out "%{http_code}" \
-            --header "Accept: application/vnd.github+json" \
-            --header "Authorization: Bearer $PRIVATE_STATS_TOKEN" \
-            --header "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/user)
+          PROFILE_USERNAME=$(
+            node scripts/github-analytics-config.mjs                       --print-profile-username
+          )
+
+          STATUS=$(curl                     --silent                     --show-error                     --output /tmp/github-user.json                     --write-out "%{http_code}"                     --header "Accept: application/vnd.github+json"                     --header "Authorization: Bearer $PRIVATE_STATS_TOKEN"                     --header "X-GitHub-Api-Version: 2022-11-28"                     https://api.github.com/user)
 
           if [ "$STATUS" != "200" ]; then
             echo "::error::GitHub rejected PRIVATE_STATS_TOKEN with HTTP $STATUS."
@@ -81,11 +87,10 @@ jobs:
             exit 1
           fi
 
-          AUTHENTICATED_LOGIN=$(node -e \
-            "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('/tmp/github-user.json','utf8')); process.stdout.write(data.login ?? '')")
+          AUTHENTICATED_LOGIN=$(node -e                     "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('/tmp/github-user.json','utf8')); process.stdout.write(data.login ?? '')")
 
-          if [ "${AUTHENTICATED_LOGIN,,}" != "${GITHUB_USERNAME,,}" ]; then
-            echo "::error::PRIVATE_STATS_TOKEN belongs to '$AUTHENTICATED_LOGIN', not '$GITHUB_USERNAME'."
+          if [ "${AUTHENTICATED_LOGIN,,}" != "${PROFILE_USERNAME,,}" ]; then
+            echo "::error::PRIVATE_STATS_TOKEN belongs to '$AUTHENTICATED_LOGIN', not '$PROFILE_USERNAME'."
             exit 1
           fi
 
@@ -95,17 +100,10 @@ jobs:
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
           PUBLIC_GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_USERNAME: maharudraabhishek
 
-          # Historical GitHub usernames used for public work attribution.
-          # Add future aliases as a comma-separated list. The generator merges
-          # matching repositories and deduplicates commits by SHA.
-          CONTRIBUTOR_ALIASES: abkumar
-
-          # Includes all repositories owned by the profile user and public
-          # repositories GitHub links to the user through commits, pull
-          # requests, or pull-request reviews. External private/internal
-          # repositories are excluded.
+          # Includes personal repositories available to the token and
+          # public repositories linked to configured contributor
+          # identities through commits, pull requests, or reviews.
           REPOSITORY_AFFILIATIONS: owner,collaborator,organization_member
           MAX_REPOSITORIES: "500"
           MAX_PUBLIC_CONTRIBUTED_REPOSITORIES: "100"
@@ -121,7 +119,6 @@ jobs:
 
           INCLUDE_ARCHIVED_REPOSITORIES: "true"
           INCLUDE_FORKED_REPOSITORIES: "false"
-          EXCLUDE_REPOSITORIES: maharudraabhishek/maharudraabhishek
           MIN_SCAN_SUCCESS_RATIO: "0.75"
 
           OUTPUT_DIRECTORY: generated-analytics
@@ -174,9 +171,7 @@ jobs:
               exit 1
             fi
 
-            if grep -qiE \
-              "github_pat_|ghp_|PRIVATE_STATS_TOKEN|Authorization: Bearer" \
-              "$svg"; then
+            if grep -qiE                       "github_pat_|ghp_|PRIVATE_STATS_TOKEN|Authorization: Bearer"                       "$svg"; then
               echo "::error::Potential secret material was found in $svg."
               exit 1
             fi
@@ -220,14 +215,15 @@ jobs:
             "open-source-stewardship.svg"
           )
 
-          # Remove every current and legacy managed card before installing the
-          # validated new set. Unrelated SVG assets are not touched.
-          for filename in "${CURRENT_SVG_FILES[@]}" "${LEGACY_SVG_FILES[@]}"; do
+          # Remove all managed current and legacy cards before the
+          # validated replacement set is installed. Unrelated SVG
+          # assets are intentionally preserved.
+          for filename in                     "${CURRENT_SVG_FILES[@]}"                     "${LEGACY_SVG_FILES[@]}"; do
             rm -f "assets/$filename"
           done
 
           for filename in "${CURRENT_SVG_FILES[@]}"; do
-            install -m 0644 "generated-analytics/$filename" "assets/$filename"
+            install -m 0644                       "generated-analytics/$filename"                       "assets/$filename"
           done
 
           echo "Fresh analytics cards installed:"
@@ -238,7 +234,6 @@ jobs:
         env:
           README_FILE: README.md
           ANALYTICS_ASSET_DIRECTORY: assets
-          GITHUB_USERNAME: maharudraabhishek
         run: |
           set -euo pipefail
 
@@ -284,8 +279,12 @@ jobs:
             fi
           done
 
-          if ! grep -Fq "hits.sh/github.com/maharudraabhishek.svg" README.md; then
-            echo "::error::README.md is missing the profile-view badge."
+          PROFILE_USERNAME=$(
+            node scripts/github-analytics-config.mjs                       --print-profile-username
+          )
+
+          if ! grep -Fq                     "hits.sh/github.com/${PROFILE_USERNAME}.svg"                     README.md; then
+            echo "::error::README.md is missing the configured profile-view badge."
             exit 1
           fi
 
@@ -297,8 +296,7 @@ jobs:
           set -euo pipefail
 
           git config user.name "github-actions[bot]"
-          git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email                     "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add -A assets README.md
 
@@ -307,7 +305,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore(stats): refresh engineering analytics"
+          git commit -m "chore(stats): refresh GitHub analytics"
 
           if ! git push; then
             echo "Initial push failed. Rebasing onto the latest branch..."
