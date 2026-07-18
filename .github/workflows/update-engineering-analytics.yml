@@ -92,10 +92,17 @@ jobs:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
           GITHUB_USERNAME: maharudraabhishek
 
-          # Repository scope used for private/public aggregation.
+          # The generator applies this strict repository policy:
+          # - include all public/private repositories owned by maharudraabhishek;
+          # - include only public repositories owned by other organizations;
+          # - exclude private/internal repositories owned by other organizations;
+          # - exclude repositories owned by other individual users.
+          #
+          # All affiliations remain listed so eligible public organization
+          # repositories can be discovered before the generator filters them.
           REPOSITORY_AFFILIATIONS: owner,collaborator,organization_member
           MAX_REPOSITORIES: "500"
-          REPOSITORY_CONCURRENCY: "4"
+          REPOSITORY_CONCURRENCY: "3"
           MANIFEST_CONCURRENCY: "2"
           MAX_MANIFEST_FILES_PER_REPOSITORY: "40"
 

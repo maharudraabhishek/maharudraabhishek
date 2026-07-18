@@ -4,7 +4,8 @@ import path from "node:path";
 const API_VERSION = "2022-11-28";
 const GRAPHQL_ENDPOINT = "https://api.github.com/graphql";
 const REST_ENDPOINT = "https://api.github.com";
-const MAX_RETRY_DELAY_MS = 60_000;
+const MAX_TRANSIENT_RETRY_DELAY_MS = 60_000;
+const MAX_RATE_LIMIT_WAIT_MS = 15 * 60_000;
 const REQUEST_RETRIES = 4;
 const MAX_CONTENT_BYTES = 1_000_000;
 
@@ -60,6 +61,22 @@ const REST_HEADERS = Object.freeze({
   Authorization: `Bearer ${token}`,
   "X-GitHub-Api-Version": API_VERSION,
   "User-Agent": `${username}-private-readme-analytics`,
+});
+
+const PUBLIC_REST_HEADERS = Object.freeze({
+  Accept: "application/vnd.github+json",
+  "X-GitHub-Api-Version": API_VERSION,
+  "User-Agent": `${username}-public-readme-analytics`,
+});
+
+const PUBLIC_RAW_HEADERS = Object.freeze({
+  Accept: "text/plain",
+  "User-Agent": `${username}-public-readme-analytics`,
+});
+
+const REPOSITORY_SCOPE = Object.freeze({
+  PERSONAL: "personal",
+  EXTERNAL_ORGANIZATION_PUBLIC: "external-organization-public",
 });
 
 const THEME = Object.freeze({
@@ -375,24 +392,86 @@ async function requestJson(
     body,
     label = "GitHub API request",
     optionalStatuses = [],
+    allowAnonymousFallback = false,
   } = {},
 ) {
-  for (let attempt = 0; attempt <= REQUEST_RETRIES; attempt += 1) {
-    const response = await fetch(url, {
-      method,
-      headers,
-      body,
-    });
+  let activeHeaders = headers;
+  let anonymousFallbackUsed = false;
+  let retryAttempt = 0;
+
+  while (true) {
+    let response;
+
+    try {
+      response = await fetch(url, {
+        method,
+        headers: activeHeaders,
+        body,
+      });
+    } catch (error) {
+      if (retryAttempt >= REQUEST_RETRIES) {
+        throw new Error(
+          `${label} failed after ${REQUEST_RETRIES + 1} network attempts: ${error.message}`,
+        );
+      }
+
+      const delay = transientRetryDelayMilliseconds(retryAttempt);
+      retryAttempt += 1;
+      console.warn(
+        `${label} encountered a network error; retrying in ${Math.ceil(delay / 1_000)}s.`,
+      );
+      await sleep(delay);
+      continue;
+    }
 
     const rawBody = await response.text();
 
     if (response.ok) {
       if (!rawBody) return null;
+
       try {
         return JSON.parse(rawBody);
       } catch {
         throw new Error(`${label} returned invalid JSON.`);
       }
+    }
+
+    const message = parseGitHubError(rawBody);
+    const rateLimited = responseIsRateLimited(response, message);
+
+    if (rateLimited) {
+      if (retryAttempt >= REQUEST_RETRIES) {
+        throw new Error(
+          `${label} remained rate-limited after ${REQUEST_RETRIES + 1} attempts.`,
+        );
+      }
+
+      const delay = rateLimitRetryDelayMilliseconds(
+        response,
+        retryAttempt,
+      );
+      retryAttempt += 1;
+
+      console.warn(
+        `${label} was rate-limited; retrying in ${Math.ceil(delay / 1_000)}s.`,
+      );
+      await sleep(delay);
+      continue;
+    }
+
+    if (
+      allowAnonymousFallback &&
+      !anonymousFallbackUsed &&
+      Object.hasOwn(activeHeaders, "Authorization") &&
+      responseAllowsPublicFallback(response.status, message)
+    ) {
+      anonymousFallbackUsed = true;
+      activeHeaders = PUBLIC_REST_HEADERS;
+      retryAttempt = 0;
+      console.warn(
+        `${label} was not accessible with the personal token; retrying as a public repository request.`,
+      );
+      continue;
     }
 
     if (optionalStatuses.includes(response.status)) {
@@ -403,25 +482,86 @@ async function requestJson(
       throw new Error(`${label} failed: GitHub rejected the token.`);
     }
 
-    const retryable =
-      response.status === 403 ||
-      response.status === 429 ||
-      response.status === 502 ||
-      response.status === 503 ||
-      response.status === 504;
+    const temporaryFailure = [502, 503, 504].includes(response.status);
 
-    if (!retryable || attempt === REQUEST_RETRIES) {
-      const message = parseGitHubError(rawBody);
-      throw new Error(
-        `${label} failed with HTTP ${response.status}${message ? `: ${message}` : "."}`,
+    if (temporaryFailure && retryAttempt < REQUEST_RETRIES) {
+      const delay = transientRetryDelayMilliseconds(retryAttempt);
+      retryAttempt += 1;
+
+      console.warn(
+        `${label} was temporarily unavailable; retrying in ${Math.ceil(delay / 1_000)}s.`,
       );
+      await sleep(delay);
+      continue;
     }
 
-    const delay = retryDelayMilliseconds(response, attempt);
-    console.warn(
-      `${label} was rate-limited or temporarily unavailable; retrying in ${Math.ceil(delay / 1_000)}s.`,
+    throw new Error(
+      `${label} failed with HTTP ${response.status}${message ? `: ${message}` : "."}`,
     );
-    await sleep(delay);
+  }
+}
+
+async function requestText(
+  url,
+  {
+    headers = PUBLIC_RAW_HEADERS,
+    label = "Public content request",
+    optionalStatuses = [],
+  } = {},
+) {
+  for (let attempt = 0; attempt <= REQUEST_RETRIES; attempt += 1) {
+    let response;
+
+    try {
+      response = await fetch(url, { headers });
+    } catch (error) {
+      if (attempt === REQUEST_RETRIES) {
+        throw new Error(
+          `${label} failed after ${REQUEST_RETRIES + 1} network attempts: ${error.message}`,
+        );
+      }
+
+      const delay = transientRetryDelayMilliseconds(attempt);
+      console.warn(
+        `${label} encountered a network error; retrying in ${Math.ceil(delay / 1_000)}s.`,
+      );
+      await sleep(delay);
+      continue;
+    }
+
+    if (response.ok) {
+      return response.text();
+    }
+
+    if (optionalStatuses.includes(response.status)) {
+      return null;
+    }
+
+    const rawBody = await response.text();
+    const message = parseGitHubError(rawBody);
+    const rateLimited = responseIsRateLimited(response, message);
+
+    if (rateLimited && attempt < REQUEST_RETRIES) {
+      const delay = rateLimitRetryDelayMilliseconds(response, attempt);
+      console.warn(
+        `${label} was rate-limited; retrying in ${Math.ceil(delay / 1_000)}s.`,
+      );
+      await sleep(delay);
+      continue;
+    }
+
+    if ([502, 503, 504].includes(response.status) && attempt < REQUEST_RETRIES) {
+      const delay = transientRetryDelayMilliseconds(attempt);
+      console.warn(
+        `${label} was temporarily unavailable; retrying in ${Math.ceil(delay / 1_000)}s.`,
+      );
+      await sleep(delay);
+      continue;
+    }
+
+    throw new Error(
+      `${label} failed with HTTP ${response.status}${message ? `: ${message}` : "."}`,
+    );
   }
 
   throw new Error(`${label} failed unexpectedly.`);
@@ -436,21 +576,78 @@ function parseGitHubError(rawBody) {
   }
 }
 
-function retryDelayMilliseconds(response, attempt) {
+function responseIsRateLimited(response, message) {
+  if (response.status === 429) return true;
+
+  const remaining = response.headers.get("x-ratelimit-remaining");
+  if (response.status === 403 && remaining === "0") return true;
+
+  return (
+    response.status === 403 &&
+    /secondary rate limit|rate limit exceeded|abuse detection/i.test(
+      message,
+    )
+  );
+}
+
+function responseAllowsPublicFallback(status, message) {
+  if (status !== 403 && status !== 404) return false;
+
+  return (
+    status === 404 ||
+    /resource not accessible by personal access token|forbidden|requires authentication/i.test(
+      message,
+    )
+  );
+}
+
+function rateLimitRetryDelayMilliseconds(response, attempt) {
   const retryAfter = Number(response.headers.get("retry-after"));
   if (Number.isFinite(retryAfter) && retryAfter > 0) {
-    return Math.min(retryAfter * 1_000, MAX_RETRY_DELAY_MS);
+    const delay = retryAfter * 1_000;
+    assertRateLimitWaitIsReasonable(delay);
+    return delay;
   }
 
+  const remaining = response.headers.get("x-ratelimit-remaining");
   const resetAt = Number(response.headers.get("x-ratelimit-reset"));
-  if (Number.isFinite(resetAt) && resetAt > 0) {
-    const untilReset = resetAt * 1_000 - Date.now() + 1_000;
-    if (untilReset > 0) {
-      return Math.min(untilReset, MAX_RETRY_DELAY_MS);
-    }
+
+  if (
+    remaining === "0" &&
+    Number.isFinite(resetAt) &&
+    resetAt > 0
+  ) {
+    const untilReset = Math.max(
+      1_000,
+      resetAt * 1_000 - Date.now() + 1_000,
+    );
+    assertRateLimitWaitIsReasonable(untilReset);
+    return untilReset;
   }
 
-  return Math.min(1_000 * 2 ** attempt, MAX_RETRY_DELAY_MS);
+  // GitHub recommends waiting at least one minute when a secondary-limit
+  // response has neither Retry-After nor an exhausted primary limit.
+  const delay = Math.min(
+    60_000 * 2 ** attempt,
+    MAX_RATE_LIMIT_WAIT_MS,
+  );
+  assertRateLimitWaitIsReasonable(delay);
+  return delay;
+}
+
+function assertRateLimitWaitIsReasonable(delay) {
+  if (delay <= MAX_RATE_LIMIT_WAIT_MS) return;
+
+  throw new Error(
+    `GitHub rate limit will not reset for approximately ${Math.ceil(delay / 60_000)} minutes; aborting instead of retrying too early.`,
+  );
+}
+
+function transientRetryDelayMilliseconds(attempt) {
+  return Math.min(
+    1_000 * 2 ** attempt,
+    MAX_TRANSIENT_RETRY_DELAY_MS,
+  );
 }
 
 async function rest(pathOrUrl, options = {}) {
@@ -538,21 +735,97 @@ async function fetchAllRepositories() {
 }
 
 function repositoryIsExcluded(repository) {
-  const fullName = repository.full_name.toLowerCase();
-  const shortName = repository.name.toLowerCase();
+  const fullName = String(repository.full_name ?? "").toLowerCase();
+  const shortName = String(repository.name ?? "").toLowerCase();
+
   return (
     config.excludedRepositories.has(fullName) ||
     config.excludedRepositories.has(shortName)
   );
 }
 
-function repositoryIsEligibleForScanning(repository) {
+function classifyRepositoryScope(repository) {
+  const ownerLogin = String(repository.owner?.login ?? "").toLowerCase();
+  const ownerType = String(repository.owner?.type ?? "").toLowerCase();
+  const visibility = String(
+    repository.visibility ??
+      (repository.private ? "private" : "public"),
+  ).toLowerCase();
+
+  if (ownerLogin === username.toLowerCase()) {
+    return REPOSITORY_SCOPE.PERSONAL;
+  }
+
+  if (
+    ownerType === "organization" &&
+    visibility === "public"
+  ) {
+    return REPOSITORY_SCOPE.EXTERNAL_ORGANIZATION_PUBLIC;
+  }
+
+  return null;
+}
+
+function repositoryPassesAnalyticsFilters(repository) {
   if (repository.disabled) return false;
   if (!repository.default_branch) return false;
   if (!config.includeForkedRepositories && repository.fork) return false;
   if (!config.includeArchivedRepositories && repository.archived) return false;
   if (repositoryIsExcluded(repository)) return false;
   return true;
+}
+
+function selectRepositoriesForAnalytics(repositories) {
+  const selected = [];
+  const summary = {
+    personalPublic: 0,
+    personalPrivate: 0,
+    externalOrganizationPublic: 0,
+    excludedExternalOrganizationPrivateOrInternal: 0,
+    excludedExternalUserOwned: 0,
+    excludedByAnalyticsFilters: 0,
+  };
+
+  for (const repository of repositories) {
+    const scope = classifyRepositoryScope(repository);
+    const visibility = String(
+      repository.visibility ??
+        (repository.private ? "private" : "public"),
+    ).toLowerCase();
+    const ownerType = String(repository.owner?.type ?? "").toLowerCase();
+
+    if (!scope) {
+      if (ownerType === "organization" && visibility !== "public") {
+        summary.excludedExternalOrganizationPrivateOrInternal += 1;
+      } else {
+        summary.excludedExternalUserOwned += 1;
+      }
+      continue;
+    }
+
+    if (!repositoryPassesAnalyticsFilters(repository)) {
+      summary.excludedByAnalyticsFilters += 1;
+      continue;
+    }
+
+    if (scope === REPOSITORY_SCOPE.PERSONAL) {
+      if (visibility === "public") {
+        summary.personalPublic += 1;
+      } else {
+        summary.personalPrivate += 1;
+      }
+    } else {
+      summary.externalOrganizationPublic += 1;
+    }
+
+    selected.push({ repository, scope });
+  }
+
+  return { selected, summary };
+}
+
+function repositorySupportsAnonymousFallback(scope) {
+  return scope === REPOSITORY_SCOPE.EXTERNAL_ORGANIZATION_PUBLIC;
 }
 
 function manifestCandidate(entry) {
@@ -574,14 +847,41 @@ function encodeRepositoryPath(value) {
     .join("/");
 }
 
-async function fetchRepositoryContent(repository, filePath) {
+async function fetchRepositoryContent(
+  repository,
+  scope,
+  filePath,
+) {
+  if (
+    scope === REPOSITORY_SCOPE.EXTERNAL_ORGANIZATION_PUBLIC
+  ) {
+    const owner = encodeURIComponent(repository.owner.login);
+    const name = encodeURIComponent(repository.name);
+    const reference = encodeURIComponent(repository.default_branch);
+    const encodedPath = encodeRepositoryPath(filePath);
+    const rawUrl =
+      `https://raw.githubusercontent.com/${owner}/${name}/${reference}/${encodedPath}`;
+
+    const content = await requestText(rawUrl, {
+      label: "Public repository manifest request",
+      optionalStatuses: [404],
+    });
+
+    if (content === null) return null;
+    if (Buffer.byteLength(content, "utf8") > MAX_CONTENT_BYTES) {
+      return null;
+    }
+
+    return content;
+  }
+
   const encodedPath = encodeRepositoryPath(filePath);
   const encodedReference = encodeURIComponent(repository.default_branch);
 
   const response = await rest(
     `/repos/${repository.full_name}/contents/${encodedPath}?ref=${encodedReference}`,
     {
-      label: "Repository manifest request",
+      label: "Personal repository manifest request",
       optionalStatuses: [404, 409, 422],
     },
   );
@@ -601,9 +901,14 @@ async function fetchRepositoryContent(repository, filePath) {
   }
 }
 
-async function fetchRepositoryDetails(repository) {
+async function fetchRepositoryDetails(selection) {
+  const { repository, scope } = selection;
+  const allowAnonymousFallback =
+    repositorySupportsAnonymousFallback(scope);
+
   const languagesPromise = rest(repository.languages_url, {
     label: "Repository languages request",
+    allowAnonymousFallback,
   });
 
   const treePromise = rest(
@@ -611,6 +916,7 @@ async function fetchRepositoryDetails(repository) {
     {
       label: "Repository tree request",
       optionalStatuses: [404, 409, 422],
+      allowAnonymousFallback,
     },
   );
 
@@ -636,7 +942,11 @@ async function fetchRepositoryDetails(repository) {
     config.manifestConcurrency,
     async (entry) => ({
       path: entry.path,
-      content: await fetchRepositoryContent(repository, entry.path),
+      content: await fetchRepositoryContent(
+        repository,
+        scope,
+        entry.path,
+      ),
     }),
   );
 
@@ -651,6 +961,7 @@ async function fetchRepositoryDetails(repository) {
 
   return {
     repository,
+    scope,
     languages: languages ?? {},
     paths,
     manifests,
@@ -1959,17 +2270,32 @@ async function main() {
   }
 
   console.log("Fetching token-accessible repositories...");
-  const repositories = await fetchAllRepositories();
-  const repositoriesForScanning = repositories.filter(
-    repositoryIsEligibleForScanning,
+  const listedRepositories = await fetchAllRepositories();
+  const {
+    selected: repositorySelections,
+    summary: repositorySelectionSummary,
+  } = selectRepositoriesForAnalytics(listedRepositories);
+
+  const repositories = repositorySelections.map(
+    (selection) => selection.repository,
   );
 
   console.log(
-    `Repositories listed: ${repositories.length}; selected for deep scan: ${repositoriesForScanning.length}.`,
+    `Repositories listed: ${listedRepositories.length}; selected for analytics: ${repositorySelections.length}.`,
+  );
+  console.log(
+    [
+      `Selection policy: ${repositorySelectionSummary.personalPublic} personal public`,
+      `${repositorySelectionSummary.personalPrivate} personal private`,
+      `${repositorySelectionSummary.externalOrganizationPublic} external organization public`,
+      `${repositorySelectionSummary.excludedExternalOrganizationPrivateOrInternal} external organization private/internal excluded`,
+      `${repositorySelectionSummary.excludedExternalUserOwned} external user-owned excluded`,
+      `${repositorySelectionSummary.excludedByAnalyticsFilters} excluded by fork/archive/disabled/profile filters`,
+    ].join("; "),
   );
 
   const scanResults = await mapLimit(
-    repositoriesForScanning,
+    repositorySelections,
     config.repositoryConcurrency,
     fetchRepositoryDetails,
   );
@@ -1986,7 +2312,7 @@ async function main() {
     }
 
     failedScans += 1;
-    const repository = repositoriesForScanning[index];
+    const repository = repositorySelections[index].repository;
 
     if (config.debugPrivateRepositories) {
       console.warn(
@@ -2000,18 +2326,18 @@ async function main() {
   }
 
   if (
-    repositoriesForScanning.length > 0 &&
+    repositorySelections.length > 0 &&
     repositoryDetails.length === 0
   ) {
     throw new Error(
-      "No repositories could be scanned. Ensure PRIVATE_STATS_TOKEN has Contents: read access to the selected repositories.",
+      "No selected repositories could be scanned. Ensure the token has Contents: read for personal repositories and that external organization repositories are public.",
     );
   }
 
   const scanSuccessRatio =
-    repositoriesForScanning.length === 0
+    repositorySelections.length === 0
       ? 1
-      : repositoryDetails.length / repositoriesForScanning.length;
+      : repositoryDetails.length / repositorySelections.length;
 
   if (scanSuccessRatio < config.minimumScanSuccessRatio) {
     throw new Error(
