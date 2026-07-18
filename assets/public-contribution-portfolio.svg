@@ -11,12 +11,12 @@
   <rect x=".5" y=".5" width="999" height="1301" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
   <text x="48" y="31" class="title">Public Open-Source Contributions</text>
-  <text x="48" y="49" class="subtitle">Full project composition for public repositories GitHub links to your commits, pull requests, or reviews · not a personal-authorship claim</text>
+  <text x="48" y="49" class="subtitle">Full project composition for public repositories linked to the primary profile or configured contributor aliases · not a whole-project authorship claim</text>
   <rect x="18" y="70" width="964" height="326" rx="10" fill="#21262D" stroke="#30363D"/>
       <g transform="translate(32 86) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="60" y="101" class="value">flutter/flutter</text>
       <text x="32" y="125" class="small">Full public project composition: 90.5K project commits · 7 releases · 21 languages · 12K source files · 177.8K stars · 30.7K forks</text>
-      <text x="32" y="146" class="label">Attributed to maharudraabhishek: 0 attributed commits · 0 changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · evidence: issue</text>
+      <text x="32" y="146" class="label">Attributed identities: maharudraabhishek · 0 attributed commits · 0 changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · evidence: issue</text>
       <defs><clipPath id="public-flutter-flutter"><rect x="28" y="154" width="944" height="12" rx="6"/></clipPath></defs>
       <rect x="28" y="154" width="944" height="12" rx="6" fill="#0D1117"/>
       <g clip-path="url(#public-flutter-flutter)"><rect x="28.00" y="154" width="702.69" height="12" fill="#00B4AB"/><rect x="730.69" y="154" width="155.52" height="12" fill="#F34B7D"/><rect x="886.21" y="154" width="26.46" height="12" fill="#6866FB"/><rect x="912.67" y="154" width="26.14" height="12" fill="#B07219"/><rect x="938.81" y="154" width="6.02" height="12" fill="#438EFF"/><rect x="944.83" y="154" width="5.47" height="12" fill="#555555"/><rect x="950.30" y="154" width="4.59" height="12" fill="#A371F7"/><rect x="954.89" y="154" width="4.33" height="12" fill="#3572A5"/><rect x="959.22" y="154" width="4.29" height="12" fill="#A97BFF"/><rect x="963.51" y="154" width="2.32" height="12" fill="#39C5CF"/><rect x="965.83" y="154" width="1.69" height="12" fill="#F05138"/><rect x="967.52" y="154" width="1.43" height="12" fill="#DA3434"/><rect x="968.95" y="154" width="1.31" height="12" fill="#89E051"/><rect x="970.26" y="154" width="0.71" height="12" fill="#F1E05A"/><rect x="970.97" y="154" width="0.42" height="12" fill="#701516"/><rect x="971.39" y="154" width="0.23" height="12" fill="#C1F12E"/><rect x="971.62" y="154" width="0.17" height="12" fill="#E34C26"/><rect x="971.79" y="154" width="0.13" height="12" fill="#012456"/><rect x="971.92" y="154" width="0.05" height="12" fill="#563D7C"/><rect x="971.97" y="154" width="0.02" height="12" fill="#F85149"/><rect x="971.99" y="154" width="0.01" height="12" fill="#DB61A2"/></g>
@@ -87,7 +87,7 @@
       <g transform="translate(32 426) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="60" y="441" class="value">heremaps/gluecodium</text>
       <text x="32" y="465" class="small">Full public project composition: 2.6K project commits · 242 releases · 12 languages · 2.7K source files · 234 stars · 30 forks</text>
-      <text x="32" y="486" class="label">Attributed to maharudraabhishek: 0 attributed commits · 0 changed lines · 0 files touched · 2 authored PRs · 2 PRs reviewed · evidence: pull-request, pull-request-review</text>
+      <text x="32" y="486" class="label">Attributed identities: maharudraabhishek · 0 attributed commits · 0 changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · evidence: pull-request, pull-request-review</text>
       <defs><clipPath id="public-heremaps-gluecodium"><rect x="28" y="494" width="944" height="12" rx="6"/></clipPath></defs>
       <rect x="28" y="494" width="944" height="12" rx="6" fill="#0D1117"/>
       <g clip-path="url(#public-heremaps-gluecodium)"><rect x="28.00" y="494" width="223.46" height="12" fill="#00B4AB"/><rect x="251.46" y="494" width="218.33" height="12" fill="#F34B7D"/><rect x="469.78" y="494" width="155.57" height="12" fill="#A97BFF"/><rect x="625.36" y="494" width="153.42" height="12" fill="#F05138"/><rect x="778.78" y="494" width="75.19" height="12" fill="#58A6FF"/><rect x="853.96" y="494" width="52.33" height="12" fill="#B07219"/><rect x="906.29" y="494" width="34.68" height="12" fill="#DA3434"/><rect x="940.97" y="494" width="25.16" height="12" fill="#555555"/><rect x="966.14" y="494" width="3.25" height="12" fill="#89E051"/><rect x="969.39" y="494" width="1.41" height="12" fill="#3572A5"/><rect x="970.80" y="494" width="1.19" height="12" fill="#DB61A2"/><rect x="971.99" y="494" width="0.01" height="12" fill="#C1F12E"/></g>
@@ -131,7 +131,7 @@
       <g transform="translate(32 682) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="60" y="697" class="value">heremaps/here-sdk-examples</text>
       <text x="32" y="721" class="small">Full public project composition: 409 project commits · 117 releases · 0 languages · 1.8K source files · 208 stars · 143 forks</text>
-      <text x="32" y="742" class="label">Attributed to maharudraabhishek: 4 attributed commits · 4K changed lines · 216 files touched · 57 authored PRs · 10 PRs reviewed · evidence: repository-relationship, pull-request, pull-request-review</text>
+      <text x="32" y="742" class="label">Attributed identities: maharudraabhishek · 4 attributed commits · 4K changed lines · 216 files touched · 0 authored PRs · 0 PRs reviewed · evidence: repository-relationship, commit, pull-request, pull-request-review</text>
       <defs><clipPath id="public-heremaps-here-sdk-examples"><rect x="28" y="750" width="944" height="12" rx="6"/></clipPath></defs>
       <rect x="28" y="750" width="944" height="12" rx="6" fill="#0D1117"/>
       <g clip-path="url(#public-heremaps-here-sdk-examples)"></g>
@@ -139,7 +139,7 @@
       <g transform="translate(32 882) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="60" y="897" class="value">razorpay/razorpay-node</text>
       <text x="32" y="921" class="small">Full public project composition: 459 project commits · 28 releases · 1 language · 130 source files · 240 stars · 129 forks</text>
-      <text x="32" y="942" class="label">Attributed to maharudraabhishek: 0 attributed commits · 0 changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · evidence: issue</text>
+      <text x="32" y="942" class="label">Attributed identities: maharudraabhishek · 0 attributed commits · 0 changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · evidence: issue</text>
       <defs><clipPath id="public-razorpay-razorpay-node"><rect x="28" y="950" width="944" height="12" rx="6"/></clipPath></defs>
       <rect x="28" y="950" width="944" height="12" rx="6" fill="#0D1117"/>
       <g clip-path="url(#public-razorpay-razorpay-node)"><rect x="28.00" y="950" width="944.00" height="12" fill="#F1E05A"/></g>
@@ -150,7 +150,7 @@
       <g transform="translate(32 1082) scale(1.1875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="60" y="1097" class="value">heremaps/here-sdk-ref-app-flutter</text>
       <text x="32" y="1121" class="small">Full public project composition: 228 project commits · 19 releases · 7 languages · 117 source files · 51 stars · 22 forks</text>
-      <text x="32" y="1142" class="label">Attributed to maharudraabhishek: 0 attributed commits · 0 changed lines · 0 files touched · 1 authored PRs · 0 PRs reviewed · evidence: pull-request</text>
+      <text x="32" y="1142" class="label">Attributed identities: maharudraabhishek · 0 attributed commits · 0 changed lines · 0 files touched · 0 authored PRs · 0 PRs reviewed · evidence: commit, pull-request</text>
       <defs><clipPath id="public-heremaps-here-sdk-ref-app-flutter"><rect x="28" y="1150" width="944" height="12" rx="6"/></clipPath></defs>
       <rect x="28" y="1150" width="944" height="12" rx="6" fill="#0D1117"/>
       <g clip-path="url(#public-heremaps-here-sdk-ref-app-flutter)"><rect x="28.00" y="1150" width="911.86" height="12" fill="#00B4AB"/><rect x="939.86" y="1150" width="18.09" height="12" fill="#A97BFF"/><rect x="957.95" y="1150" width="5.40" height="12" fill="#C1F12E"/><rect x="963.34" y="1150" width="3.85" height="12" fill="#89E051"/><rect x="967.19" y="1150" width="3.70" height="12" fill="#701516"/><rect x="970.90" y="1150" width="1.04" height="12" fill="#F05138"/><rect x="971.94" y="1150" width="0.06" height="12" fill="#438EFF"/></g>
