@@ -22,7 +22,7 @@ const GITHUB_CARDS = Object.freeze([
   ["contribution-graph.svg", "GitHub contribution calendar"],
   ["github-activity-graph.svg", "GitHub activity graph for the last 12 months"],
   ["personal-code-contribution.svg", "Personal code contribution by language"],
-  ["language-spectrum.svg", "Engineering language footprint across personal and verified public contributed projects"],
+  ["language-spectrum.svg", "Engineering language footprint across personal and public contributed projects"],
   ["public-contribution-portfolio.svg", "Public open-source contribution portfolio"],
   ["frameworks-platforms.svg", "Framework and platform contribution impact"],
   ["engineering-domains.svg", "Derived engineering domains"],
@@ -30,20 +30,24 @@ const GITHUB_CARDS = Object.freeze([
   ["repository-portfolio.svg", "Repository portfolio analytics"],
 ]);
 
-const AI_CARDS = Object.freeze([
+const AI_PRIMARY_CARDS = Object.freeze([
   ["ai-engineering-overview.svg", "AI engineering overview"],
-  ["prompt-engineering.svg", "Prompt engineering"],
-  ["context-engineering.svg", "Context engineering"],
-  ["memory-engineering.svg", "Memory engineering"],
-  ["ai-harness-engineering.svg", "AI harness engineering"],
-  ["agentic-orchestration.svg", "Agentic orchestration"],
+  ["agentic-workflow-maturity.svg", "Agentic workflow maturity"],
+  ["ai-engineering-capabilities.svg", "AI engineering capabilities"],
   ["mcp-tool-integration.svg", "MCP and tool integration"],
-  ["rag-retrieval-engineering.svg", "RAG and retrieval engineering"],
-  ["ai-evaluation-observability.svg", "AI evaluation and observability"],
-  ["ai-governance-safety.svg", "AI governance and safety"],
+  ["context-governance.svg", "Context engineering and governance"],
   ["ai-workflow-activity.svg", "AI workflow activity"],
   ["ai-engineering-trophies.svg", "AI engineering trophies"],
 ]);
+
+const AI_COMPACT_CARDS = Object.freeze([
+  ["context-engineering.svg", "Compact context engineering analytics"],
+  ["memory-engineering.svg", "Compact memory engineering analytics"],
+  ["ai-harness-engineering.svg", "Compact AI harness engineering analytics"],
+  ["agentic-orchestration.svg", "Compact agentic orchestration analytics"],
+]);
+
+const AI_CARDS = Object.freeze([...AI_PRIMARY_CARDS, ...AI_COMPACT_CARDS]);
 
 const CARDS = Object.freeze([...GITHUB_CARDS, ...AI_CARDS]);
 const MANAGED_ASSET_FILENAMES = Object.freeze([...new Set([
@@ -52,9 +56,10 @@ const MANAGED_ASSET_FILENAMES = Object.freeze([...new Set([
   "activity-timeline.svg",
   "engineering-trophies.svg",
   "open-source-stewardship.svg",
-  "agentic-workflow-maturity.svg",
-  "ai-engineering-capabilities.svg",
-  "context-governance.svg",
+  "prompt-engineering.svg",
+  "rag-retrieval-engineering.svg",
+  "ai-evaluation-observability.svg",
+  "ai-governance-safety.svg",
 ])]);
 const MANAGED_EXTERNAL_HOSTS = Object.freeze([
   "github-readme-stats.shion.dev",
@@ -85,6 +90,7 @@ function removeManagedHtmlBlocks(readme) {
   let result = readme;
   result = result.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, (block) => containsManagedReference(block) ? "" : block);
   result = result.replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, (block) => containsManagedReference(block) ? "" : block);
+  result = result.replace(/<table\b[^>]*>[\s\S]*?<\/table>/gi, (block) => containsManagedReference(block) ? "" : block);
   return result;
 }
 function removeManagedLines(readme) {
@@ -95,6 +101,8 @@ function removeManagedLines(readme) {
     if (/^##\s+(Engineering|GitHub) Analytics\s*$/i.test(trimmed)) return false;
     if (/^###\s+🤖\s+AI Engineering Analytics\s*$/i.test(trimmed)) return false;
     if (/^###\s+AI Engineering Analytics\s*$/i.test(trimmed)) return false;
+    if (/^####\s+Specialized AI Engineering\s*$/i.test(trimmed)) return false;
+    if (/^> Focused cards report context, memory, harness and orchestration/.test(trimmed)) return false;
     if (/^> Personal contribution cards count GitHub-attributed work\./.test(trimmed)) return false;
     if (/^> AI analytics are evidence-based/.test(trimmed)) return false;
     return true;
@@ -120,6 +128,18 @@ async function validateAndHashAssets() {
 function imageBlocks(cards, version) {
   return cards.map(([filename, alt]) => `<p align="center">\n  <img src="./assets/${filename}?v=${version}" alt="${alt}" />\n</p>`).join("\n\n");
 }
+function compactImageGrid(cards, version) {
+  const rows = [];
+  for (let index = 0; index < cards.length; index += 2) {
+    const cells = cards.slice(index, index + 2).map(
+      ([filename, alt]) =>
+        `    <td width="50%" align="center"><img src="./assets/${filename}?v=${version}" alt="${alt}" width="100%" /></td>`,
+    );
+    if (cells.length === 1) cells.push("    <td width=\"50%\"></td>");
+    rows.push(`  <tr>\n${cells.join("\n")}\n  </tr>`);
+  }
+  return `<table width="100%">\n${rows.join("\n")}\n</table>`;
+}
 function profileViewBadge() {
   const encodedUsername = encodeURIComponent(username);
   return `<p align="center">\n  <a href="https://hits.sh/github.com/${encodedUsername}/">\n    <img src="https://hits.sh/github.com/${encodedUsername}.svg?view=today-total&style=flat-square&label=Profile%20views&color=0D1117&labelColor=30363D&logo=github" alt="Profile views" />\n  </a>\n</p>`;
@@ -136,7 +156,13 @@ ${imageBlocks(GITHUB_CARDS, version)}
 
 > AI analytics are evidence-based repository configuration and workflow signals. They do not estimate how much code was generated by AI.
 
-${imageBlocks(AI_CARDS, version)}
+${imageBlocks(AI_PRIMARY_CARDS, version)}
+
+#### Specialized AI Engineering
+
+> Focused cards report context, memory, harness and orchestration evidence without replacing the broader AI dashboard.
+
+${compactImageGrid(AI_COMPACT_CARDS, version)}
 
 ${profileViewBadge()}
 ${END_MARKER}`;
