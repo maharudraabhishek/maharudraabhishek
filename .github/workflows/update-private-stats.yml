@@ -6,6 +6,7 @@ on:
     - cron: "17 2 * * *"
   workflow_dispatch:
 
+# The workflow only needs repository-content write access to commit generated SVGs.
 permissions:
   contents: write
 
@@ -15,9 +16,9 @@ concurrency:
 
 jobs:
   generate:
-    name: Generate analytics cards
+    name: Generate engineering analytics
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Check out profile repository
@@ -31,12 +32,30 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Validate required generator
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          GENERATOR="scripts/generate-engineering-analytics.mjs"
+
+          if [ ! -f "$GENERATOR" ]; then
+            echo "::error::$GENERATOR is missing from the repository."
+            exit 1
+          fi
+
+          node --check "$GENERATOR"
+          echo "Generator exists and passed the Node.js syntax check."
+
       - name: Validate private GitHub token
         shell: bash
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
+          GITHUB_USERNAME: maharudraabhishek
         run: |
-          if [ -z "$PRIVATE_STATS_TOKEN" ]; then
+          set -euo pipefail
+
+          if [ -z "${PRIVATE_STATS_TOKEN:-}" ]; then
             echo "::error::PRIVATE_STATS_TOKEN is missing."
             echo "Add it under Settings → Secrets and variables → Actions."
             exit 1
@@ -44,6 +63,7 @@ jobs:
 
           STATUS=$(curl \
             --silent \
+            --show-error \
             --output /tmp/github-user.json \
             --write-out "%{http_code}" \
             --header "Accept: application/vnd.github+json" \
@@ -57,44 +77,67 @@ jobs:
             exit 1
           fi
 
-          echo "GitHub authentication succeeded."
+          AUTHENTICATED_LOGIN=$(node -e \
+            "const fs=require('fs'); const data=JSON.parse(fs.readFileSync('/tmp/github-user.json','utf8')); process.stdout.write(data.login ?? '')")
 
-      - name: Generate fresh analytics cards
+          if [ "${AUTHENTICATED_LOGIN,,}" != "${GITHUB_USERNAME,,}" ]; then
+            echo "::error::PRIVATE_STATS_TOKEN belongs to '$AUTHENTICATED_LOGIN', not '$GITHUB_USERNAME'."
+            exit 1
+          fi
+
+          echo "GitHub authentication succeeded for $AUTHENTICATED_LOGIN."
+
+      - name: Generate analytics into a temporary directory
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
           GITHUB_USERNAME: maharudraabhishek
-          MAX_REPOSITORIES: "200"
-          REPOSITORY_CONCURRENCY: "5"
-        run: |
-          mkdir -p assets
 
-          rm -f \
-            assets/github-overview.svg \
-            assets/contribution-streak.svg \
-            assets/activity-timeline.svg \
-            assets/language-spectrum.svg \
-            assets/frameworks-platforms.svg \
-            assets/engineering-domains.svg \
-            assets/delivery-collaboration.svg \
-            assets/repository-portfolio.svg
+          # Repository scope used for private/public aggregation.
+          REPOSITORY_AFFILIATIONS: owner,collaborator,organization_member
+          MAX_REPOSITORIES: "500"
+          REPOSITORY_CONCURRENCY: "4"
+          MANIFEST_CONCURRENCY: "2"
+          MAX_MANIFEST_FILES_PER_REPOSITORY: "40"
+
+          # Include historical archived work, exclude forks and this profile repo
+          # so generated README code does not distort language percentages.
+          INCLUDE_ARCHIVED_REPOSITORIES: "true"
+          INCLUDE_FORKED_REPOSITORIES: "false"
+          EXCLUDE_REPOSITORIES: maharudraabhishek/maharudraabhishek
+
+          # Fail rather than publish misleading analytics when too many
+          # repositories cannot be scanned.
+          MIN_SCAN_SUCCESS_RATIO: "0.75"
+
+          OUTPUT_DIRECTORY: generated-analytics
+          DEBUG_PRIVATE_REPOSITORIES: "false"
+        run: |
+          set -euo pipefail
+
+          rm -rf generated-analytics
+          mkdir -p generated-analytics
 
           node scripts/generate-engineering-analytics.mjs
 
       - name: Validate generated SVG cards
         shell: bash
         run: |
+          set -euo pipefail
+
           SVG_FILES=(
-            "assets/github-overview.svg"
-            "assets/contribution-streak.svg"
-            "assets/activity-timeline.svg"
-            "assets/language-spectrum.svg"
-            "assets/frameworks-platforms.svg"
-            "assets/engineering-domains.svg"
-            "assets/delivery-collaboration.svg"
-            "assets/repository-portfolio.svg"
+            "github-overview.svg"
+            "contribution-streak.svg"
+            "activity-timeline.svg"
+            "language-spectrum.svg"
+            "frameworks-platforms.svg"
+            "engineering-domains.svg"
+            "delivery-collaboration.svg"
+            "repository-portfolio.svg"
           )
 
-          for svg in "${SVG_FILES[@]}"; do
+          for filename in "${SVG_FILES[@]}"; do
+            svg="generated-analytics/$filename"
+
             if [ ! -s "$svg" ]; then
               echo "::error::$svg is missing or empty."
               exit 1
@@ -115,14 +158,44 @@ jobs:
             echo "Validated: $svg"
           done
 
+      - name: Replace repository analytics cards
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p assets
+
+          SVG_FILES=(
+            "github-overview.svg"
+            "contribution-streak.svg"
+            "activity-timeline.svg"
+            "language-spectrum.svg"
+            "frameworks-platforms.svg"
+            "engineering-domains.svg"
+            "delivery-collaboration.svg"
+            "repository-portfolio.svg"
+          )
+
+          for filename in "${SVG_FILES[@]}"; do
+            install -m 0644 "generated-analytics/$filename" "assets/$filename"
+          done
+
+          # Remove the previous single-card filename from the earlier version.
+          rm -f assets/github-languages.svg
+
+          echo "Fresh analytics cards installed:"
+          ls -lh assets/*.svg
+
       - name: Commit and push refreshed cards
         shell: bash
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add --force assets/*.svg
+          git add -A assets
 
           if git diff --cached --quiet; then
             echo "Analytics are unchanged. Nothing to commit."
