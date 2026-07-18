@@ -3659,7 +3659,9 @@ function metricGrid(metrics, startY = 78, columns = 2, width = 560) {
  * repository health without duplicating language or framework cards.
  */
 function renderOverview(data) {
-  const metrics = [
+  const width = 860;
+  const height = 280;
+  const primaryMetrics = [
     {
       icon: "repo",
       color: THEME.blue,
@@ -3702,7 +3704,7 @@ function renderOverview(data) {
       value: compactNumber(
         data.publicContributedRepositories,
       ),
-      label: "Verified public contribution repos",
+      label: "Public contribution repos",
     },
     {
       icon: "people",
@@ -3712,6 +3714,9 @@ function renderOverview(data) {
       ),
       label: "Public organizations",
     },
+  ];
+
+  const compactInsights = [
     {
       icon: "workflow",
       color: THEME.cyan,
@@ -3738,15 +3743,70 @@ function renderOverview(data) {
     },
   ];
 
+  const primaryColumns = 4;
+  const primaryGap = 10;
+  const primaryX = 20;
+  const primaryY = 70;
+  const primaryCellWidth =
+    (
+      width -
+      primaryX * 2 -
+      primaryGap * (primaryColumns - 1)
+    ) /
+    primaryColumns;
+  const primaryCellHeight = 67;
+  const primaryRowPitch = 77;
+
+  const primaryTiles = primaryMetrics
+    .map((metric, index) => {
+      const column = index % primaryColumns;
+      const row = Math.floor(index / primaryColumns);
+      const x =
+        primaryX +
+        column * (primaryCellWidth + primaryGap);
+      const y =
+        primaryY +
+        row * primaryRowPitch;
+
+      return `<rect x="${x}" y="${y}" width="${primaryCellWidth}" height="${primaryCellHeight}" rx="10" fill="${metric.color}" fill-opacity=".08" stroke="${metric.color}" stroke-opacity=".42"/>
+      ${icon(metric.icon, x + 12, y + 13, metric.color, 16)}
+      <text x="${x + 40}" y="${y + 30}" class="metricValue">${escapeXml(metric.value)}</text>
+      <text x="${x + 12}" y="${y + 54}" class="metricLabel">${escapeXml(metric.label)}</text>`;
+    })
+    .join("");
+
+  const insightY = 228;
+  const insightGap = 10;
+  const insightCellWidth =
+    (
+      width -
+      primaryX * 2 -
+      insightGap * (compactInsights.length - 1)
+    ) /
+    compactInsights.length;
+
+  const insightTiles = compactInsights
+    .map((metric, index) => {
+      const x =
+        primaryX +
+        index * (insightCellWidth + insightGap);
+
+      return `<rect x="${x}" y="${insightY}" width="${insightCellWidth}" height="34" rx="9" fill="${THEME.track}" stroke="${metric.color}" stroke-opacity=".45"/>
+      ${icon(metric.icon, x + 10, insightY + 9, metric.color, 14)}
+      <text x="${x + 31}" y="${insightY + 16}" class="small">${escapeXml(metric.value)}</text>
+      <text x="${x + 31}" y="${insightY + 28}" class="tiny">${escapeXml(metric.label)}</text>`;
+    })
+    .join("");
+
   return cardShell({
-    width: 1000,
-    height: 286,
+    width,
+    height,
     title: "GitHub Overview",
     iconName: "star",
     accent: THEME.yellow,
     subtitle:
-      "Scale, current activity, delivery, collaboration, public impact and repository health",
-    body: metricGrid(metrics, 78, 4, 1000),
+      "Engineering scale, delivery, collaboration and repository health",
+    body: `${primaryTiles}${insightTiles}`,
   });
 }
 
@@ -3758,14 +3818,10 @@ function renderOverview(data) {
  * across the same rolling 12-month window used by GitHub Overview.
  */
 function renderStreak(streak) {
-  const peakDayLabel =
-    streak.peakContributionDate
-      ? `Peak day · ${formatDate(
-          streak.peakContributionDate,
-        )}`
-      : "Peak day · 12 months";
+  const width = 860;
+  const height = 286;
 
-  const metrics = [
+  const featuredMetrics = [
     {
       icon: "flame",
       color: THEME.orange,
@@ -3784,24 +3840,9 @@ function renderStreak(streak) {
       value: compactNumber(streak.activeDays),
       label: "Active days · all time",
     },
-    {
-      icon: "calendar",
-      color: THEME.cyan,
-      value: formatDate(streak.first),
-      label: "First recorded contribution",
-    },
-    {
-      icon: "commit",
-      color: THEME.blue,
-      value: formatDate(streak.latest),
-      label: "Latest recorded contribution",
-    },
-    {
-      icon: "activity",
-      color: THEME.purple,
-      value: streak.mostActiveWeekday,
-      label: "Most active weekday",
-    },
+  ];
+
+  const recentMetrics = [
     {
       icon: "commit",
       color: THEME.green,
@@ -3817,10 +3858,7 @@ function renderStreak(streak) {
     {
       icon: "calendar",
       color: THEME.purple,
-      value: plural(
-        streak.recentActiveWeeks,
-        "week",
-      ),
+      value: plural(streak.recentActiveWeeks, "week"),
       label: "Active weeks · latest 53",
     },
     {
@@ -3836,7 +3874,9 @@ function renderStreak(streak) {
         streak.peakContributionCount,
         "contribution",
       ),
-      label: peakDayLabel,
+      label: streak.peakContributionDate
+        ? `Peak · ${formatDate(streak.peakContributionDate)}`
+        : "Peak contribution day",
     },
     {
       icon: "activity",
@@ -3846,15 +3886,86 @@ function renderStreak(streak) {
     },
   ];
 
+  const featuredX = 20;
+  const featuredY = 70;
+  const featuredGap = 12;
+  const featuredCellWidth =
+    (
+      width -
+      featuredX * 2 -
+      featuredGap * 2
+    ) /
+    3;
+  const featuredCellHeight = 67;
+
+  const featuredTiles = featuredMetrics
+    .map((metric, index) => {
+      const x =
+        featuredX +
+        index * (featuredCellWidth + featuredGap);
+
+      return `<rect x="${x}" y="${featuredY}" width="${featuredCellWidth}" height="${featuredCellHeight}" rx="11" fill="${metric.color}" fill-opacity=".09" stroke="${metric.color}" stroke-opacity=".5"/>
+      ${icon(metric.icon, x + 14, featuredY + 14, metric.color, 18)}
+      <text x="${x + 46}" y="${featuredY + 31}" class="metricValue">${escapeXml(metric.value)}</text>
+      <text x="${x + 14}" y="${featuredY + 55}" class="metricLabel">${escapeXml(metric.label)}</text>`;
+    })
+    .join("");
+
+  const timelineY = 147;
+  const timelineWidth = width - 40;
+  const timelineThird = timelineWidth / 3;
+
+  const timeline = `<rect x="20" y="${timelineY}" width="${timelineWidth}" height="39" rx="10" fill="${THEME.track}" stroke="${THEME.border}"/>
+      <text x="34" y="${timelineY + 16}" class="tiny">FIRST RECORDED</text>
+      <text x="34" y="${timelineY + 31}" class="small">${escapeXml(formatDate(streak.first))}</text>
+      <line x1="${20 + timelineThird}" y1="${timelineY + 8}" x2="${20 + timelineThird}" y2="${timelineY + 31}" stroke="${THEME.border}"/>
+      <text x="${20 + timelineThird + 14}" y="${timelineY + 16}" class="tiny">MOST ACTIVE WEEKDAY</text>
+      <text x="${20 + timelineThird + 14}" y="${timelineY + 31}" class="small">${escapeXml(streak.mostActiveWeekday)}</text>
+      <line x1="${20 + timelineThird * 2}" y1="${timelineY + 8}" x2="${20 + timelineThird * 2}" y2="${timelineY + 31}" stroke="${THEME.border}"/>
+      <text x="${20 + timelineThird * 2 + 14}" y="${timelineY + 16}" class="tiny">LATEST RECORDED</text>
+      <text x="${20 + timelineThird * 2 + 14}" y="${timelineY + 31}" class="small">${escapeXml(formatDate(streak.latest))}</text>`;
+
+  const recentColumns = 3;
+  const recentGap = 10;
+  const recentX = 20;
+  const recentY = 197;
+  const recentCellWidth =
+    (
+      width -
+      recentX * 2 -
+      recentGap * (recentColumns - 1)
+    ) /
+    recentColumns;
+  const recentCellHeight = 34;
+  const recentRowPitch = 42;
+
+  const recentTiles = recentMetrics
+    .map((metric, index) => {
+      const column = index % recentColumns;
+      const row = Math.floor(index / recentColumns);
+      const x =
+        recentX +
+        column * (recentCellWidth + recentGap);
+      const y =
+        recentY +
+        row * recentRowPitch;
+
+      return `<rect x="${x}" y="${y}" width="${recentCellWidth}" height="${recentCellHeight}" rx="8" fill="${metric.color}" fill-opacity=".055" stroke="${metric.color}" stroke-opacity=".34"/>
+      ${icon(metric.icon, x + 10, y + 9, metric.color, 14)}
+      <text x="${x + 31}" y="${y + 15}" class="small">${escapeXml(metric.value)}</text>
+      <text x="${x + 31}" y="${y + 28}" class="tiny">${escapeXml(metric.label)}</text>`;
+    })
+    .join("");
+
   return cardShell({
-    width: 1000,
-    height: 286,
+    width,
+    height,
     title: "Contribution Streak",
     iconName: "flame",
     accent: THEME.orange,
     subtitle:
-      "All-time streak history plus rolling 12-month contribution consistency",
-    body: metricGrid(metrics, 78, 4, 1000),
+      "All-time streak history with rolling 12-month consistency",
+    body: `${featuredTiles}${timeline}${recentTiles}`,
   });
 }
 

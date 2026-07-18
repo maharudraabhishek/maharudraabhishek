@@ -289,6 +289,20 @@ function fullWidthCard(card, version) {
 </p>`;
 }
 
+/**
+ * Centers a naturally sized SVG on its own row.
+ *
+ * GitHub applies max-width constraints on narrow screens, so the card remains
+ * responsive without being stretched to the full README width on desktop.
+ */
+function naturalWidthCard(card, version, width) {
+  const [filename, alt] = card;
+
+  return `<p align="center">
+  <img src="./assets/${filename}?v=${version}" alt="${alt}" width="${width}" />
+</p>`;
+}
+
 function twoColumnRow(leftCard, rightCard, version) {
   const [leftFilename, leftAlt] = leftCard;
   const [rightFilename, rightAlt] = rightCard;
@@ -359,9 +373,9 @@ function buildAnalyticsBlock(version) {
 
 > Personal contribution cards count GitHub-attributed work. Full public-project composition is shown separately and is not a personal-authorship claim.
 
-${fullWidthCard(CARD.overview, version)}
+${naturalWidthCard(CARD.overview, version, 860)}
 
-${fullWidthCard(CARD.streak, version)}
+${naturalWidthCard(CARD.streak, version, 860)}
 
 ${fullWidthCard(CARD.github_trophies, version)}
 

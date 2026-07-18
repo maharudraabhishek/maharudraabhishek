@@ -705,27 +705,26 @@ function renderCapabilities(data) {
  */
 function renderMcpTools(data) {
   const width = 760;
-  const metricStartY = 80;
-  const metricColumns = 2;
-  const metricRows = 2;
-  const metricRowPitch = 62;
-  const metricsBottom =
-    metricStartY +
-    (metricRows - 1) * metricRowPitch +
-    18;
+  const metricX = 20;
+  const metricY = 72;
+  const metricGap = 10;
+  const metricColumns = 4;
+  const metricCellWidth =
+    (
+      width -
+      metricX * 2 -
+      metricGap * (metricColumns - 1)
+    ) /
+    metricColumns;
+  const metricCellHeight = 60;
 
-  const sectionTitleY = metricsBottom + 38;
-  const categoryStartY = sectionTitleY + 20;
+  const categoryPanelY = 151;
+  const categoryHeaderHeight = 38;
   const categoryColumns = 2;
   const categoryGap = 12;
   const categoryRowPitch = 42;
-  const categoryCellWidth =
-    (
-      width -
-      56 -
-      categoryGap
-    ) /
-    categoryColumns;
+  const categoryStartY =
+    categoryPanelY + categoryHeaderHeight + 12;
   const categoryRows = Math.max(
     1,
     Math.ceil(
@@ -733,39 +732,65 @@ function renderMcpTools(data) {
       categoryColumns,
     ),
   );
-  const height =
-    categoryStartY +
+  const categoryPanelHeight =
+    categoryHeaderHeight +
+    12 +
     categoryRows * categoryRowPitch +
-    28;
+    12;
+  const height =
+    categoryPanelY +
+    categoryPanelHeight +
+    16;
 
   const metrics = [
     {
       icon: "network",
       color: THEME.green,
       value: compactNumber(data.mcpRepositories),
-      label: "MCP-enabled repositories",
+      label: "MCP repositories",
     },
     {
       icon: "docs",
       color: THEME.blue,
       value: compactNumber(data.totals.mcpConfigs),
-      label: "MCP configuration signals",
+      label: "Configuration signals",
     },
     {
       icon: "bot",
       color: THEME.purple,
       value: compactNumber(data.totals.agentFiles),
-      label: "Agent definition files",
+      label: "Agent definitions",
     },
     {
       icon: "tool",
       color: THEME.cyan,
       value: compactNumber(data.toolCategories.length),
-      label: "Connected tool categories",
+      label: "Tool categories",
     },
   ];
 
-  const categoryCards =
+  const metricTiles = metrics
+    .map((metric, index) => {
+      const x =
+        metricX +
+        index * (metricCellWidth + metricGap);
+
+      return `<rect x="${x}" y="${metricY}" width="${metricCellWidth}" height="${metricCellHeight}" rx="10" fill="${metric.color}" fill-opacity=".08" stroke="${metric.color}" stroke-opacity=".43"/>
+      ${icon(metric.icon, x + 12, metricY + 13, metric.color, 16)}
+      <text x="${x + 40}" y="${metricY + 29}" class="value">${escapeXml(metric.value)}</text>
+      <text x="${x + 12}" y="${metricY + 50}" class="tiny">${escapeXml(metric.label)}</text>`;
+    })
+    .join("");
+
+  const categoryCellWidth =
+    (
+      width -
+      56 -
+      categoryGap
+    ) /
+    categoryColumns;
+
+  const categoryTiles =
     data.toolCategories.length > 0
       ? data.toolCategories
           .map((item, index) => {
@@ -784,14 +809,21 @@ function renderMcpTools(data) {
             const y =
               categoryStartY +
               row * categoryRowPitch;
+            const countBadgeWidth = 66;
+            const countBadgeX =
+              x +
+              categoryCellWidth -
+              countBadgeWidth -
+              8;
 
-            return `<rect x="${x}" y="${y}" width="${categoryCellWidth}" height="32" rx="8" fill="${THEME.cyan}" fill-opacity=".08" stroke="${THEME.cyan}" stroke-opacity=".45"/>
+            return `<rect x="${x}" y="${y}" width="${categoryCellWidth}" height="32" rx="8" fill="${THEME.background}" stroke="${THEME.cyan}" stroke-opacity=".38"/>
       ${icon("tool", x + 11, y + 8, THEME.cyan, 14)}
       <text x="${x + 34}" y="${y + 20}" class="small">${escapeXml(item.name)}</text>
-      <text x="${x + categoryCellWidth - 12}" y="${y + 20}" text-anchor="end" class="label">${item.repositories} repos</text>`;
+      <rect x="${countBadgeX}" y="${y + 6}" width="${countBadgeWidth}" height="20" rx="10" fill="${THEME.cyan}" fill-opacity=".13"/>
+      <text x="${countBadgeX + countBadgeWidth / 2}" y="${y + 20}" text-anchor="middle" class="tiny">${item.repositories} repos</text>`;
           })
           .join("")
-      : `<rect x="28" y="${categoryStartY}" width="${width - 56}" height="32" rx="8" fill="${THEME.track}" stroke="${THEME.border}"/>
+      : `<rect x="28" y="${categoryStartY}" width="${width - 56}" height="32" rx="8" fill="${THEME.background}" stroke="${THEME.border}"/>
       <text x="44" y="${categoryStartY + 21}" class="empty">No generic MCP tool categories were identified.</text>`;
 
   return cardShell({
@@ -801,16 +833,14 @@ function renderMcpTools(data) {
     iconName: "network",
     accent: THEME.green,
     subtitle:
-      "Aggregate tool categories only · private server names, URLs and credentials are never rendered",
-    body: `${metricGrid(
-      metrics,
-      width,
-      metricStartY,
-      metricColumns,
-    )}
-      <line x1="28" y1="${sectionTitleY - 17}" x2="${width - 28}" y2="${sectionTitleY - 17}" stroke="${THEME.border}"/>
-      <text x="28" y="${sectionTitleY}" class="title" style="font-size:14px">Detected tool categories</text>
-      ${categoryCards}`,
+      "Aggregate categories only · private MCP server details are never shown",
+    body: `${metricTiles}
+      <rect x="20" y="${categoryPanelY}" width="${width - 40}" height="${categoryPanelHeight}" rx="12" fill="${THEME.track}" stroke="${THEME.border}"/>
+      <rect x="20" y="${categoryPanelY}" width="${width - 40}" height="${categoryHeaderHeight}" rx="12" fill="${THEME.green}" fill-opacity=".09"/>
+      <line x1="20" y1="${categoryPanelY + categoryHeaderHeight}" x2="${width - 20}" y2="${categoryPanelY + categoryHeaderHeight}" stroke="${THEME.green}" stroke-opacity=".42"/>
+      ${icon("tool", 34, categoryPanelY + 11, THEME.green, 16)}
+      <text x="60" y="${categoryPanelY + 25}" class="small" style="font-weight:600">Detected tool categories</text>
+      ${categoryTiles}`,
   });
 }
 
