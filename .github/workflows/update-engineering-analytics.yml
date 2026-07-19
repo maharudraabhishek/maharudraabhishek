@@ -72,6 +72,12 @@ jobs:
           node scripts/generate-engineering-analytics.mjs \
             --self-test-summary-cards
 
+          # Exercises v20's data accuracy contract without network access:
+          # alias attribution, Python/Jupyter classification, Linguist-byte
+          # aggregation, PR deduplication, and structured API diagnostics.
+          node scripts/generate-engineering-analytics.mjs \
+            --self-test-data-pipeline
+
       - name: Reset generated asset directories
         shell: bash
         run: |
@@ -134,6 +140,8 @@ jobs:
       - name: Generate analytics into clean staging
         env:
           PRIVATE_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN }}
+          # github.token is created automatically for this workflow. It is not
+          # a second user-managed secret and is used only for public scope.
           PUBLIC_GITHUB_TOKEN: ${{ github.token }}
 
           # Includes personal repositories available to the token and public
@@ -148,6 +156,8 @@ jobs:
           MAX_MANIFEST_FILES_PER_REPOSITORY: "80"
 
           CODE_ACTIVITY_YEARS: "10"
+          # Caps are correctness guards: reaching one fails the run rather
+          # than publishing partial personal-code totals.
           MAX_COMMITS_PER_REPOSITORY: "250"
           MAX_ANALYZED_COMMITS: "2500"
           COMMIT_LIST_CONCURRENCY: "2"

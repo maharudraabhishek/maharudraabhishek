@@ -21,7 +21,11 @@ const MAX_CONTENT_BYTES = 1_000_000;
 const summaryCardSelfTest = process.argv.includes(
   "--self-test-summary-cards",
 );
-const token = summaryCardSelfTest
+const dataPipelineSelfTest = process.argv.includes(
+  "--self-test-data-pipeline",
+);
+const offlineSelfTest = summaryCardSelfTest || dataPipelineSelfTest;
+const token = offlineSelfTest
   ? "offline-summary-card-self-test"
   : requiredEnvironment("PRIVATE_STATS_TOKEN");
 
@@ -351,6 +355,7 @@ const CONTRIBUTION_LANGUAGE_BY_EXTENSION = Object.freeze({
   ".h": "C",
   ".hpp": "C++",
   ".html": "HTML",
+  ".ipynb": "Jupyter Notebook",
   ".java": "Java",
   ".jl": "Julia",
   ".js": "JavaScript",
@@ -366,6 +371,8 @@ const CONTRIBUTION_LANGUAGE_BY_EXTENSION = Object.freeze({
   ".pl": "Perl",
   ".ps1": "PowerShell",
   ".py": "Python",
+  ".pyi": "Python",
+  ".pyw": "Python",
   ".r": "R",
   ".rb": "Ruby",
   ".rs": "Rust",
@@ -479,8 +486,10 @@ function repositoryPatternMatches(pattern, fullName) {
  * verified commits, authored pull requests, or submitted reviews—not from a
  * repository whitelist.
  */
-function contributionIdentitiesForScope(scope) {
-  if (scope !== REPOSITORY_SCOPE.PUBLIC_CONTRIBUTED) return [username];
+function contributionIdentitiesForScope(_scope) {
+  // Configured identities represent the same person across username history.
+  // GitHub can retain an old login on commits in personal repositories too,
+  // so limiting aliases to external public projects under-counts authored work.
   return contributorIdentities;
 }
 
@@ -836,14 +845,16 @@ async function requestJson(
       }
     }
 
-    const message = parseGitHubError(rawBody);
-    const rateLimited = responseIsRateLimited(response, message);
+    const diagnostics = parseGitHubError(rawBody, response);
+    const rateLimited = responseIsRateLimited(response, diagnostics);
 
     if (rateLimited) {
       if (retryAttempt >= REQUEST_RETRIES) {
-        throw new Error(
-          `${label} remained rate-limited after ${REQUEST_RETRIES + 1} attempts.`,
-        );
+        const error = githubHttpError(label, response, diagnostics);
+        error.message =
+          `${label} remained rate-limited after ${REQUEST_RETRIES + 1} attempts: ` +
+          diagnostics.summary;
+        throw error;
       }
 
       const delay = rateLimitRetryDelayMilliseconds(
@@ -863,7 +874,7 @@ async function requestJson(
       allowAnonymousFallback &&
       !anonymousFallbackUsed &&
       Object.hasOwn(activeHeaders, "Authorization") &&
-      responseAllowsPublicFallback(response.status, message)
+      responseAllowsPublicFallback(response.status, diagnostics)
     ) {
       anonymousFallbackUsed = true;
       activeHeaders = PUBLIC_REST_HEADERS;
@@ -876,10 +887,6 @@ async function requestJson(
 
     if (optionalStatuses.includes(response.status)) {
       return null;
-    }
-
-    if (response.status === 401) {
-      throw new Error(`${label} failed: GitHub rejected the token.`);
     }
 
     const temporaryFailure = [502, 503, 504].includes(response.status);
@@ -895,9 +902,7 @@ async function requestJson(
       continue;
     }
 
-    throw new Error(
-      `${label} failed with HTTP ${response.status}${message ? `: ${message}` : "."}`,
-    );
+    throw githubHttpError(label, response, diagnostics);
   }
 }
 
@@ -938,8 +943,8 @@ async function requestText(
     }
 
     const rawBody = await response.text();
-    const message = parseGitHubError(rawBody);
-    const rateLimited = responseIsRateLimited(response, message);
+    const diagnostics = parseGitHubError(rawBody, response);
+    const rateLimited = responseIsRateLimited(response, diagnostics);
 
     if (rateLimited && attempt < REQUEST_RETRIES) {
       const delay = rateLimitRetryDelayMilliseconds(response, attempt);
@@ -959,24 +964,86 @@ async function requestText(
       continue;
     }
 
-    throw new Error(
-      `${label} failed with HTTP ${response.status}${message ? `: ${message}` : "."}`,
-    );
+    throw githubHttpError(label, response, diagnostics);
   }
 
   throw new Error(`${label} failed unexpectedly.`);
 }
 
-function parseGitHubError(rawBody) {
+/**
+ * Retains GitHub's structured failure diagnostics without ever including
+ * request headers or credentials. Search API 422 responses are otherwise too
+ * ambiguous to distinguish access, qualifier, and abuse-control failures.
+ */
+function parseGitHubError(rawBody, response = null) {
+  let parsed = null;
   try {
-    const parsed = JSON.parse(rawBody);
-    return parsed.message ? String(parsed.message) : "";
+    parsed = JSON.parse(rawBody);
   } catch {
-    return rawBody.slice(0, 200);
+    // Non-JSON proxy responses are bounded before entering logs.
   }
+
+  const errors = Array.isArray(parsed?.errors)
+    ? parsed.errors.slice(0, 10).map((error) => {
+        if (typeof error === "string") return { message: error.slice(0, 300) };
+        if (!error || typeof error !== "object") return { message: String(error).slice(0, 300) };
+        return {
+          resource: error.resource ? String(error.resource).slice(0, 100) : null,
+          field: error.field ? String(error.field).slice(0, 100) : null,
+          code: error.code ? String(error.code).slice(0, 100) : null,
+          message: error.message ? String(error.message).slice(0, 300) : null,
+        };
+      })
+    : [];
+  const message = parsed?.message
+    ? String(parsed.message).slice(0, 500)
+    : rawBody.slice(0, 200);
+  const errorDetails = errors
+    .map((error) =>
+      [error.resource, error.field, error.code, error.message]
+        .filter(Boolean)
+        .join("/"),
+    )
+    .filter(Boolean)
+    .join("; ");
+
+  return Object.freeze({
+    message,
+    errors: Object.freeze(errors.map((error) => Object.freeze(error))),
+    documentationUrl: parsed?.documentation_url
+      ? String(parsed.documentation_url).slice(0, 500)
+      : null,
+    requestId: response?.headers.get("x-github-request-id") ?? null,
+    rateLimitResource: response?.headers.get("x-ratelimit-resource") ?? null,
+    rateLimitRemaining: response?.headers.get("x-ratelimit-remaining") ?? null,
+    rateLimitReset: response?.headers.get("x-ratelimit-reset") ?? null,
+    retryAfter: response?.headers.get("retry-after") ?? null,
+    summary: [message, errorDetails].filter(Boolean).join(" · "),
+  });
 }
 
-function responseIsRateLimited(response, message) {
+function githubHttpError(label, response, diagnostics) {
+  const metadata = [
+    diagnostics.requestId ? `request ${diagnostics.requestId}` : null,
+    diagnostics.rateLimitResource
+      ? `resource ${diagnostics.rateLimitResource}`
+      : null,
+    diagnostics.rateLimitRemaining !== null
+      ? `remaining ${diagnostics.rateLimitRemaining}`
+      : null,
+  ].filter(Boolean).join(", ");
+  const error = new Error(
+    `${label} failed with HTTP ${response.status}` +
+    `${diagnostics.summary ? `: ${diagnostics.summary}` : "."}` +
+    `${metadata ? ` (${metadata})` : ""}`,
+  );
+  error.name = "GitHubHttpError";
+  error.status = response.status;
+  error.diagnostics = diagnostics;
+  return error;
+}
+
+function responseIsRateLimited(response, diagnostics) {
   if (response.status === 429) return true;
 
   const remaining = response.headers.get("x-ratelimit-remaining");
@@ -985,18 +1052,18 @@ function responseIsRateLimited(response, message) {
   return (
     response.status === 403 &&
     /secondary rate limit|rate limit exceeded|abuse detection/i.test(
-      message,
+      diagnostics.summary,
     )
   );
 }
 
-function responseAllowsPublicFallback(status, message) {
+function responseAllowsPublicFallback(status, diagnostics) {
   if (status !== 403 && status !== 404) return false;
 
   return (
     status === 404 ||
     /resource not accessible by personal access token|forbidden|requires authentication/i.test(
-      message,
+      diagnostics.summary,
     )
   );
 }
@@ -1349,30 +1416,38 @@ async function fetchContributionCollectionRepositories(
       });
 
       const repositories = [];
+      const yearFailures = [];
       for (const result of yearResults) {
         if (result.status === "rejected") {
-          console.warn(
-            `Contribution-repository year query failed for ${identity}: ${result.reason.message}`,
-          );
+          yearFailures.push(result.reason.message);
           continue;
         }
         repositories.push(...result.value);
+      }
+      if (yearFailures.length > 0) {
+        throw new Error(
+          `Contribution-repository year discovery failed for ${identity}: ${yearFailures.join("; ")}`,
+        );
       }
       return repositories;
     },
   );
 
   const repositories = new Map();
+  const identityFailures = [];
   for (const result of identityResults) {
     if (result.status === "rejected") {
-      console.warn(
-        `Contribution collection discovery failed: ${result.reason.message}`,
-      );
+      identityFailures.push(result.reason.message);
       continue;
     }
     for (const repository of result.value) {
       mergeContributionCandidate(repositories, repository);
     }
+  }
+  if (identityFailures.length > 0) {
+    throw new Error(
+      `Contribution collection discovery was incomplete: ${identityFailures.join("; ")}`,
+    );
   }
   return [...repositories.values()];
 }
@@ -1388,28 +1463,14 @@ async function searchPublicContributionRepositoryNames(
   identity,
 ) {
   const repositories = new Map();
-  for (
-    let page = 1;
-    page <= 10 &&
-    repositories.size < config.maxPublicContributedRepositories;
-    page += 1
-  ) {
+  let reportedTotal = null;
+  for (let page = 1; page <= 10; page += 1) {
     const endpoint =
       `/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=100&page=${page}`;
-    const attempts = [
-      {
-        headers: REST_HEADERS,
-        label: "personal token",
-      },
-      {
-        headers: PUBLIC_REST_HEADERS,
-        label: "workflow token",
-      },
-      {
-        headers: ANONYMOUS_REST_HEADERS,
-        label: "anonymous public API",
-      },
-    ];
+    const attempts = publicSearchCredentialAttempts().map((attempt) => ({
+      headers: attempt.headers,
+      label: attempt.name,
+    }));
 
     let response = null;
     let lastError = null;
@@ -1436,6 +1497,12 @@ async function searchPublicContributionRepositoryNames(
     }
 
     const items = Array.isArray(response?.items) ? response.items : [];
+    reportedTotal ??= safeInteger(response?.total_count);
+    if (response?.incomplete_results === true || reportedTotal > 1_000) {
+      throw new Error(
+        `Public contribution search (${evidence}; ${identity}) could not retrieve a complete GitHub Search result set (${reportedTotal} reported).`,
+      );
+    }
     for (const item of items) {
       const fullName = repositoryNameFromApiUrl(item.repository_url);
       if (fullName) {
@@ -1446,7 +1513,12 @@ async function searchPublicContributionRepositoryNames(
         });
       }
     }
-    if (items.length < 100) break;
+    if (items.length < 100 || page * 100 >= reportedTotal) break;
+  }
+  if (repositories.size > config.maxPublicContributedRepositories) {
+    throw new Error(
+      `Public contribution discovery found ${repositories.size} repositories for ${identity}, exceeding MAX_PUBLIC_CONTRIBUTED_REPOSITORIES=${config.maxPublicContributedRepositories}. Raise the cap rather than publishing a partial portfolio.`,
+    );
   }
   return [...repositories.values()];
 }
@@ -1459,7 +1531,7 @@ async function fetchPublicRepositoryMetadata(
   const encoded = fullName.split("/").map(encodeURIComponent).join("/");
   let repository;
   let lastError;
-  for (const headers of [PUBLIC_REST_HEADERS, REST_HEADERS, ANONYMOUS_REST_HEADERS]) {
+  for (const { headers } of publicSearchCredentialAttempts()) {
     try {
       repository = await rest(`/repos/${encoded}`, {
         label: `Public repository metadata (${fullName})`,
@@ -1471,11 +1543,9 @@ async function fetchPublicRepositoryMetadata(
     }
   }
   if (!repository) {
-    console.warn(
-      `Could not load public repository metadata for ${fullName}: ` +
-      `${lastError?.message ?? "unknown error"}`,
+    throw lastError ?? new Error(
+      `Could not load public repository metadata for ${fullName}.`,
     );
-    return null;
   }
 
   const normalized = normalizePublicContributionRepository(
@@ -1509,11 +1579,10 @@ async function fetchSearchDiscoveredContributionRepositories() {
   );
 
   const names = new Map();
+  const searchFailures = [];
   for (const result of searchResults) {
     if (result.status === "rejected") {
-      console.warn(
-        `Public contribution search source failed: ${result.reason.message}`,
-      );
+      searchFailures.push(result.reason.message);
       continue;
     }
     for (const item of result.value) {
@@ -1527,6 +1596,11 @@ async function fetchSearchDiscoveredContributionRepositories() {
       names.set(item.fullName.toLowerCase(), existing);
     }
   }
+  if (searchFailures.length > 0) {
+    throw new Error(
+      `Public contribution search discovery was incomplete: ${searchFailures.join("; ")}`,
+    );
+  }
 
   const metadataResults = await mapLimit(
     [...names.values()].slice(0, config.maxPublicContributedRepositories),
@@ -1537,15 +1611,20 @@ async function fetchSearchDiscoveredContributionRepositories() {
         [...item.evidence][0],
         [...item.identities],
       );
-      if (!repository) return null;
       repository.contribution_evidence = [...item.evidence];
       repository.contribution_identities = [...item.identities];
       return repository;
     },
   );
-  return metadataResults
-    .filter((result) => result.status === "fulfilled" && result.value)
-    .map((result) => result.value);
+  const metadataFailures = metadataResults
+    .filter((result) => result.status === "rejected")
+    .map((result) => result.reason.message);
+  if (metadataFailures.length > 0) {
+    throw new Error(
+      `Public contribution metadata discovery was incomplete: ${metadataFailures.join("; ")}`,
+    );
+  }
+  return metadataResults.map((result) => result.value);
 }
 
 async function fetchPublicContributedRepositories() {
@@ -1554,31 +1633,14 @@ async function fetchPublicContributedRepositories() {
   // Every configured identity uses ordinary GitHub-wide public contribution
   // discovery. Candidates are verified later before affecting analytics.
   const sourceSpecs = [
-    ...globalContributorIdentities.flatMap((identity) => [
-      {
-        name: `repository relationship via personal token (${identity})`,
-        run: () => fetchRepositoriesContributedToConnection(
-          identity,
-          REST_HEADERS,
-          `Public contributed-repository relationship via personal token (${identity})`,
-        ),
-      },
-      {
-        name: `repository relationship via workflow token (${identity})`,
-        run: () => fetchRepositoriesContributedToConnection(
-          identity,
-          PUBLIC_REST_HEADERS,
-          `Public contributed-repository relationship via workflow token (${identity})`,
-        ),
-      },
-    ]),
-    {
-      name: "yearly contribution collections via personal token",
-      run: () => fetchContributionCollectionRepositories(
-        REST_HEADERS,
-        "Personal-token",
+    ...globalContributorIdentities.map((identity) => ({
+      name: `repository relationship via workflow token (${identity})`,
+      run: () => fetchRepositoriesContributedToConnection(
+        identity,
+        PUBLIC_REST_HEADERS,
+        `Public contributed-repository relationship via workflow token (${identity})`,
       ),
-    },
+    })),
     {
       name: "yearly contribution collections via workflow token",
       run: () => fetchContributionCollectionRepositories(
@@ -1596,10 +1658,11 @@ async function fetchPublicContributedRepositories() {
     sourceSpecs.map((source) => source.run()),
   );
   const merged = new Map();
+  const sourceFailures = [];
   sources.forEach((source, index) => {
     const sourceName = sourceSpecs[index].name;
     if (source.status === "rejected") {
-      console.warn(`${sourceName} discovery failed: ${source.reason.message}`);
+      sourceFailures.push(`${sourceName}: ${source.reason.message}`);
       return;
     }
     console.log(
@@ -1610,12 +1673,23 @@ async function fetchPublicContributedRepositories() {
     }
   });
 
+  if (sourceFailures.length > 0) {
+    throw new Error(
+      `Public contribution discovery was incomplete: ${sourceFailures.join("; ")}`,
+    );
+  }
+
+  if (merged.size > config.maxPublicContributedRepositories) {
+    throw new Error(
+      `Public contribution discovery found ${merged.size} unique repositories, exceeding MAX_PUBLIC_CONTRIBUTED_REPOSITORIES=${config.maxPublicContributedRepositories}. Raise the cap rather than publishing a partial portfolio.`,
+    );
+  }
+
   return [...merged.values()]
     .sort((first, second) =>
       String(second.pushed_at ?? "").localeCompare(String(first.pushed_at ?? "")) ||
       first.full_name.localeCompare(second.full_name),
-    )
-    .slice(0, config.maxPublicContributedRepositories);
+    );
 }
 
 function mergeRepositories(...repositoryLists) {
@@ -1836,7 +1910,9 @@ async function publicRestWithFallback(
   { label, optionalStatuses = [] },
 ) {
   let lastError = null;
-  for (const headers of [PUBLIC_REST_HEADERS, REST_HEADERS, ANONYMOUS_REST_HEADERS]) {
+  // External public repositories must never inherit the fine-grained private
+  // PAT's repository-selection or organization-authorization restrictions.
+  for (const { headers } of publicSearchCredentialAttempts()) {
     try {
       return await rest(endpoint, {
         label,
@@ -1850,16 +1926,6 @@ async function publicRestWithFallback(
   throw lastError ?? new Error(`${label} failed.`);
 }
 
-function inferLanguagesFromPaths(paths) {
-  const counts = new Map();
-  for (const filePath of paths) {
-    const language = contributionLanguageForPath(filePath);
-    if (!language) continue;
-    counts.set(language, safeInteger(counts.get(language)) + 1);
-  }
-  return Object.fromEntries(counts);
-}
-
 async function fetchRepositoryDetails(selection) {
   const { repository, scope, publicContribution = false } = selection;
   const publicRepository = repositorySupportsAnonymousFallback(scope);
@@ -1868,8 +1934,9 @@ async function fetchRepositoryDetails(selection) {
   let treeResponse = null;
 
   if (publicRepository) {
-    // Language and tree calls are independent. One failed endpoint must not
-    // discard the other data or remove the whole public project.
+    // Both results are required. Mixing GitHub Linguist byte counts with a
+    // source-file-count fallback would make the aggregate mathematically
+    // invalid and could silently publish partial repository analytics.
     const [languageResult, treeResult] = await Promise.allSettled([
       publicRestWithFallback(repository.languages_url, {
         label: `Public repository languages (${repository.full_name})`,
@@ -1878,21 +1945,15 @@ async function fetchRepositoryDetails(selection) {
         `/repos/${repository.full_name}/git/trees/${encodeURIComponent(repository.default_branch)}?recursive=1`,
         {
           label: `Public repository tree (${repository.full_name})`,
-          optionalStatuses: [404, 409, 422],
+          optionalStatuses: [409],
         },
       ),
     ]);
 
-    if (languageResult.status === "fulfilled") {
-      languages = languageResult.value ?? {};
-    } else {
-      console.warn(languageResult.reason.message);
-    }
-    if (treeResult.status === "fulfilled") {
-      treeResponse = treeResult.value;
-    } else {
-      console.warn(treeResult.reason.message);
-    }
+    if (languageResult.status === "rejected") throw languageResult.reason;
+    if (treeResult.status === "rejected") throw treeResult.reason;
+    languages = languageResult.value ?? {};
+    treeResponse = treeResult.value;
   } else {
     [languages, treeResponse] = await Promise.all([
       rest(repository.languages_url, {
@@ -1903,7 +1964,7 @@ async function fetchRepositoryDetails(selection) {
         `/repos/${repository.full_name}/git/trees/${encodeURIComponent(repository.default_branch)}?recursive=1`,
         {
           label: "Repository tree request",
-          optionalStatuses: [404, 409, 422],
+          optionalStatuses: [409],
           headers: REST_HEADERS,
         },
       ),
@@ -1917,11 +1978,10 @@ async function fetchRepositoryDetails(selection) {
     .filter((entry) => entry.type === "blob" && entry.path)
     .map((entry) => entry.path);
 
-  let languageSource = "github-linguist";
-  if (Object.keys(languages ?? {}).length === 0 && paths.length > 0) {
-    languages = inferLanguagesFromPaths(paths);
-    languageSource = "source-file fallback";
-  }
+  // An empty Linguist response is a valid result for an empty or non-code
+  // repository. It remains empty rather than being replaced by incomparable
+  // file counts.
+  const languageSource = "github-linguist";
 
   const manifestEntries = treeEntries
     .filter(manifestCandidate)
@@ -1939,6 +1999,14 @@ async function fetchRepositoryDetails(selection) {
       content: await fetchRepositoryContent(repository, scope, entry.path),
     }),
   );
+  const manifestFailures = manifestResults
+    .filter((result) => result.status === "rejected")
+    .map((result) => result.reason.message);
+  if (manifestFailures.length > 0) {
+    throw new Error(
+      `Manifest inspection was incomplete for ${repository.full_name}: ${manifestFailures.join("; ")}`,
+    );
+  }
   const manifests = manifestResults
     .filter((result) =>
       result.status === "fulfilled" &&
@@ -2213,26 +2281,13 @@ function calculateStreak(days) {
   };
 }
 
-async function searchCount(
-  query,
-  label,
-  { headers = REST_HEADERS } = {},
-) {
-  const response = await rest(
-    `/search/issues?q=${encodeURIComponent(query)}&per_page=1`,
-    { label, headers },
-  );
-  return safeInteger(response?.total_count);
-}
-
 /**
- * Runs the same issue/PR search for every configured contributor identity.
+ * Searches global collaboration activity across both credential scopes.
  *
- * The primary profile query uses the private PAT so token-accessible private
- * activity can still be counted. Historical aliases use the public workflow
- * token because they are intended only for public contribution attribution.
- * Every identity search is required: substituting a PR total for a merged-PR
- * total or silently treating a failed alias as zero would publish false data.
+ * The PAT is required for selected private repositories; the workflow token
+ * (or anonymous fallback) covers external public repositories that a
+ * fine-grained PAT may not be authorized to search. Result identifiers are
+ * unioned across credentials and historical aliases to prevent double counts.
  */
 async function searchCountsByContributorIdentity(
   queryFactory,
@@ -2241,20 +2296,54 @@ async function searchCountsByContributorIdentity(
 ) {
   const results = await mapLimit(
     identities,
-    2,
+    1,
     async (identity) => {
-      const isPrimary = identity.toLowerCase() === username.toLowerCase();
-      const headers = isPrimary ? REST_HEADERS : PUBLIC_REST_HEADERS;
-      const count = await searchCount(
+      const privateResult = await searchRepositoryIssueIdentifiers(
         queryFactory(identity),
-        `${label} (${identity})`,
-        { headers },
+        `${label} (${identity}; personal token)`,
+        null,
+        REST_HEADERS,
       );
-      return { identity, count };
+      if (!privateResult.complete) {
+        throw new Error(
+          `${label} (${identity}; personal token) exceeded GitHub Search's 1,000-result retrieval boundary.`,
+        );
+      }
+
+      let publicResult = null;
+      let lastPublicError = null;
+      for (const attempt of publicSearchCredentialAttempts()) {
+        try {
+          publicResult = await searchRepositoryIssueIdentifiers(
+            queryFactory(identity),
+            `${label} (${identity}; ${attempt.name})`,
+            null,
+            attempt.headers,
+          );
+          if (publicResult.complete) break;
+        } catch (error) {
+          lastPublicError = error;
+        }
+      }
+      if (!publicResult) {
+        throw lastPublicError ?? new Error(
+          `${label} (${identity}; public scope) had no usable credential.`,
+        );
+      }
+      if (!publicResult.complete) {
+        throw new Error(
+          `${label} (${identity}; public scope) exceeded GitHub Search's 1,000-result retrieval boundary.`,
+        );
+      }
+
+      return {
+        identity,
+        keys: new Set([...privateResult.keys, ...publicResult.keys]),
+      };
     },
   );
 
-  const counts = [];
+  const identityResults = [];
   const failures = [];
   for (const [index, result] of results.entries()) {
     if (result.status === "rejected") {
@@ -2263,7 +2352,7 @@ async function searchCountsByContributorIdentity(
       );
       continue;
     }
-    counts.push(result.value);
+    identityResults.push(result.value);
   }
 
   if (failures.length > 0) {
@@ -2272,12 +2361,150 @@ async function searchCountsByContributorIdentity(
     );
   }
 
+  const combinedKeys = new Set(
+    identityResults.flatMap((item) => [...item.keys]),
+  );
   return {
-    total: counts.reduce((sum, item) => sum + safeInteger(item.count), 0),
-    identities: counts
-      .filter((item) => safeInteger(item.count) > 0)
+    total: combinedKeys.size,
+    identities: identityResults
+      .filter((item) => item.keys.size > 0)
       .map((item) => item.identity),
-    counts,
+    counts: identityResults.map((item) => ({
+      identity: item.identity,
+      count: item.keys.size,
+    })),
+  };
+}
+
+function publicSearchCredentialAttempts() {
+  return [
+    ...(publicGithubToken
+      ? [{ name: "workflow token", headers: PUBLIC_REST_HEADERS }]
+      : []),
+    { name: "anonymous public API", headers: ANONYMOUS_REST_HEADERS },
+  ];
+}
+
+function publicSearchResultKey(item, expectedRepositoryFullName) {
+  const repositoryFullName =
+    repositoryNameFromApiUrl(item?.repository_url) ??
+    expectedRepositoryFullName;
+  const pullRequestNumber = Number(item?.number);
+  if (!repositoryFullName || !Number.isSafeInteger(pullRequestNumber)) {
+    return null;
+  }
+  return `${repositoryFullName.toLowerCase()}#${pullRequestNumber}`;
+}
+
+/**
+ * Retrieves repository-scoped issue/PR identifiers instead of only
+ * `total_count`. Identifiers can be unioned across historical aliases, which
+ * prevents the same pull request from being counted twice.
+ */
+async function searchRepositoryIssueIdentifiers(
+  query,
+  label,
+  repositoryFullName,
+  headers,
+) {
+  const keys = new Set();
+  let reportedTotal = null;
+  let incompleteResults = false;
+
+  for (let page = 1; page <= 10; page += 1) {
+    const response = await rest(
+      `/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=100&page=${page}`,
+      { label, headers },
+    );
+    const items = Array.isArray(response?.items) ? response.items : [];
+    reportedTotal ??= safeInteger(response?.total_count);
+    incompleteResults ||= response?.incomplete_results === true;
+
+    for (const item of items) {
+      const key = publicSearchResultKey(item, repositoryFullName);
+      if (key) keys.add(key);
+    }
+
+    if (items.length < 100 || keys.size >= reportedTotal) break;
+  }
+
+  return {
+    keys,
+    reportedTotal: safeInteger(reportedTotal),
+    complete:
+      !incompleteResults &&
+      safeInteger(reportedTotal) <= 1_000 &&
+      keys.size >= safeInteger(reportedTotal),
+  };
+}
+
+/**
+ * Searches one external public repository with public credentials only.
+ * Switching from the workflow token to anonymous access is a credential
+ * fallback, not a retry of the same deterministic 422 response.
+ */
+async function searchPublicRepositoryEvidence(
+  repository,
+  identities,
+  qualifierFactory,
+  label,
+) {
+  const combinedKeys = new Set();
+  const matchedIdentities = new Set();
+  const unavailable = [];
+
+  for (const identity of identities) {
+    const query = qualifierFactory(identity);
+    let identityResult = null;
+    const attemptFailures = [];
+
+    for (const attempt of publicSearchCredentialAttempts()) {
+      try {
+        identityResult = await searchRepositoryIssueIdentifiers(
+          query,
+          `${label} (${identity}; ${attempt.name})`,
+          repository.full_name,
+          attempt.headers,
+        );
+        if (identityResult.complete) break;
+        attemptFailures.push({
+          credential: attempt.name,
+          message:
+            `GitHub Search returned an incomplete result set (${identityResult.keys.size}/${identityResult.reportedTotal}).`,
+          status: null,
+          diagnostics: null,
+        });
+      } catch (error) {
+        attemptFailures.push({
+          credential: attempt.name,
+          message: error.message,
+          status: Number.isInteger(error.status) ? error.status : null,
+          diagnostics: error.diagnostics ?? null,
+        });
+      }
+    }
+
+    if (!identityResult?.complete) {
+      unavailable.push({
+        identity,
+        reason: identityResult
+          ? `GitHub Search reported ${identityResult.reportedTotal} results but only ${identityResult.keys.size} identifiers were retrievable.`
+          : "All public credential attempts failed.",
+        failures: attemptFailures,
+      });
+      continue;
+    }
+
+    for (const key of identityResult.keys) combinedKeys.add(key);
+    if (identityResult.keys.size > 0) matchedIdentities.add(identity);
+  }
+
+  return {
+    status: unavailable.length === 0 ? "success" : "unavailable",
+    count: unavailable.length === 0 ? combinedKeys.size : null,
+    keys: combinedKeys,
+    identities: [...matchedIdentities],
+    unavailable,
   };
 }
 
@@ -2317,6 +2544,12 @@ async function fetchAuthoredCommitReferences(selection) {
   const since = new Date();
   since.setUTCFullYear(since.getUTCFullYear() - config.codeActivityYears);
 
+  // Empty repositories have no default branch and therefore no commit list.
+  // This is a known zero, unlike an inaccessible or invalid API response.
+  if (!repository.default_branch) {
+    return { selection, commits: [], capped: false };
+  }
+
   // Public organization projects may contain work authored through historical
   // GitHub accounts. Query every configured identity and merge by commit SHA
   // so one commit can never be counted twice.
@@ -2336,14 +2569,18 @@ async function fetchAuthoredCommitReferences(selection) {
       }
 
       const perPage = Math.min(100, remaining);
-      const response = await rest(
-        `/repos/${repository.full_name}/commits?sha=${encodeURIComponent(repository.default_branch)}&author=${encodeURIComponent(identity)}&since=${encodeURIComponent(since.toISOString())}&per_page=${perPage}&page=${pageNumber}`,
-        {
-          label: `Authored-commit listing (${identity})`,
-          optionalStatuses: [404, 409, 422],
-          headers: requestHeaders,
-        },
-      );
+      const endpoint =
+        `/repos/${repository.full_name}/commits?sha=${encodeURIComponent(repository.default_branch)}&author=${encodeURIComponent(identity)}&since=${encodeURIComponent(since.toISOString())}&per_page=${perPage}&page=${pageNumber}`;
+      const response = repositorySupportsAnonymousFallback(scope)
+        ? await publicRestWithFallback(endpoint, {
+            label: `Authored-commit listing (${identity})`,
+            optionalStatuses: [409],
+          })
+        : await rest(endpoint, {
+            label: `Authored-commit listing (${identity})`,
+            optionalStatuses: [409],
+            headers: requestHeaders,
+          });
 
       const pageItems = Array.isArray(response) ? response : [];
       for (const commit of pageItems) {
@@ -2436,23 +2673,26 @@ async function fetchCommitDetails(selection, commitReference) {
     : REST_HEADERS;
   const files = [];
   let statistics = null;
+  let filesTruncated = false;
 
   for (let pageNumber = 1; pageNumber <= 30; pageNumber += 1) {
-    const response = await rest(
-      `/repos/${repository.full_name}/commits/${encodeURIComponent(sha)}?per_page=100&page=${pageNumber}`,
-      {
-        label: "Commit-detail request",
-        optionalStatuses: [404, 409, 422],
-        headers: requestHeaders,
-      },
-    );
+    const endpoint =
+      `/repos/${repository.full_name}/commits/${encodeURIComponent(sha)}?per_page=100&page=${pageNumber}`;
+    const response = repositorySupportsAnonymousFallback(scope)
+      ? await publicRestWithFallback(endpoint, {
+          label: "Public commit-detail request",
+        })
+      : await rest(endpoint, {
+          label: "Personal commit-detail request",
+          headers: requestHeaders,
+        });
 
-    if (!response) break;
     if (pageNumber === 1) statistics = response.stats ?? null;
 
     const pageFiles = Array.isArray(response.files) ? response.files : [];
     files.push(...pageFiles);
     if (pageFiles.length < 100) break;
+    if (pageNumber === 30) filesTruncated = true;
   }
 
   return {
@@ -2465,6 +2705,7 @@ async function fetchCommitDetails(selection, commitReference) {
       null,
     statistics,
     files,
+    filesTruncated,
     attributedIdentities: [...new Set(attributedIdentities)],
   };
 }
@@ -2505,21 +2746,38 @@ async function analyzePersonalCodeContributions(repositorySelections) {
   );
 
   const repositoryCommitLists = [];
-  let failedCommitLists = 0;
+  const listingFailures = [];
 
-  for (const result of listResults) {
+  for (const [index, result] of listResults.entries()) {
     if (result.status === "fulfilled") {
       repositoryCommitLists.push(result.value);
     } else {
-      failedCommitLists += 1;
-      console.warn(`Authored-commit listing failed: ${result.reason.message}`);
+      listingFailures.push(
+        `${repositorySelections[index].repository.full_name}: ${result.reason.message}`,
+      );
     }
+  }
+
+  if (listingFailures.length > 0) {
+    throw new Error(
+      `Personal authored-commit discovery was incomplete: ${listingFailures.join("; ")}`,
+    );
   }
 
   const allocation = allocateCommitReferences(repositoryCommitLists);
   console.log(
-    `Authored commits discovered: ${allocation.discoveredCount}; selected for detailed analysis: ${allocation.allocated.length}; repository caps reached: ${allocation.cappedRepositories}; listing failures: ${failedCommitLists}.`,
+    `Authored commits discovered: ${allocation.discoveredCount}; selected for detailed analysis: ${allocation.allocated.length}; repository caps reached: ${allocation.cappedRepositories}; listing failures: 0.`,
   );
+
+  if (
+    allocation.cappedRepositories > 0 ||
+    allocation.discoveredCount > allocation.allocated.length
+  ) {
+    throw new Error(
+      "Personal code contribution analysis reached a configured commit cap. " +
+      "Raise MAX_COMMITS_PER_REPOSITORY or MAX_ANALYZED_COMMITS rather than publishing partial language totals.",
+    );
+  }
 
   const detailResults = await mapLimit(
     allocation.allocated,
@@ -2539,16 +2797,24 @@ async function analyzePersonalCodeContributions(repositorySelections) {
     firstDate: null,
     latestDate: null,
   };
-  let failedCommitDetails = 0;
+  const detailFailures = [];
 
-  for (const result of detailResults) {
+  for (const [index, result] of detailResults.entries()) {
     if (result.status === "rejected") {
-      failedCommitDetails += 1;
-      console.warn(`Commit-detail analysis failed: ${result.reason.message}`);
+      const allocationItem = allocation.allocated[index];
+      detailFailures.push(
+        `${allocationItem.selection.repository.full_name}@${allocationItem.commit.sha}: ${result.reason.message}`,
+      );
       continue;
     }
 
     const detail = result.value;
+    if (detail.filesTruncated) {
+      detailFailures.push(
+        `${detail.repositoryFullName}@${detail.sha}: changed-file pagination exceeded GitHub's 3,000-file retrieval boundary.`,
+      );
+      continue;
+    }
     const repositoryAccumulator = repositories.get(detail.repositoryFullName) ??
       createContributionAccumulator();
     repositoryAccumulator.commitShas.add(detail.sha);
@@ -2610,6 +2876,12 @@ async function analyzePersonalCodeContributions(repositorySelections) {
     }
   }
 
+  if (detailFailures.length > 0) {
+    throw new Error(
+      `Personal commit-detail analysis was incomplete: ${detailFailures.join("; ")}`,
+    );
+  }
+
   const languageItems = [...languages.entries()]
     .map(([language, accumulator]) => ({
       language,
@@ -2633,12 +2905,12 @@ async function analyzePersonalCodeContributions(repositorySelections) {
   return {
     languages: languageItems,
     repositories: repositoryItems,
-    analyzedCommits: detailResults.length - failedCommitDetails,
+    analyzedCommits: detailResults.length,
     discoveredCommits: allocation.discoveredCount,
     globalCapReached:
       allocation.discoveredCount > allocation.allocated.length,
     cappedRepositories: allocation.cappedRepositories,
-    failedCommitDetails,
+    failedCommitDetails: 0,
     aiWorkflowActivity: {
       commits: aiWorkflow.commitShas.size,
       repositories: aiWorkflow.repositories.size,
@@ -2655,11 +2927,11 @@ async function analyzePersonalCodeContributions(repositorySelections) {
 }
 
 /**
- * Builds a repository-normalized language footprint.
+ * Aggregates the exact byte totals reported by GitHub's Languages endpoint.
  *
- * Each repository contributes a total weight of 1 regardless of its size.
- * This prevents a large monorepo from overwhelming every smaller project and
- * makes the SVG represent breadth of engineering work rather than raw bytes.
+ * A percentage-of-percentages gives a tiny repository the same influence as a
+ * monorepo and can badly distort languages such as Python. Raw Linguist bytes
+ * are additive across repositories and therefore form one consistent metric.
  */
 function aggregateLanguages(repositoryDetails) {
   const totals = new Map();
@@ -2673,7 +2945,7 @@ function aggregateLanguages(repositoryDetails) {
         rawUnits: 0,
         repositories: 0,
       };
-      current.weight += item.percentage / 100;
+      current.weight += item.bytes;
       current.rawUnits += item.bytes;
       current.repositories += 1;
       totals.set(item.language, current);
@@ -2734,36 +3006,27 @@ async function fetchPublicRepositoryLifecycle(repository) {
     }
   `;
 
-  try {
-    const data = await graphql(
-      query,
-      { owner, name },
-      `Public contribution repository lifecycle query (${repository.full_name})`,
-      { headers: PUBLIC_REST_HEADERS },
+  const data = await graphql(
+    query,
+    { owner, name },
+    `Public contribution repository lifecycle query (${repository.full_name})`,
+    { headers: PUBLIC_REST_HEADERS },
+  );
+  const result = data?.repository;
+  if (!result) {
+    throw new Error(
+      `Public lifecycle query returned no repository for ${repository.full_name}.`,
     );
-    const result = data?.repository;
-
-    return {
-      commits: safeInteger(
-        result?.defaultBranchRef?.target?.history?.totalCount,
-      ),
-      releases: safeInteger(result?.releases?.totalCount),
-      stars: safeInteger(result?.stargazerCount),
-      forks: safeInteger(result?.forkCount),
-    };
-  } catch (error) {
-    // Lifecycle counts improve the card but must not block language/code
-    // composition for an otherwise accessible public contribution project.
-    console.warn(
-      `Public repository lifecycle metrics unavailable for ${repository.full_name}: ${error.message}`,
-    );
-    return {
-      commits: 0,
-      releases: 0,
-      stars: safeInteger(repository.stargazers_count),
-      forks: safeInteger(repository.forks_count),
-    };
   }
+
+  return {
+    commits: safeInteger(
+      result.defaultBranchRef?.target?.history?.totalCount,
+    ),
+    releases: safeInteger(result.releases?.totalCount),
+    stars: safeInteger(result.stargazerCount),
+    forks: safeInteger(result.forkCount),
+  };
 }
 
 function repositoryLanguageComposition(detail) {
@@ -2816,7 +3079,7 @@ async function fetchAttributedContributorCommits(repository, identities) {
       `/repos/${repository.full_name}/contributors?anon=1&per_page=100&page=${page}`,
       {
         label: `Repository contributors (${repository.full_name})`,
-        optionalStatuses: [204, 404, 409],
+        optionalStatuses: [204, 409],
       },
     );
     const items = Array.isArray(contributors) ? contributors : [];
@@ -2839,7 +3102,6 @@ async function fetchPullRequestReviews(repository, pullRequestNumber) {
       `/repos/${repository.full_name}/pulls/${pullRequestNumber}/reviews?per_page=100&page=${page}`,
       {
         label: `Pull-request reviews (${repository.full_name}#${pullRequestNumber})`,
-        optionalStatuses: [404, 410, 422],
       },
     );
     const items = Array.isArray(pageItems) ? pageItems : [];
@@ -2855,7 +3117,11 @@ async function fetchPullRequestReviews(repository, pullRequestNumber) {
  * search indexing can omit historical review records even though a repository's
  * PR review timeline still contains them.
  */
-async function fetchDirectPullRequestActivity(repository, identities) {
+async function fetchDirectPullRequestActivity(
+  repository,
+  identities,
+  { inspectReviews = true } = {},
+) {
   const identitySet = new Set(identities.map((identity) => identity.toLowerCase()));
   const pullRequests = [];
   let capped = false;
@@ -2871,7 +3137,6 @@ async function fetchDirectPullRequestActivity(repository, identities) {
       `/repos/${repository.full_name}/pulls?state=all&sort=updated&direction=desc&per_page=${perPage}&page=${page}`,
       {
         label: `Historical pull requests (${repository.full_name})`,
-        optionalStatuses: [404, 409],
       },
     );
     const items = Array.isArray(pageItems) ? pageItems : [];
@@ -2885,39 +3150,59 @@ async function fetchDirectPullRequestActivity(repository, identities) {
   const matchedIdentities = new Set();
   let reviewSubmissions = 0;
 
+  for (const pullRequest of pullRequests) {
+    const authorLogin = String(pullRequest?.user?.login ?? "").toLowerCase();
+    if (!identitySet.has(authorLogin)) continue;
+    authored.add(`${repository.full_name.toLowerCase()}#${pullRequest.number}`);
+    matchedIdentities.add(pullRequest.user.login);
+  }
+
+  if (!inspectReviews) {
+    return {
+      authoredPullRequests: authored.size,
+      reviewedPullRequests: null,
+      approvedPullRequests: null,
+      reviewSubmissions: null,
+      authoredKeys: authored,
+      reviewedKeys: reviewed,
+      approvedKeys: approved,
+      identities: [...matchedIdentities],
+      listingComplete: !capped,
+      reviewInspectionComplete: false,
+      reviewFailures: [],
+      capped,
+    };
+  }
+
   const reviewResults = await mapLimit(
     pullRequests,
     config.pullRequestReviewConcurrency,
     async (pullRequest) => {
-      const authorLogin = String(pullRequest?.user?.login ?? "").toLowerCase();
-      const authoredByConfiguredIdentity = identitySet.has(authorLogin);
       const reviews = await fetchPullRequestReviews(
         repository,
         pullRequest.number,
       );
-      return { pullRequest, authoredByConfiguredIdentity, reviews };
+      return { pullRequest, reviews };
     },
   );
 
+  const reviewFailures = [];
   for (const result of reviewResults) {
     if (result.status === "rejected") {
-      console.warn(result.reason.message);
+      reviewFailures.push(result.reason.message);
       continue;
     }
-    const { pullRequest, authoredByConfiguredIdentity, reviews } = result.value;
-    if (authoredByConfiguredIdentity) {
-      authored.add(pullRequest.number);
-      matchedIdentities.add(pullRequest.user.login);
-    }
+    const { pullRequest, reviews } = result.value;
+    const key = `${repository.full_name.toLowerCase()}#${pullRequest.number}`;
 
     for (const review of reviews) {
       const login = String(review?.user?.login ?? "").toLowerCase();
       if (!identitySet.has(login)) continue;
-      reviewed.add(pullRequest.number);
+      reviewed.add(key);
       reviewSubmissions += 1;
       matchedIdentities.add(review.user.login);
       if (String(review.state ?? "").toUpperCase() === "APPROVED") {
-        approved.add(pullRequest.number);
+        approved.add(key);
       }
     }
   }
@@ -2927,7 +3212,14 @@ async function fetchDirectPullRequestActivity(repository, identities) {
     reviewedPullRequests: reviewed.size,
     approvedPullRequests: approved.size,
     reviewSubmissions,
+    authoredKeys: authored,
+    reviewedKeys: reviewed,
+    approvedKeys: approved,
     identities: [...matchedIdentities],
+    listingComplete: !capped,
+    reviewInspectionComplete:
+      !capped && reviewFailures.length === 0,
+    reviewFailures,
     capped,
   };
 }
@@ -2942,7 +3234,8 @@ async function buildPublicContributionPortfolio(
 
   const results = await mapLimit(
     publicContributionDetails,
-    2,
+    // GitHub Search has a separate, restrictive rate-limit bucket.
+    1,
     async (detail) => {
       const repository = detail.repository;
       const identities = contributionIdentitiesForScope(
@@ -2959,25 +3252,23 @@ async function buildPublicContributionPortfolio(
         files: 0,
       };
 
-      const [
-        lifecycle,
-        contributorActivity,
-        authoredSearch,
-        reviewedSearch,
-      ] = await Promise.all([
+      const [lifecycle, contributorActivity, authoredSearch, reviewedSearch] =
+        await Promise.all([
         fetchPublicRepositoryLifecycle(repository),
         fetchAttributedContributorCommits(repository, identities),
-        searchCountsByContributorIdentity(
+        searchPublicRepositoryEvidence(
+          repository,
+          identities,
           (identity) =>
             `repo:${repository.full_name} author:${identity} is:pr`,
           `Public contribution authored-PR search (${repository.full_name})`,
-          { identities },
         ),
-        searchCountsByContributorIdentity(
+        searchPublicRepositoryEvidence(
+          repository,
+          identities,
           (identity) =>
             `repo:${repository.full_name} reviewed-by:${identity} is:pr`,
           `Public contribution reviewed-PR search (${repository.full_name})`,
-          { identities },
         ),
       ]);
 
@@ -2985,27 +3276,78 @@ async function buildPublicContributionPortfolio(
         repository.contribution_evidence ?? [],
       );
 
-      // Search indexes can under-report old review activity. Scan the actual
-      // pull-request review records when GitHub reports review evidence, when
-      // reviewed-by search finds activity, or when a repository relationship
-      // exists but neither commits nor authored PRs explain that relationship.
-      const shouldInspectHistoricalReviews =
-        discoveryEvidence.has("pull-request-review") ||
-        reviewedSearch.total > 0 ||
-        (discoveryEvidence.has("repository-relationship") &&
-          contributorActivity.commits === 0 &&
-          authoredSearch.total === 0);
+      // Emit safe structured search diagnostics before any direct fallback can
+      // fail. Authorization headers and credential values are never included.
+      for (const [kind, searchResult] of [
+        ["authored PR", authoredSearch],
+        ["reviewed PR", reviewedSearch],
+      ]) {
+        if (searchResult.status !== "unavailable") continue;
+        const summary = searchResult.unavailable
+          .map((item) => {
+            const attempts = (item.failures ?? [])
+              .map((failure) =>
+                `${failure.credential}: ${failure.message}`,
+              )
+              .join(" | ");
+            return `${item.identity}: ${item.reason}` +
+              `${attempts ? ` (${attempts})` : ""}`;
+          })
+          .join("; ");
+        console.warn(
+          `Public ${kind} search unavailable for ${repository.full_name}; bounded direct REST verification will be used. ${summary}`,
+        );
+      }
 
-      const directPullRequestActivity = shouldInspectHistoricalReviews
-        ? await fetchDirectPullRequestActivity(repository, identities)
-        : {
-            authoredPullRequests: 0,
-            reviewedPullRequests: 0,
-            approvedPullRequests: 0,
-            reviewSubmissions: 0,
-            identities: [],
-            capped: false,
-          };
+      // A failed search remains unknown. A bounded direct scan independently
+      // verifies it instead of silently converting the failure to zero.
+      const shouldInspectHistoricalReviews =
+        reviewedSearch.status === "unavailable" ||
+        discoveryEvidence.has("pull-request-review") ||
+        safeInteger(reviewedSearch.count) > 0;
+      const relationshipNeedsExplanation =
+        discoveryEvidence.has("repository-relationship") &&
+        contributorActivity.commits === 0 &&
+        authoredSearch.status === "success" &&
+        authoredSearch.count === 0;
+      const shouldInspectPullRequests =
+        authoredSearch.status === "unavailable" ||
+        shouldInspectHistoricalReviews ||
+        relationshipNeedsExplanation;
+
+      const directPullRequestActivity = shouldInspectPullRequests
+        ? await fetchDirectPullRequestActivity(repository, identities, {
+            inspectReviews: shouldInspectHistoricalReviews,
+          })
+        : null;
+
+      if (
+        shouldInspectPullRequests &&
+        !directPullRequestActivity?.listingComplete
+      ) {
+        throw new Error(
+          `Direct pull-request verification for ${repository.full_name} reached MAX_PULL_REQUESTS_PER_PUBLIC_REPOSITORY. Raise the cap rather than publishing partial PR analytics.`,
+        );
+      }
+      if (
+        shouldInspectHistoricalReviews &&
+        !directPullRequestActivity?.reviewInspectionComplete
+      ) {
+        const failures = directPullRequestActivity?.reviewFailures ?? [];
+        throw new Error(
+          `Direct review verification for ${repository.full_name} was incomplete` +
+          `${failures.length > 0 ? `: ${failures.join("; ")}` : "."}`,
+        );
+      }
+
+      const authoredKeys = new Set([
+        ...(authoredSearch.status === "success" ? authoredSearch.keys : []),
+        ...(directPullRequestActivity?.authoredKeys ?? []),
+      ]);
+      const reviewedKeys = new Set([
+        ...(reviewedSearch.status === "success" ? reviewedSearch.keys : []),
+        ...(directPullRequestActivity?.reviewedKeys ?? []),
+      ]);
 
       const composition = repositoryLanguageComposition(detail);
       const technologies = [...detectTechnologies(
@@ -3015,19 +3357,12 @@ async function buildPublicContributionPortfolio(
         safeInteger(personal.commits),
         safeInteger(contributorActivity.commits),
       );
-      const authoredPullRequests = Math.max(
-        authoredSearch.total,
-        directPullRequestActivity.authoredPullRequests,
-      );
-      const reviewedPullRequests = Math.max(
-        reviewedSearch.total,
-        directPullRequestActivity.reviewedPullRequests,
-      );
+      const authoredPullRequests = authoredKeys.size;
+      const reviewedPullRequests = reviewedKeys.size;
 
       // A public repository is included only when GitHub verifies actual
       // engineering activity from at least one configured identity. Discovery
-      // relationships alone are not enough, preventing zero-contribution
-      // repositories from affecting language, framework, and portfolio stats.
+      // relationships alone are not enough.
       const verified =
         attributedCommits > 0 ||
         authoredPullRequests > 0 ||
@@ -3039,7 +3374,7 @@ async function buildPublicContributionPortfolio(
         ...contributorActivity.identities,
         ...authoredSearch.identities,
         ...reviewedSearch.identities,
-        ...directPullRequestActivity.identities,
+        ...(directPullRequestActivity?.identities ?? []),
       ])].sort();
 
       return {
@@ -3056,10 +3391,10 @@ async function buildPublicContributionPortfolio(
         authoredPullRequests,
         reviewedPullRequests,
         approvedPullRequests:
-          directPullRequestActivity.approvedPullRequests,
+          directPullRequestActivity?.approvedPullRequests ?? 0,
         reviewSubmissions:
-          directPullRequestActivity.reviewSubmissions,
-        reviewScanCapped: directPullRequestActivity.capped,
+          directPullRequestActivity?.reviewSubmissions ?? 0,
+        reviewScanCapped: false,
         attributedIdentities,
         evidence: repository.contribution_evidence ?? [],
       };
@@ -4616,7 +4951,7 @@ function renderLanguages(languages, scopeSummary) {
     title: "Engineering Language Footprint",
     iconName: "code",
     accent: THEME.cyan,
-    subtitle: `Repository-normalized composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} verified public contribution projects · each repository has equal total weight`,
+    subtitle: `GitHub Linguist code-byte composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} verified public contribution projects`,
     body: `
       <defs><clipPath id="language-bar"><rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5"/></clipPath></defs>
       <rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5" fill="${THEME.track}"/>
@@ -5608,6 +5943,95 @@ async function runSummaryCardSelfTest() {
   );
 }
 
+/**
+ * Exercises the v20 accuracy invariants without contacting GitHub.
+ * This deliberately tests the failure-prone seams: aliases, notebooks,
+ * additive Linguist bytes, search-result deduplication, and 422 diagnostics.
+ */
+async function runDataPipelineSelfTest() {
+  const assert = (condition, message) => {
+    if (!condition) throw new Error(`Data pipeline self-test failed: ${message}`);
+  };
+
+  assert(
+    contributionLanguageForPath("analysis/model.ipynb") ===
+      "Jupyter Notebook",
+    "Jupyter notebooks are not classified.",
+  );
+  assert(
+    contributionLanguageForPath("services/forecast.py") === "Python",
+    "Python files are not classified.",
+  );
+  assert(
+    contributionIdentitiesForScope(REPOSITORY_SCOPE.PERSONAL).length ===
+      contributorIdentities.length,
+    "historical aliases are not applied to personal repositories.",
+  );
+
+  const languageFixture = aggregateLanguages([
+    {
+      languages: { Python: 900, JavaScript: 100 },
+      paths: ["src/app.py", "web/app.js"],
+    },
+    {
+      languages: { Python: 100, "Jupyter Notebook": 900 },
+      paths: ["tools/helper.py", "notebooks/model.ipynb"],
+    },
+  ]);
+  const languagePercentages = new Map(
+    languageFixture.map((item) => [item.language, item.percentage]),
+  );
+  assert(
+    Math.abs(languagePercentages.get("Python") - 50) < 0.0001,
+    "Linguist bytes are not aggregated additively.",
+  );
+  assert(
+    Math.abs(languagePercentages.get("Jupyter Notebook") - 45) < 0.0001,
+    "Jupyter Linguist bytes are missing from the footprint.",
+  );
+
+  const duplicateKeyA = publicSearchResultKey(
+    {
+      repository_url: "https://api.github.com/repos/example/project",
+      number: 42,
+    },
+    null,
+  );
+  const duplicateKeyB = publicSearchResultKey(
+    { number: 42 },
+    "example/project",
+  );
+  assert(
+    new Set([duplicateKeyA, duplicateKeyB]).size === 1,
+    "PR identifiers do not deduplicate across identities or credentials.",
+  );
+
+  const diagnostics = parseGitHubError(
+    JSON.stringify({
+      message: "Validation Failed",
+      errors: [{ resource: "Search", field: "q", code: "invalid" }],
+      documentation_url: "https://docs.github.com/rest/search",
+    }),
+    {
+      headers: new Headers({
+        "x-github-request-id": "SELF-TEST",
+        "x-ratelimit-resource": "search",
+        "x-ratelimit-remaining": "29",
+      }),
+    },
+  );
+  assert(
+    diagnostics.errors[0]?.field === "q" &&
+      diagnostics.requestId === "SELF-TEST" &&
+      diagnostics.rateLimitResource === "search",
+    "structured GitHub failure diagnostics were discarded.",
+  );
+
+  console.log(
+    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, and GitHub diagnostics are intact.",
+  );
+}
+
 async function main() {
   console.log("Fetching authenticated account...");
   console.log(
@@ -5998,6 +6422,8 @@ async function main() {
 
 if (summaryCardSelfTest) {
   await runSummaryCardSelfTest();
+} else if (dataPipelineSelfTest) {
+  await runDataPipelineSelfTest();
 } else {
   await main();
 }

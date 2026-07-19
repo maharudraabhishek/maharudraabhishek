@@ -21,7 +21,9 @@ export default {
     /**
      * Historical or alternate GitHub usernames owned by the same person.
      *
-     * Every identity is searched globally across public repositories for:
+     * Every identity is used for authored-commit attribution in all selected
+     * personal/private and verified public repositories. Every identity is
+     * also searched globally across public repositories for:
      * - default-branch commits;
      * - authored pull requests;
      * - submitted pull-request reviews and approvals;
