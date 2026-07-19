@@ -18,7 +18,12 @@ const MAX_RATE_LIMIT_WAIT_MS = 15 * 60_000;
 const REQUEST_RETRIES = 4;
 const MAX_CONTENT_BYTES = 1_000_000;
 
-const token = requiredEnvironment("PRIVATE_STATS_TOKEN");
+const summaryCardSelfTest = process.argv.includes(
+  "--self-test-summary-cards",
+);
+const token = summaryCardSelfTest
+  ? "offline-summary-card-self-test"
+  : requiredEnvironment("PRIVATE_STATS_TOKEN");
 
 // Identity settings are loaded from the single user-editable config file.
 // The generator contains no profile-specific username or public alias.
@@ -68,7 +73,7 @@ const config = Object.freeze({
   ),
   minimumScanSuccessRatio: numberEnvironment(
     "MIN_SCAN_SUCCESS_RATIO",
-    0.75,
+    1,
     { min: 0, max: 1 },
   ),
   affiliations:
@@ -2220,31 +2225,18 @@ async function searchCount(
   return safeInteger(response?.total_count);
 }
 
-async function safeSearchCount(
-  query,
-  label,
-  fallback,
-  options = {},
-) {
-  try {
-    return await searchCount(query, label, options);
-  } catch (error) {
-    console.warn(`${label} unavailable; using the fallback value.`);
-    return fallback;
-  }
-}
-
 /**
  * Runs the same issue/PR search for every configured contributor identity.
  *
  * The primary profile query uses the private PAT so token-accessible private
  * activity can still be counted. Historical aliases use the public workflow
  * token because they are intended only for public contribution attribution.
+ * Every identity search is required: substituting a PR total for a merged-PR
+ * total or silently treating a failed alias as zero would publish false data.
  */
 async function searchCountsByContributorIdentity(
   queryFactory,
   label,
-  primaryFallback = 0,
   { identities = globalContributorIdentities } = {},
 ) {
   const results = await mapLimit(
@@ -2253,11 +2245,9 @@ async function searchCountsByContributorIdentity(
     async (identity) => {
       const isPrimary = identity.toLowerCase() === username.toLowerCase();
       const headers = isPrimary ? REST_HEADERS : PUBLIC_REST_HEADERS;
-      const fallback = isPrimary ? primaryFallback : 0;
-      const count = await safeSearchCount(
+      const count = await searchCount(
         queryFactory(identity),
         `${label} (${identity})`,
-        fallback,
         { headers },
       );
       return { identity, count };
@@ -2265,12 +2255,21 @@ async function searchCountsByContributorIdentity(
   );
 
   const counts = [];
-  for (const result of results) {
+  const failures = [];
+  for (const [index, result] of results.entries()) {
     if (result.status === "rejected") {
-      console.warn(`${label} identity search failed: ${result.reason.message}`);
+      failures.push(
+        `${identities[index]}: ${result.reason.message}`,
+      );
       continue;
     }
     counts.push(result.value);
+  }
+
+  if (failures.length > 0) {
+    throw new Error(
+      `${label} failed for ${failures.length} configured identity search(es): ${failures.join("; ")}`,
+    );
   }
 
   return {
@@ -2972,14 +2971,12 @@ async function buildPublicContributionPortfolio(
           (identity) =>
             `repo:${repository.full_name} author:${identity} is:pr`,
           `Public contribution authored-PR search (${repository.full_name})`,
-          0,
           { identities },
         ),
         searchCountsByContributorIdentity(
           (identity) =>
             `repo:${repository.full_name} reviewed-by:${identity} is:pr`,
           `Public contribution reviewed-PR search (${repository.full_name})`,
-          0,
           { identities },
         ),
       ]);
@@ -3651,322 +3648,622 @@ function metricGrid(metrics, startY = 78, columns = 2, width = 560) {
     .join("");
 }
 
+function lockedCardText(
+  x,
+  y,
+  value,
+  {
+    size = 10,
+    fill = THEME.text,
+    weight = 500,
+    anchor = "start",
+    letterSpacing = null,
+  } = {},
+) {
+  const spacing = letterSpacing === null
+    ? ""
+    : ` letter-spacing="${letterSpacing}"`;
+
+  return `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}"${spacing}>${escapeXml(value)}</text>`;
+}
+
+function lockedCardLabel(
+  x,
+  y,
+  primary,
+  qualifier = "",
+  {
+    anchor = "start",
+    size = 9.2,
+    letterSpacing = null,
+  } = {},
+) {
+  const spacing = letterSpacing === null
+    ? ""
+    : ` letter-spacing="${letterSpacing}"`;
+
+  return `<text x="${x}" y="${y}" fill="#D0D7DE" font-size="${size}" font-weight="600" text-anchor="${anchor}"${spacing}><tspan>${escapeXml(primary)}</tspan><tspan fill="${THEME.muted}" font-weight="500">${escapeXml(qualifier)}</tspan></text>`;
+}
+
+function lockedMetricIcon(name, x, y, color) {
+  // The approved design uses visible semantic icons with no badge or circle.
+  return icon(name, x + 2, y + 2, color, 20.8);
+}
+
+function lockedCardLine(x1, y1, x2, y2, color, width = 1, opacity = null) {
+  const opacityAttribute = opacity === null
+    ? ""
+    : ` stroke-opacity="${opacity}"`;
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${width}"${opacityAttribute}/>`;
+}
+
+function lockedCardDot(x, y, color, radius = 3) {
+  return `<circle cx="${x}" cy="${y}" r="${radius}" fill="${color}"/>`;
+}
+
+function boundedPercentage(value) {
+  return Math.min(100, Math.max(0, Number(value) || 0));
+}
+
+function lockedCardShell({ id, title, description, definitions, body }) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360" role="img" aria-labelledby="${id}-title ${id}-description">
+  <title id="${id}-title">${escapeXml(title)}</title>
+  <desc id="${id}-description">${escapeXml(description)}</desc>
+  <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}</style>
+  <defs>${definitions}</defs>
+  <rect x=".5" y=".5" width="759" height="359" rx="2" fill="${THEME.background}" stroke="${THEME.border}"/>
+  ${body}
+</svg>`;
+}
+
 /**
- * Renders the top-level GitHub engineering summary.
+ * Renders the approved 760×360 Contribution Engine overview.
  *
- * The card is full width and uses a 4×3 metric grid. Metrics intentionally
- * cover scale, current activity, delivery, collaboration, public impact and
- * repository health without duplicating language or framework cards.
+ * The visual structure is intentionally locked. Only validated values and
+ * percentage-bar lengths change between workflow runs.
  */
 function renderOverview(data) {
-  const width = 860;
-  const height = 280;
-  const primaryMetrics = [
-    {
-      icon: "repo",
-      color: THEME.blue,
-      value: compactNumber(data.repositories),
-      label: "Verified repositories",
-    },
-    {
-      icon: "activity",
-      color: THEME.orange,
-      value: compactNumber(data.activeRepositories),
-      label: "Active repositories · 90d",
-    },
-    {
-      icon: "activity",
-      color: THEME.green,
-      value: compactNumber(data.recentContributions),
-      label: "Contributions · 12 months",
-    },
-    {
-      icon: "commit",
-      color: THEME.cyan,
-      value: compactNumber(data.allTimeCommitContributions),
-      label: "Commit contributions · all time",
-    },
-    {
-      icon: "pull",
-      color: THEME.green,
-      value: compactNumber(data.mergedPullRequests),
-      label: "Merged PRs · all time",
-    },
-    {
-      icon: "people",
-      color: THEME.pink,
-      value: compactNumber(data.reviewContributions),
-      label: "PR reviews · all time",
-    },
-    {
-      icon: "branch",
-      color: THEME.purple,
-      value: compactNumber(
-        data.publicContributedRepositories,
-      ),
-      label: "Public contribution repos",
-    },
-    {
-      icon: "people",
-      color: THEME.blue,
-      value: compactNumber(
-        data.publicOrganizationsContributed,
-      ),
-      label: "Public organizations",
-    },
+  const ciCoverage = boundedPercentage(data.ciCoverage);
+  const testCoverage = boundedPercentage(data.testCoverage);
+  const ciBarWidth = (ciCoverage / 100) * 170;
+  const testBarWidth = (testCoverage / 100) * 176;
+
+  const definitions = `
+    <linearGradient id="overview-flow" x1="0" x2="1"><stop stop-color="${THEME.blue}"/><stop offset=".5" stop-color="${THEME.green}"/><stop offset="1" stop-color="${THEME.purple}"/></linearGradient>
+    <radialGradient id="overview-core"><stop stop-color="#19314A"/><stop offset=".62" stop-color="#111923"/><stop offset="1" stop-color="${THEME.background}"/></radialGradient>
+    <linearGradient id="overview-quality" x1="0" x2="1"><stop stop-color="${THEME.cyan}"/><stop offset="1" stop-color="${THEME.green}"/></linearGradient>
+    <filter id="overview-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>`;
+
+  let body = "";
+  body += icon("star", 22, 20, THEME.yellow, 18);
+  body += lockedCardText(54, 36, "GitHub Overview", {
+    size: 19,
+    weight: 700,
+  });
+  body += lockedCardText(
+    54,
+    55,
+    "From repository scale to sustained delivery and engineering quality",
+    { size: 11, fill: THEME.muted, weight: 400 },
+  );
+  body += lockedCardDot(570, 31, THEME.green, 3);
+  body += lockedCardText(732, 34, "PRIVATE + PUBLIC · DAILY", {
+    size: 7.5,
+    fill: THEME.muted,
+    weight: 700,
+    anchor: "end",
+    letterSpacing: ".5",
+  });
+  body += lockedCardLine(22, 68, 738, 68, THEME.border);
+
+  body += lockedCardText(28, 90, "REPOSITORY BASE", {
+    size: 8.1,
+    fill: THEME.blue,
+    weight: 750,
+    letterSpacing: "1.05",
+  });
+
+  const repositoryMetrics = [
+    [compactNumber(data.repositories), "Verified repositories", "", "repo"],
+    [compactNumber(data.activeRepositories), "Active repositories", " · 90d", "activity"],
+    [data.contributionTenure, "Contribution tenure", "", "calendar"],
   ];
 
-  const compactInsights = [
-    {
-      icon: "workflow",
-      color: THEME.cyan,
-      value: formatPercentage(data.ciCoverage),
-      label: "CI/CD coverage",
-    },
-    {
-      icon: "test",
-      color: THEME.green,
-      value: formatPercentage(data.testCoverage),
-      label: "Test coverage",
-    },
-    {
-      icon: "calendar",
-      color: THEME.orange,
-      value: data.contributionTenure,
-      label: "Contribution tenure",
-    },
-    {
-      icon: "star",
-      color: THEME.yellow,
-      value: compactNumber(data.ownedRepositoryStars),
-      label: "Owned repository stars",
-    },
+  for (const [index, metric] of repositoryMetrics.entries()) {
+    const [value, label, qualifier, iconName] = metric;
+    const y = 120 + index * 52;
+    body += lockedMetricIcon(iconName, 28, y - 21, THEME.blue);
+    body += lockedCardText(64, y, value, { size: 20, weight: 780 });
+    body += lockedCardLabel(64, y + 17, label, qualifier);
+    if (index < 2) {
+      body += lockedCardLine(28, y + 29, 205, y + 29, "#202730");
+    }
+  }
+
+  body += `<path d="M211 177 C254 177 265 160 307 160" fill="none" stroke="${THEME.blue}" stroke-opacity=".4" stroke-width="2"/>`;
+  body += `<path d="M453 160 C495 160 506 177 548 177" fill="none" stroke="${THEME.purple}" stroke-opacity=".4" stroke-width="2"/>`;
+  body += `<circle cx="380" cy="169" r="68" fill="${THEME.blue}" opacity=".08" filter="url(#overview-glow)"/>`;
+  body += `<circle cx="380" cy="169" r="62" fill="url(#overview-core)" stroke="url(#overview-flow)" stroke-width="2"/>`;
+  body += `<circle cx="380" cy="169" r="52" fill="none" stroke="#303D4D" stroke-dasharray="2 7"/>`;
+  body += lockedMetricIcon("activity", 316, 132, THEME.green);
+  body += lockedCardText(350, 162, compactNumber(data.recentContributions), {
+    size: 34,
+    weight: 820,
+  });
+  body += lockedCardText(380, 183, "CONTRIBUTIONS", {
+    size: 8.6,
+    fill: THEME.green,
+    weight: 780,
+    anchor: "middle",
+    letterSpacing: ".75",
+  });
+  body += lockedCardText(380, 200, "ROLLING 12 MONTHS", {
+    size: 7.7,
+    fill: "#B1BAC4",
+    weight: 650,
+    anchor: "middle",
+    letterSpacing: ".45",
+  });
+  body += lockedCardDot(307, 160, THEME.blue, 4);
+  body += lockedCardDot(453, 160, THEME.purple, 4);
+
+  body += lockedMetricIcon("commit", 282, 70, THEME.cyan);
+  body += lockedCardText(318, 91, compactNumber(data.allTimeCommitContributions), {
+    size: 17,
+    fill: THEME.cyan,
+    weight: 780,
+  });
+  body += lockedCardLabel(
+    380,
+    107,
+    "COMMIT CONTRIBUTIONS",
+    " · ALL TIME",
+    { anchor: "middle", size: 7.8, letterSpacing: ".25" },
+  );
+
+  body += lockedMetricIcon("pull", 329, 233, THEME.green);
+  body += lockedCardText(365, 254, compactNumber(data.mergedPullRequests), {
+    size: 17,
+    fill: THEME.green,
+    weight: 780,
+  });
+  body += lockedCardLabel(380, 271, "MERGED PRS", " · ALL TIME", {
+    anchor: "middle",
+    size: 7.9,
+    letterSpacing: ".35",
+  });
+  body += lockedCardLine(380, 232, 380, 238, THEME.green, 1, ".45");
+
+  body += lockedCardText(552, 90, "COLLABORATION REACH", {
+    size: 8.1,
+    fill: THEME.purple,
+    weight: 750,
+    letterSpacing: ".75",
+  });
+
+  const collaborationMetrics = [
+    [compactNumber(data.publicContributedRepositories), "Public contribution repos", "", "branch"],
+    [compactNumber(data.publicOrganizationsContributed), "Public organizations", "", "people"],
+    [compactNumber(data.reviewContributions), "PR reviews", " · all time", "people"],
   ];
 
-  const primaryColumns = 4;
-  const primaryGap = 10;
-  const primaryX = 20;
-  const primaryY = 70;
-  const primaryCellWidth =
-    (
-      width -
-      primaryX * 2 -
-      primaryGap * (primaryColumns - 1)
-    ) /
-    primaryColumns;
-  const primaryCellHeight = 67;
-  const primaryRowPitch = 77;
+  for (const [index, metric] of collaborationMetrics.entries()) {
+    const [value, label, qualifier, iconName] = metric;
+    const y = 120 + index * 52;
+    body += lockedMetricIcon(iconName, 552, y - 21, THEME.purple);
+    body += lockedCardText(588, y, value, { size: 20, weight: 780 });
+    body += lockedCardLabel(588, y + 17, label, qualifier);
+    if (index < 2) {
+      body += lockedCardLine(552, y + 29, 732, y + 29, "#202730");
+    }
+  }
 
-  const primaryTiles = primaryMetrics
-    .map((metric, index) => {
-      const column = index % primaryColumns;
-      const row = Math.floor(index / primaryColumns);
-      const x =
-        primaryX +
-        column * (primaryCellWidth + primaryGap);
-      const y =
-        primaryY +
-        row * primaryRowPitch;
+  body += lockedMetricIcon("star", 552, 246, THEME.yellow);
+  body += lockedCardText(588, 267, compactNumber(data.ownedRepositoryStars), {
+    size: 16,
+    fill: THEME.yellow,
+    weight: 780,
+  });
+  body += lockedCardLabel(616, 267, "Owned repository stars", "", {
+    size: 8.8,
+  });
 
-      return `<rect x="${x}" y="${y}" width="${primaryCellWidth}" height="${primaryCellHeight}" rx="10" fill="${metric.color}" fill-opacity=".08" stroke="${metric.color}" stroke-opacity=".42"/>
-      ${icon(metric.icon, x + 12, y + 13, metric.color, 16)}
-      <text x="${x + 40}" y="${y + 30}" class="metricValue">${escapeXml(metric.value)}</text>
-      <text x="${x + 12}" y="${y + 54}" class="metricLabel">${escapeXml(metric.label)}</text>`;
-    })
-    .join("");
+  body += lockedCardLine(22, 283, 738, 283, THEME.border);
+  body += lockedCardText(28, 301, "ENGINEERING QUALITY", {
+    size: 7.8,
+    fill: THEME.cyan,
+    weight: 750,
+    letterSpacing: ".95",
+  });
 
-  const insightY = 228;
-  const insightGap = 10;
-  const insightCellWidth =
-    (
-      width -
-      primaryX * 2 -
-      insightGap * (compactInsights.length - 1)
-    ) /
-    compactInsights.length;
+  body += lockedMetricIcon("workflow", 28, 303, THEME.cyan);
+  body += lockedCardText(64, 324, formatPercentage(ciCoverage), {
+    size: 17,
+    fill: THEME.cyan,
+    weight: 780,
+  });
+  body += lockedCardLabel(64, 341, "CI/CD coverage", "", { size: 9 });
+  body += `<rect x="164" y="315" width="170" height="7" rx="3" fill="${THEME.track}"/>`;
+  body += `<rect x="164" y="315" width="${ciBarWidth.toFixed(2)}" height="7" rx="3" fill="${THEME.cyan}"/>`;
+  body += lockedCardText(334, 341, `${ciCoverage.toFixed(1)} / 100`, {
+    size: 7.4,
+    fill: THEME.muted,
+    weight: 650,
+    anchor: "end",
+  });
 
-  const insightTiles = compactInsights
-    .map((metric, index) => {
-      const x =
-        primaryX +
-        index * (insightCellWidth + insightGap);
+  body += lockedMetricIcon("test", 398, 303, THEME.green);
+  body += lockedCardText(434, 324, formatPercentage(testCoverage), {
+    size: 17,
+    fill: THEME.green,
+    weight: 780,
+  });
+  body += lockedCardLabel(434, 341, "Test coverage", "", { size: 9 });
+  body += `<rect x="534" y="315" width="176" height="7" rx="3" fill="${THEME.track}"/>`;
+  body += `<rect x="534" y="315" width="${testBarWidth.toFixed(2)}" height="7" rx="3" fill="url(#overview-quality)"/>`;
+  body += lockedCardText(710, 341, `${testCoverage.toFixed(1)} / 100`, {
+    size: 7.4,
+    fill: THEME.muted,
+    weight: 650,
+    anchor: "end",
+  });
 
-      return `<rect x="${x}" y="${insightY}" width="${insightCellWidth}" height="34" rx="9" fill="${THEME.track}" stroke="${metric.color}" stroke-opacity=".45"/>
-      ${icon(metric.icon, x + 10, insightY + 9, metric.color, 14)}
-      <text x="${x + 31}" y="${insightY + 16}" class="small">${escapeXml(metric.value)}</text>
-      <text x="${x + 31}" y="${insightY + 28}" class="tiny">${escapeXml(metric.label)}</text>`;
-    })
-    .join("");
-
-  return cardShell({
-    width,
-    height,
+  return lockedCardShell({
+    id: "github-overview",
     title: "GitHub Overview",
-    iconName: "star",
-    accent: THEME.yellow,
-    subtitle:
-      "Engineering scale, delivery, collaboration and repository health",
-    body: `${primaryTiles}${insightTiles}`,
+    description:
+      "Repository scale, rolling contribution delivery, collaboration reach, and engineering quality metrics.",
+    definitions,
+    body,
   });
 }
 
 /**
- * Renders all-time streak history together with recent consistency signals.
+ * Renders the approved 760×360 Fire Orbit streak card.
  *
- * A current streak alone can reset after one inactive day, so the card also
- * shows active weeks, active-day rate, contribution density and the peak day
- * across the same rolling 12-month window used by GitHub Overview.
+ * The circular fire centerpiece is the only circular badge; all supporting
+ * semantic icons remain unframed for clarity and quick scanning.
  */
 function renderStreak(streak) {
-  const width = 860;
-  const height = 286;
+  const definitions = `
+    <linearGradient id="streak-ring" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${THEME.orange}"/><stop offset=".55" stop-color="#FF6B35"/><stop offset="1" stop-color="${THEME.yellow}"/></linearGradient>
+    <radialGradient id="streak-core"><stop stop-color="#321B13"/><stop offset=".62" stop-color="#171512"/><stop offset="1" stop-color="${THEME.background}"/></radialGradient>
+    <filter id="streak-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>`;
 
-  const featuredMetrics = [
-    {
-      icon: "flame",
-      color: THEME.orange,
-      value: plural(streak.current, "day"),
-      label: "Current streak",
-    },
-    {
-      icon: "star",
-      color: THEME.yellow,
-      value: plural(streak.longest, "day"),
-      label: "Longest streak · all time",
-    },
-    {
-      icon: "activity",
-      color: THEME.green,
-      value: compactNumber(streak.activeDays),
-      label: "Active days · all time",
-    },
-  ];
-
-  const recentMetrics = [
-    {
-      icon: "commit",
-      color: THEME.green,
-      value: compactNumber(streak.recentContributions),
-      label: "Contributions · 12 months",
-    },
-    {
-      icon: "calendar",
-      color: THEME.cyan,
-      value: compactNumber(streak.recentActiveDays),
-      label: "Active days · 12 months",
-    },
-    {
-      icon: "calendar",
-      color: THEME.purple,
-      value: plural(streak.recentActiveWeeks, "week"),
-      label: "Active weeks · latest 53",
-    },
-    {
-      icon: "activity",
-      color: THEME.blue,
-      value: streak.averagePerActiveDay.toFixed(1),
-      label: "Average per active day",
-    },
-    {
-      icon: "star",
-      color: THEME.yellow,
-      value: plural(
-        streak.peakContributionCount,
-        "contribution",
-      ),
-      label: streak.peakContributionDate
-        ? `Peak · ${formatDate(streak.peakContributionDate)}`
-        : "Peak contribution day",
-    },
-    {
-      icon: "activity",
-      color: THEME.orange,
-      value: formatPercentage(streak.activeDayRate),
-      label: "Active-day rate · 12 months",
-    },
-  ];
-
-  const featuredX = 20;
-  const featuredY = 70;
-  const featuredGap = 12;
-  const featuredCellWidth =
-    (
-      width -
-      featuredX * 2 -
-      featuredGap * 2
-    ) /
-    3;
-  const featuredCellHeight = 67;
-
-  const featuredTiles = featuredMetrics
-    .map((metric, index) => {
-      const x =
-        featuredX +
-        index * (featuredCellWidth + featuredGap);
-
-      return `<rect x="${x}" y="${featuredY}" width="${featuredCellWidth}" height="${featuredCellHeight}" rx="11" fill="${metric.color}" fill-opacity=".09" stroke="${metric.color}" stroke-opacity=".5"/>
-      ${icon(metric.icon, x + 14, featuredY + 14, metric.color, 18)}
-      <text x="${x + 46}" y="${featuredY + 31}" class="metricValue">${escapeXml(metric.value)}</text>
-      <text x="${x + 14}" y="${featuredY + 55}" class="metricLabel">${escapeXml(metric.label)}</text>`;
-    })
-    .join("");
-
-  const timelineY = 147;
-  const timelineWidth = width - 40;
-  const timelineThird = timelineWidth / 3;
-
-  const timeline = `<rect x="20" y="${timelineY}" width="${timelineWidth}" height="39" rx="10" fill="${THEME.track}" stroke="${THEME.border}"/>
-      <text x="34" y="${timelineY + 16}" class="tiny">FIRST RECORDED</text>
-      <text x="34" y="${timelineY + 31}" class="small">${escapeXml(formatDate(streak.first))}</text>
-      <line x1="${20 + timelineThird}" y1="${timelineY + 8}" x2="${20 + timelineThird}" y2="${timelineY + 31}" stroke="${THEME.border}"/>
-      <text x="${20 + timelineThird + 14}" y="${timelineY + 16}" class="tiny">MOST ACTIVE WEEKDAY</text>
-      <text x="${20 + timelineThird + 14}" y="${timelineY + 31}" class="small">${escapeXml(streak.mostActiveWeekday)}</text>
-      <line x1="${20 + timelineThird * 2}" y1="${timelineY + 8}" x2="${20 + timelineThird * 2}" y2="${timelineY + 31}" stroke="${THEME.border}"/>
-      <text x="${20 + timelineThird * 2 + 14}" y="${timelineY + 16}" class="tiny">LATEST RECORDED</text>
-      <text x="${20 + timelineThird * 2 + 14}" y="${timelineY + 31}" class="small">${escapeXml(formatDate(streak.latest))}</text>`;
-
-  const recentColumns = 3;
-  const recentGap = 10;
-  const recentX = 20;
-  const recentY = 197;
-  const recentCellWidth =
-    (
-      width -
-      recentX * 2 -
-      recentGap * (recentColumns - 1)
-    ) /
-    recentColumns;
-  const recentCellHeight = 34;
-  const recentRowPitch = 42;
-
-  const recentTiles = recentMetrics
-    .map((metric, index) => {
-      const column = index % recentColumns;
-      const row = Math.floor(index / recentColumns);
-      const x =
-        recentX +
-        column * (recentCellWidth + recentGap);
-      const y =
-        recentY +
-        row * recentRowPitch;
-
-      return `<rect x="${x}" y="${y}" width="${recentCellWidth}" height="${recentCellHeight}" rx="8" fill="${metric.color}" fill-opacity=".055" stroke="${metric.color}" stroke-opacity=".34"/>
-      ${icon(metric.icon, x + 10, y + 9, metric.color, 14)}
-      <text x="${x + 31}" y="${y + 15}" class="small">${escapeXml(metric.value)}</text>
-      <text x="${x + 31}" y="${y + 28}" class="tiny">${escapeXml(metric.label)}</text>`;
-    })
-    .join("");
-
-  return cardShell({
-    width,
-    height,
-    title: "Contribution Streak",
-    iconName: "flame",
-    accent: THEME.orange,
-    subtitle:
-      "All-time streak history with rolling 12-month consistency",
-    body: `${featuredTiles}${timeline}${recentTiles}`,
+  let body = "";
+  body += icon("flame", 22, 20, THEME.orange, 18);
+  body += lockedCardText(54, 36, "Contribution Streak", {
+    size: 19,
+    weight: 700,
   });
+  body += lockedCardText(
+    54,
+    55,
+    "Consistency, momentum and all-time contribution history",
+    { size: 11, fill: THEME.muted, weight: 400 },
+  );
+  body += lockedCardDot(570, 31, THEME.green, 3);
+  body += lockedCardText(732, 34, "PRIVATE + PUBLIC · DAILY", {
+    size: 7.5,
+    fill: THEME.muted,
+    weight: 700,
+    anchor: "end",
+    letterSpacing: ".5",
+  });
+  body += lockedCardLine(22, 68, 738, 68, THEME.border);
+
+  body += lockedCardText(28, 91, "ALL-TIME CONSISTENCY", {
+    size: 8.1,
+    fill: THEME.blue,
+    weight: 750,
+    letterSpacing: ".95",
+  });
+
+  const allTimeMetrics = [
+    [compactNumber(streak.activeDays), "Active days", " · all time", "activity", THEME.green, 18],
+    [plural(streak.longest, "day"), "Longest streak", " · all time", "star", THEME.yellow, 18],
+    [streak.mostActiveWeekday, "Most active weekday", "", "calendar", THEME.blue, 15],
+  ];
+
+  for (const [index, metric] of allTimeMetrics.entries()) {
+    const [value, label, qualifier, iconName, color, size] = metric;
+    const y = 121 + index * 48;
+    body += lockedMetricIcon(iconName, 28, y - 21, color);
+    body += lockedCardText(64, y, value, { size, fill: color, weight: 780 });
+    body += lockedCardLabel(64, y + 17, label, qualifier, { size: 8.8 });
+    if (index < 2) {
+      body += lockedCardLine(28, y + 27, 212, y + 27, "#202730");
+    }
+  }
+
+  body += `<circle cx="380" cy="163" r="72" fill="${THEME.orange}" opacity=".1" filter="url(#streak-glow)"/>`;
+  body += `<circle cx="380" cy="163" r="66" fill="url(#streak-core)" stroke="url(#streak-ring)" stroke-width="3"/>`;
+  body += `<circle cx="380" cy="163" r="56" fill="none" stroke="#4B2B1F" stroke-dasharray="2 7"/>`;
+  body += icon("flame", 364, 101, THEME.orange, 32);
+  body += lockedCardText(380, 180, compactNumber(streak.current), {
+    size: 39,
+    weight: 820,
+    anchor: "middle",
+  });
+  body += lockedCardText(380, 200, "DAY STREAK", {
+    size: 8.8,
+    fill: THEME.orange,
+    weight: 780,
+    anchor: "middle",
+    letterSpacing: "1",
+  });
+  body += lockedCardText(380, 217, "CURRENT", {
+    size: 7.4,
+    fill: "#B1BAC4",
+    weight: 650,
+    anchor: "middle",
+    letterSpacing: ".7",
+  });
+  body += lockedCardLine(380, 230, 380, 242, THEME.orange, 1, ".5");
+
+  body += lockedMetricIcon("activity", 300, 238, THEME.blue);
+  body += lockedCardText(336, 259, streak.averagePerActiveDay.toFixed(1), {
+    size: 14,
+    fill: THEME.blue,
+    weight: 780,
+  });
+  body += lockedCardLabel(336, 274, "Average", " / active day", {
+    size: 7.6,
+  });
+  body += lockedMetricIcon("calendar", 408, 238, THEME.orange);
+  body += lockedCardText(444, 259, formatPercentage(streak.activeDayRate), {
+    size: 14,
+    fill: THEME.orange,
+    weight: 780,
+  });
+  body += lockedCardLabel(444, 274, "Active-day rate", " · 12m", {
+    size: 7.6,
+  });
+
+  body += lockedCardText(548, 91, "ROLLING 12-MONTH PULSE", {
+    size: 8.1,
+    fill: THEME.purple,
+    weight: 750,
+    letterSpacing: ".75",
+  });
+
+  const rollingMetrics = [
+    [compactNumber(streak.recentContributions), "Contributions", " · 12 months", "commit", THEME.blue, 18],
+    [compactNumber(streak.recentActiveDays), "Active days", " · 12 months", "activity", THEME.green, 18],
+    [plural(streak.recentActiveWeeks, "week"), "Active weeks", " · latest 53", "calendar", THEME.purple, 15],
+  ];
+
+  for (const [index, metric] of rollingMetrics.entries()) {
+    const [value, label, qualifier, iconName, color, size] = metric;
+    const y = 121 + index * 48;
+    body += lockedMetricIcon(iconName, 548, y - 21, color);
+    body += lockedCardText(584, y, value, { size, fill: color, weight: 780 });
+    body += lockedCardLabel(584, y + 17, label, qualifier, { size: 8.8 });
+    if (index < 2) {
+      body += lockedCardLine(548, y + 27, 732, y + 27, "#202730");
+    }
+  }
+
+  const peakValue = plural(streak.peakContributionCount, "contribution");
+  const peakDate = streak.peakContributionDate
+    ? formatDate(streak.peakContributionDate)
+    : "—";
+
+  body += lockedCardLine(22, 289, 738, 289, THEME.border);
+  body += lockedCardText(28, 307, "ACTIVITY TIMELINE", {
+    size: 7.8,
+    fill: THEME.muted,
+    weight: 750,
+    letterSpacing: ".9",
+  });
+  body += lockedCardLine(43, 323, 717, 323, "#252C35", 2);
+  body += lockedCardDot(43, 323, THEME.blue, 4);
+  body += lockedCardDot(380, 323, THEME.yellow, 5);
+  body += lockedCardDot(717, 323, THEME.green, 4);
+  body += lockedCardText(43, 342, formatDate(streak.first), {
+    size: 9.2,
+    fill: "#D0D7DE",
+    weight: 650,
+  });
+  body += lockedCardText(43, 354, "First recorded", {
+    size: 7.1,
+    fill: THEME.muted,
+  });
+  body += lockedCardText(380, 342, peakValue, {
+    size: 9.2,
+    fill: THEME.yellow,
+    weight: 700,
+    anchor: "middle",
+  });
+  body += lockedCardText(380, 354, `Peak · ${peakDate}`, {
+    size: 7.1,
+    fill: THEME.muted,
+    anchor: "middle",
+  });
+  body += lockedCardText(717, 342, formatDate(streak.latest), {
+    size: 9.2,
+    fill: "#D0D7DE",
+    weight: 650,
+    anchor: "end",
+  });
+  body += lockedCardText(717, 354, "Latest recorded", {
+    size: 7.1,
+    fill: THEME.muted,
+    anchor: "end",
+  });
+
+  return lockedCardShell({
+    id: "contribution-streak",
+    title: "Contribution Streak",
+    description:
+      "Current and longest streaks, all-time active days, rolling 12-month consistency, and contribution timeline.",
+    definitions,
+    body,
+  });
+}
+
+/**
+ * Rejects incomplete or internally inconsistent summary data before either
+ * approved card can be published. This complements the upstream API and
+ * repository-scan checks with cross-card invariants.
+ */
+function validateSummaryCardMetrics(overview, streak) {
+  const errors = [];
+  const integerMetrics = [
+    ["overview.repositories", overview.repositories],
+    ["overview.activeRepositories", overview.activeRepositories],
+    ["overview.recentContributions", overview.recentContributions],
+    ["overview.allTimeCommitContributions", overview.allTimeCommitContributions],
+    ["overview.mergedPullRequests", overview.mergedPullRequests],
+    ["overview.reviewContributions", overview.reviewContributions],
+    ["overview.publicContributedRepositories", overview.publicContributedRepositories],
+    ["overview.publicOrganizationsContributed", overview.publicOrganizationsContributed],
+    ["overview.ownedRepositoryStars", overview.ownedRepositoryStars],
+    ["streak.current", streak.current],
+    ["streak.longest", streak.longest],
+    ["streak.activeDays", streak.activeDays],
+    ["streak.recentContributions", streak.recentContributions],
+    ["streak.recentActiveDays", streak.recentActiveDays],
+    ["streak.recentActiveWeeks", streak.recentActiveWeeks],
+    ["streak.peakContributionCount", streak.peakContributionCount],
+  ];
+
+  for (const [name, value] of integerMetrics) {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      errors.push(`${name} must be a non-negative safe integer; received ${value}.`);
+    }
+  }
+
+  const percentageMetrics = [
+    ["overview.ciCoverage", overview.ciCoverage],
+    ["overview.testCoverage", overview.testCoverage],
+    ["streak.activeDayRate", streak.activeDayRate],
+  ];
+  for (const [name, value] of percentageMetrics) {
+    if (!Number.isFinite(value) || value < 0 || value > 100) {
+      errors.push(`${name} must be between 0 and 100; received ${value}.`);
+    }
+  }
+
+  if (
+    typeof overview.contributionTenure !== "string" ||
+    overview.contributionTenure.trim().length === 0
+  ) {
+    errors.push("overview.contributionTenure must be a non-empty string.");
+  }
+
+  if (overview.activeRepositories > overview.repositories) {
+    errors.push("Active repositories cannot exceed verified repositories.");
+  }
+  if (
+    overview.publicOrganizationsContributed >
+    overview.publicContributedRepositories
+  ) {
+    errors.push("Public organizations cannot exceed verified public contribution repositories.");
+  }
+  if (overview.recentContributions !== streak.recentContributions) {
+    errors.push(
+      "The overview and streak rolling-12-month contribution totals must match.",
+    );
+  }
+  if (streak.recentActiveDays > 365) {
+    errors.push("Rolling active days cannot exceed the 365-day source window.");
+  }
+  if (streak.recentActiveWeeks > 53) {
+    errors.push("Rolling active weeks cannot exceed the 53 intersecting calendar weeks.");
+  }
+  if (streak.recentActiveDays > streak.activeDays) {
+    errors.push("Rolling active days cannot exceed all-time active days.");
+  }
+  if (streak.longest > streak.activeDays) {
+    errors.push("The longest streak cannot exceed all-time active days.");
+  }
+  if (streak.current > streak.longest) {
+    errors.push("The current streak cannot exceed the longest streak.");
+  }
+
+  const expectedAverage = streak.recentActiveDays > 0
+    ? streak.recentContributions / streak.recentActiveDays
+    : 0;
+  if (
+    !Number.isFinite(streak.averagePerActiveDay) ||
+    Math.abs(streak.averagePerActiveDay - expectedAverage) > 1e-9
+  ) {
+    errors.push("Average contributions per active day is inconsistent with the rolling totals.");
+  }
+
+  const expectedActiveDayRate = (streak.recentActiveDays / 365) * 100;
+  if (Math.abs(streak.activeDayRate - expectedActiveDayRate) > 1e-9) {
+    errors.push("Active-day rate is inconsistent with the 365-day source window.");
+  }
+  if (streak.peakContributionCount > streak.recentContributions) {
+    errors.push("Peak-day contributions cannot exceed the rolling contribution total.");
+  }
+
+  const weekdays = new Set([
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "—",
+  ]);
+  if (!weekdays.has(streak.mostActiveWeekday)) {
+    errors.push(`Invalid most-active weekday '${streak.mostActiveWeekday}'.`);
+  }
+
+  function validIsoDate(value) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value ?? ""))) return false;
+    const date = dateFromIso(value);
+    return Number.isFinite(date.getTime()) && isoDate(date) === value;
+  }
+
+  if (Boolean(streak.first) !== Boolean(streak.latest)) {
+    errors.push("First and latest contribution dates must either both exist or both be empty.");
+  }
+  for (const [name, value] of [
+    ["streak.first", streak.first],
+    ["streak.latest", streak.latest],
+    ["streak.peakContributionDate", streak.peakContributionDate],
+  ]) {
+    if (value !== null && value !== undefined && !validIsoDate(value)) {
+      errors.push(`${name} must be a valid ISO calendar date; received '${value}'.`);
+    }
+  }
+  if (streak.first && streak.latest && streak.first > streak.latest) {
+    errors.push("The first contribution date cannot be later than the latest date.");
+  }
+
+  if (streak.recentContributions === 0) {
+    if (streak.peakContributionCount !== 0 || streak.peakContributionDate) {
+      errors.push("An empty rolling window cannot have a peak contribution day.");
+    }
+  } else if (
+    streak.peakContributionCount <= 0 ||
+    !streak.peakContributionDate
+  ) {
+    errors.push("A non-empty rolling window must have a positive peak and peak date.");
+  }
+
+  if (streak.peakContributionDate) {
+    const today = dateFromIso(isoDate(new Date()));
+    const rollingStart = isoDate(addUtcDays(today, -364));
+    const todayIso = isoDate(today);
+    if (
+      streak.peakContributionDate < rollingStart ||
+      streak.peakContributionDate > todayIso
+    ) {
+      errors.push("The peak contribution date must fall inside the rolling 365-day window.");
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Summary card data validation failed:\n- ${errors.join("\n- ")}`,
+    );
+  }
 }
 
 function recentDays(days, numberOfDays) {
@@ -5194,6 +5491,123 @@ async function writeCards(cards) {
   }
 }
 
+async function runSummaryCardSelfTest() {
+  const today = isoDate(new Date());
+  const overviewFixture = {
+    repositories: 37,
+    activeRepositories: 18,
+    recentContributions: 444,
+    allTimeCommitContributions: 9_876,
+    mergedPullRequests: 123,
+    reviewContributions: 27,
+    publicContributedRepositories: 8,
+    publicOrganizationsContributed: 5,
+    ciCoverage: 77.8,
+    testCoverage: 68.4,
+    contributionTenure: "<1 month",
+    ownedRepositoryStars: 91,
+  };
+  const streakFixture = {
+    current: 8,
+    longest: 21,
+    activeDays: 196,
+    first: "2018-02-22",
+    latest: today,
+    mostActiveWeekday: "Monday",
+    recentContributions: 444,
+    recentActiveDays: 101,
+    recentActiveWeeks: 49,
+    averagePerActiveDay: 444 / 101,
+    activeDayRate: (101 / 365) * 100,
+    peakContributionCount: 20,
+    peakContributionDate: today,
+  };
+
+  validateSummaryCardMetrics(overviewFixture, streakFixture);
+
+  let mismatchRejected = false;
+  try {
+    validateSummaryCardMetrics(
+      { ...overviewFixture, recentContributions: 443 },
+      streakFixture,
+    );
+  } catch (error) {
+    mismatchRejected = String(error.message).includes(
+      "rolling-12-month contribution totals must match",
+    );
+  }
+  if (!mismatchRejected) {
+    throw new Error(
+      "Summary card validator self-test failed to reject a cross-card total mismatch.",
+    );
+  }
+
+  const overviewSvg = renderOverview(overviewFixture);
+  const streakSvg = renderStreak(streakFixture);
+
+  const checks = [
+    [overviewSvg, 'width="760" height="360"'],
+    [overviewSvg, 'viewBox="0 0 760 360"'],
+    [overviewSvg, "444"],
+    [overviewSvg, "9.9K"],
+    [overviewSvg, "&lt;1 month"],
+    [overviewSvg, "77.8%"],
+    [overviewSvg, "68.4%"],
+    [streakSvg, 'width="760" height="360"'],
+    [streakSvg, 'viewBox="0 0 760 360"'],
+    [streakSvg, "DAY STREAK"],
+    [streakSvg, "49 weeks"],
+    [streakSvg, "20 contributions"],
+    [streakSvg, "Monday"],
+  ];
+
+  for (const [svg, expected] of checks) {
+    if (!svg.includes(expected)) {
+      throw new Error(
+        `Summary card renderer self-test failed: missing '${expected}'.`,
+      );
+    }
+  }
+
+  for (const [name, svg] of [
+    ["GitHub Overview", overviewSvg],
+    ["Contribution Streak", streakSvg],
+  ]) {
+    if (!svg.trim().endsWith("</svg>")) {
+      throw new Error(`${name} renderer produced an incomplete SVG document.`);
+    }
+    if (/\b(?:undefined|NaN|Infinity)\b/.test(svg)) {
+      throw new Error(`${name} renderer leaked an invalid numeric value.`);
+    }
+  }
+
+  const previewDirectory =
+    process.env.SUMMARY_CARD_PREVIEW_DIRECTORY?.trim();
+  if (previewDirectory) {
+    const absolutePreviewDirectory = path.resolve(previewDirectory);
+    await fs.mkdir(absolutePreviewDirectory, { recursive: true });
+    await Promise.all([
+      fs.writeFile(
+        path.join(absolutePreviewDirectory, "github-overview.svg"),
+        overviewSvg,
+        "utf8",
+      ),
+      fs.writeFile(
+        path.join(absolutePreviewDirectory, "contribution-streak.svg"),
+        streakSvg,
+        "utf8",
+      ),
+    ]);
+    console.log(
+      `Wrote summary-card QA previews to ${absolutePreviewDirectory}.`,
+    );
+  }
+
+  console.log(
+    "Summary card self-test passed: locked dimensions, dynamic values, XML escaping, and validation invariants are intact.",
+  );
+}
+
 async function main() {
   console.log("Fetching authenticated account...");
   console.log(
@@ -5303,8 +5717,8 @@ async function main() {
   );
 
   if (truncatedTrees > 0) {
-    console.warn(
-      "Some recursive Git trees were truncated by GitHub. Language totals remain available, but manifest/test/CI detection may be incomplete for those repositories.",
+    throw new Error(
+      `GitHub truncated ${truncatedTrees} recursive repository tree(s). Refusing to publish potentially incomplete manifest, test, or CI coverage metrics.`,
     );
   }
 
@@ -5336,17 +5750,14 @@ async function main() {
     searchCountsByContributorIdentity(
       (identity) => `author:${identity} is:pr`,
       "Pull-request search",
-      contributionHistory.totals.pullRequests,
     ),
     searchCountsByContributorIdentity(
       (identity) => `author:${identity} is:pr is:merged`,
       "Merged pull-request search",
-      contributionHistory.totals.pullRequests,
     ),
     searchCountsByContributorIdentity(
       (identity) => `author:${identity} is:issue is:closed`,
       "Closed-issue search",
-      contributionHistory.totals.issues,
     ),
   ]);
 
@@ -5506,6 +5917,11 @@ async function main() {
     ownedRepositoryStars,
   };
 
+  validateSummaryCardMetrics(overview, streak);
+  console.log(
+    "Validated GitHub Overview and Contribution Streak source metrics and cross-card totals.",
+  );
+
   const delivery = {
     pullRequests,
     mergedPullRequests,
@@ -5580,4 +5996,8 @@ async function main() {
   );
 }
 
-await main();
+if (summaryCardSelfTest) {
+  await runSummaryCardSelfTest();
+} else {
+  await main();
+}

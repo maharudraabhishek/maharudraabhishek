@@ -373,9 +373,9 @@ function buildAnalyticsBlock(version) {
 
 > Personal contribution cards count GitHub-attributed work. Full public-project composition is shown separately and is not a personal-authorship claim.
 
-${naturalWidthCard(CARD.overview, version, 860)}
+${naturalWidthCard(CARD.overview, version, 760)}
 
-${naturalWidthCard(CARD.streak, version, 860)}
+${naturalWidthCard(CARD.streak, version, 760)}
 
 ${fullWidthCard(CARD.github_trophies, version)}
 

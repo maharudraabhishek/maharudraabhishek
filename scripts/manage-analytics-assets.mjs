@@ -31,6 +31,25 @@ export const ANALYTICS_ASSET_FILENAMES = Object.freeze([
 const SECRET_PATTERN =
   /github_pat_|ghp_|PRIVATE_STATS_TOKEN|Authorization:\s*Bearer/i;
 
+const LOCKED_SUMMARY_CARD_MARKERS = Object.freeze({
+  "github-overview.svg": Object.freeze([
+    'width="760" height="360"',
+    'viewBox="0 0 760 360"',
+    'width="759" height="359" rx="2"',
+    'id="overview-flow"',
+    "From repository scale to sustained delivery and engineering quality",
+    "ENGINEERING QUALITY",
+  ]),
+  "contribution-streak.svg": Object.freeze([
+    'width="760" height="360"',
+    'viewBox="0 0 760 360"',
+    'width="759" height="359" rx="2"',
+    'id="streak-ring"',
+    "DAY STREAK",
+    "ACTIVITY TIMELINE",
+  ]),
+});
+
 const workspaceDirectory = path.resolve(
   process.env.GITHUB_WORKSPACE?.trim() ||
   process.cwd(),
@@ -183,6 +202,16 @@ async function validateSvgFile(directoryPath, filename) {
   if (SECRET_PATTERN.test(content)) {
     throw new Error(
       `Potential secret material was found in ${filePath}.`,
+    );
+  }
+
+  const lockedMarkers = LOCKED_SUMMARY_CARD_MARKERS[filename] ?? [];
+  const missingLockedMarkers = lockedMarkers.filter(
+    (marker) => !content.includes(marker),
+  );
+  if (missingLockedMarkers.length > 0) {
+    throw new Error(
+      `${filename} does not match the approved locked-card contract. Missing: ${missingLockedMarkers.join(", ")}`,
     );
   }
 }
