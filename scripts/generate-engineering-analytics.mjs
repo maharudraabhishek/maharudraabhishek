@@ -176,6 +176,14 @@ const ANONYMOUS_REST_HEADERS = Object.freeze({
   "User-Agent": `${username}-public-readme-analytics`,
 });
 
+// GitHub recommends serializing REST Search requests to avoid secondary rate
+// limits. Keep one queue per credential so private, workflow-token, and
+// anonymous searches do not block one another. A queued
+// request retains its slot while requestJson honors Retry-After/reset headers,
+// preventing sibling requests from waking and retrying as a burst.
+const searchRequestQueues = new Map();
+const anonymousSearchCredential = Symbol("anonymous-search-credential");
+
 const PUBLIC_RAW_HEADERS = Object.freeze({
   Accept: "text/plain",
   "User-Agent": `${username}-public-readme-analytics`,
@@ -1114,10 +1122,43 @@ function transientRetryDelayMilliseconds(attempt) {
   );
 }
 
+function searchCredentialKey(headers) {
+  const authorization = String(
+    headers?.Authorization ?? headers?.authorization ?? "",
+  ).trim();
+  return authorization || anonymousSearchCredential;
+}
+
+async function enqueueSearchRequest(headers, request) {
+  const credentialKey = searchCredentialKey(headers);
+  const previousRequest = searchRequestQueues.get(credentialKey) ??
+    Promise.resolve();
+  const scheduledRequest = previousRequest
+    .catch(() => undefined)
+    .then(request);
+  searchRequestQueues.set(credentialKey, scheduledRequest);
+
+  try {
+    return await scheduledRequest;
+  } finally {
+    if (searchRequestQueues.get(credentialKey) === scheduledRequest) {
+      searchRequestQueues.delete(credentialKey);
+    }
+  }
+}
+
 async function rest(pathOrUrl, options = {}) {
   const url = pathOrUrl.startsWith("http")
     ? pathOrUrl
     : `${REST_ENDPOINT}${pathOrUrl}`;
+
+  if (new URL(url).pathname.startsWith("/search/")) {
+    return enqueueSearchRequest(
+      options.headers ?? REST_HEADERS,
+      () => requestJson(url, options),
+    );
+  }
+
   return requestJson(url, options);
 }
 
@@ -6276,6 +6317,94 @@ async function runDataPipelineSelfTest() {
     "external public collaboration Search does not exclude the primary owner.",
   );
 
+  const privateSearchHeaders = Object.freeze({
+    Authorization: "Bearer private-test",
+  });
+  const equivalentPrivateSearchHeaders = Object.freeze({
+    Authorization: "Bearer private-test",
+  });
+  const publicSearchHeaders = Object.freeze({
+    Authorization: "Bearer public-test",
+  });
+  const searchExecutionOrder = [];
+  let releasePrivateSearch;
+  const privateSearchCooldown = new Promise((resolve) => {
+    releasePrivateSearch = resolve;
+  });
+  let confirmPublicSearchFinished;
+  const publicSearchFinished = new Promise((resolve) => {
+    confirmPublicSearchFinished = resolve;
+  });
+
+  const firstPrivateSearch = enqueueSearchRequest(
+    privateSearchHeaders,
+    async () => {
+      searchExecutionOrder.push("private-1:start");
+      await privateSearchCooldown;
+      searchExecutionOrder.push("private-1:end");
+    },
+  );
+  const secondPrivateSearch = enqueueSearchRequest(
+    equivalentPrivateSearchHeaders,
+    async () => {
+      searchExecutionOrder.push("private-2:start");
+      searchExecutionOrder.push("private-2:end");
+    },
+  );
+  const publicSearch = enqueueSearchRequest(
+    publicSearchHeaders,
+    async () => {
+      searchExecutionOrder.push("public:start");
+      searchExecutionOrder.push("public:end");
+      confirmPublicSearchFinished();
+    },
+  );
+
+  await publicSearchFinished;
+  assert(
+    searchExecutionOrder.join(",") ===
+      "private-1:start,public:start,public:end",
+    "Search requests sharing a credential are not serialized independently of other credentials.",
+  );
+  releasePrivateSearch();
+  await Promise.all([
+    firstPrivateSearch,
+    secondPrivateSearch,
+    publicSearch,
+  ]);
+  assert(
+    searchExecutionOrder.join(",") ===
+      "private-1:start,public:start,public:end,private-1:end,private-2:start,private-2:end",
+    "a queued Search request did not retain its credential slot through a cooldown.",
+  );
+
+  const recoverySearchHeaders = Object.freeze({
+    Authorization: "Bearer recovery-test",
+  });
+  let recoverySearchRan = false;
+  const expectedSearchFailure = enqueueSearchRequest(
+    recoverySearchHeaders,
+    async () => {
+      throw new Error("expected Search failure");
+    },
+  );
+  const recoverySearch = enqueueSearchRequest(
+    recoverySearchHeaders,
+    async () => {
+      recoverySearchRan = true;
+    },
+  );
+  const expectedSearchError = await expectedSearchFailure.catch(
+    (error) => error,
+  );
+  await recoverySearch;
+  assert(
+    expectedSearchError.message === "expected Search failure" &&
+      recoverySearchRan &&
+      searchRequestQueues.size === 0,
+    "a failed Search request poisoned its credential queue.",
+  );
+
   const duplicateKeyA = publicSearchResultKey(
     {
       repository_url: "https://api.github.com/repos/example/project",
@@ -6437,7 +6566,7 @@ async function runDataPipelineSelfTest() {
   );
 
   console.log(
-    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, profile-owned scope chunking, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
+    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, profile-owned scope chunking, credential-scoped Search serialization, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
   );
 }
 
