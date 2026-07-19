@@ -200,6 +200,22 @@ const REPOSITORY_SCOPE = Object.freeze({
   PUBLIC_CONTRIBUTED: "public-contributed",
 });
 
+const OPEN_SOURCE_PROJECT_MANIFEST = "open-source-projects.json";
+// GitHub's repository API returns SPDX identifiers for detected licenses.
+// Keep qualification policy-based and repository-agnostic so newly licensed
+// owned projects appear without adding project names to this generator.
+const OPEN_SOURCE_SPDX_IDENTIFIERS = new Set([
+  "0BSD", "AFL-3.0", "AGPL-3.0", "AGPL-3.0-only", "AGPL-3.0-or-later",
+  "Apache-2.0", "Artistic-2.0", "BSD-2-Clause", "BSD-3-Clause",
+  "BSL-1.0", "CC0-1.0", "CDDL-1.0", "ECL-2.0", "EPL-1.0", "EPL-2.0",
+  "EUPL-1.1", "EUPL-1.2", "GPL-2.0", "GPL-2.0-only",
+  "GPL-2.0-or-later", "GPL-3.0", "GPL-3.0-only", "GPL-3.0-or-later",
+  "ISC", "LGPL-2.1", "LGPL-2.1-only", "LGPL-2.1-or-later", "LGPL-3.0",
+  "LGPL-3.0-only", "LGPL-3.0-or-later", "MIT", "MPL-2.0", "MS-PL",
+  "NCSA", "OFL-1.1", "OSL-3.0", "PostgreSQL", "Unlicense", "UPL-1.0",
+  "Zlib",
+]);
+
 const THEME = Object.freeze({
   background: "#0D1117",
   border: "#30363D",
@@ -554,6 +570,43 @@ function escapeXml(value) {
     .replaceAll('"', "&quot;");
 }
 
+function repositorySpdxIdentifier(repository) {
+  return String(
+    repository?.license?.spdx_id ??
+      repository?.licenseInfo?.spdxId ??
+      "",
+  ).trim();
+}
+
+function isOwnedOpenSourceDetail(detail) {
+  const repository = detail?.repository;
+  const visibility = String(
+    repository?.visibility ?? (repository?.private ? "private" : "public"),
+  ).toLowerCase();
+  const owner = String(repository?.owner?.login ?? "").toLowerCase();
+  const spdx = repositorySpdxIdentifier(repository);
+
+  return detail?.scope === REPOSITORY_SCOPE.PERSONAL &&
+    owner === username.toLowerCase() &&
+    visibility === "public" &&
+    !repository?.private &&
+    OPEN_SOURCE_SPDX_IDENTIFIERS.has(spdx);
+}
+
+function openSourceProjectFilename(fullName) {
+  const slug = String(fullName)
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "--")
+    .replace(/-+/g, "-")
+    .replace(/^[.-]+|[.-]+$/g, "") || "project";
+  let hash = 2166136261;
+  for (const character of String(fullName).toLowerCase()) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return `open-source-project-${slug}-${hash.toString(16).padStart(8, "0")}.svg`;
+}
+
 function compactNumber(value) {
   return new Intl.NumberFormat("en", {
     notation: "compact",
@@ -804,17 +857,17 @@ function cardShell({
 }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeXml(title)}">
   <style>
-    .title{fill:${THEME.title};font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .subtitle{fill:${THEME.muted};font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .label{fill:${THEME.muted};font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .value{fill:${THEME.text};font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .small{fill:${THEME.text};font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .tiny{fill:${THEME.muted};font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .title{fill:${THEME.title};font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:${THEME.muted};font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:${THEME.muted};font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:${THEME.text};font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:${THEME.text};font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:${THEME.muted};font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricValue{fill:${THEME.title};font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .metricLabel{fill:${THEME.text};font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .metricNote{fill:${THEME.muted};font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:${THEME.text};font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:${THEME.muted};font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .sectionLabel{fill:${THEME.green};font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
-    .empty{fill:${THEME.muted};font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:${THEME.muted};font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
   <rect x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="12" fill="${THEME.background}" stroke="${THEME.border}"/>
   ${icon(iconName, 20, 17, accent, 18)}
@@ -2156,9 +2209,9 @@ async function fetchRepositoryDetails(selection) {
   let treeResponse = null;
 
   if (publicRepository) {
-    // Both results are required. Mixing GitHub Linguist byte counts with a
-    // source-file-count fallback would make the aggregate mathematically
-    // invalid and could silently publish partial repository analytics.
+    // Both results are required. A complete tree provides an exact byte-size
+    // fallback when GitHub reports no Linguist bytes; a partial tree would
+    // silently skew both composition and repository-quality analytics.
     const [languageResult, treeResult] = await Promise.allSettled([
       publicRestWithFallback(repository.languages_url, {
         label: `Public repository languages (${repository.full_name})`,
@@ -2200,10 +2253,30 @@ async function fetchRepositoryDetails(selection) {
     .filter((entry) => entry.type === "blob" && entry.path)
     .map((entry) => entry.path);
 
-  // An empty Linguist response is a valid result for an empty or non-code
-  // repository. It remains empty rather than being replaced by incomparable
-  // file counts.
-  const languageSource = "github-linguist";
+  // GitHub can return an empty Languages response for a non-empty source
+  // repository (for example when repository-level Linguist overrides suppress
+  // every path). Preserve byte weighting by falling back to the sizes in the
+  // complete default-branch tree. This is deliberately generic and never
+  // infers a language from repository names, topics, or a hardcoded project.
+  const linguistLanguageBytes = languages ?? {};
+  const linguistTotalBytes = Object.values(linguistLanguageBytes).reduce(
+    (sum, value) => sum + safeInteger(value),
+    0,
+  );
+  const treeLanguageBytes = repositoryTreeLanguageBytes(treeEntries);
+  const treeLanguageTotalBytes = Object.values(treeLanguageBytes).reduce(
+    (sum, value) => sum + safeInteger(value),
+    0,
+  );
+  const usesTreeLanguageFallback =
+    linguistTotalBytes <= 0 && treeLanguageTotalBytes > 0;
+
+  languages = usesTreeLanguageFallback
+    ? treeLanguageBytes
+    : linguistLanguageBytes;
+  const languageSource = usesTreeLanguageFallback
+    ? "default-branch source bytes"
+    : "github-linguist";
 
   const manifestEntries = treeEntries
     .filter(manifestCandidate)
@@ -2928,6 +3001,34 @@ function contributionLanguageForPath(filePath) {
   return CONTRIBUTION_LANGUAGE_BY_EXTENSION[extension] ?? null;
 }
 
+/**
+ * Builds a language composition from exact blob sizes in a complete Git tree.
+ *
+ * This is a correctness fallback for repositories whose GitHub Languages API
+ * reports no bytes despite containing attributable source files. It uses the
+ * same generated/vendor exclusions as personal contribution analysis and is
+ * only selected when Linguist returns no usable data.
+ */
+function repositoryTreeLanguageBytes(treeEntries) {
+  const totals = new Map();
+
+  for (const entry of treeEntries ?? []) {
+    if (entry?.type !== "blob" || !entry.path) continue;
+    const bytes = safeInteger(entry.size);
+    if (bytes <= 0) continue;
+
+    const language = contributionLanguageForPath(entry.path);
+    if (!language) continue;
+    totals.set(language, safeInteger(totals.get(language)) + bytes);
+  }
+
+  return Object.fromEntries(
+    [...totals.entries()].sort(([first], [second]) =>
+      first.localeCompare(second),
+    ),
+  );
+}
+
 async function fetchAuthoredCommitReferences(selection) {
   const { repository, scope } = selection;
   const requestHeaders = repositorySupportsAnonymousFallback(scope)
@@ -3065,6 +3166,7 @@ async function fetchCommitDetails(selection, commitReference) {
     : REST_HEADERS;
   const files = [];
   let statistics = null;
+  let commitDate = discoveredDate;
   let filesTruncated = false;
 
   for (let pageNumber = 1; pageNumber <= 30; pageNumber += 1) {
@@ -3079,7 +3181,13 @@ async function fetchCommitDetails(selection, commitReference) {
           headers: requestHeaders,
         });
 
-    if (pageNumber === 1) statistics = response.stats ?? null;
+    if (pageNumber === 1) {
+      statistics = response.stats ?? null;
+      commitDate ??=
+        response.commit?.author?.date ??
+        response.commit?.committer?.date ??
+        null;
+    }
 
     const pageFiles = Array.isArray(response.files) ? response.files : [];
     files.push(...pageFiles);
@@ -3090,11 +3198,7 @@ async function fetchCommitDetails(selection, commitReference) {
   return {
     repositoryFullName: repository.full_name,
     sha,
-    date:
-      discoveredDate ??
-      statistics?.commit?.author?.date ??
-      statistics?.commit?.committer?.date ??
-      null,
+    date: commitDate,
     statistics,
     files,
     filesTruncated,
@@ -3319,11 +3423,12 @@ async function analyzePersonalCodeContributions(repositorySelections) {
 }
 
 /**
- * Aggregates the exact byte totals reported by GitHub's Languages endpoint.
+ * Aggregates byte totals reported by GitHub's Languages endpoint or, only
+ * when it is empty, the exact source-blob sizes in the default-branch tree.
  *
  * A percentage-of-percentages gives a tiny repository the same influence as a
- * monorepo and can badly distort languages such as Python. Raw Linguist bytes
- * are additive across repositories and therefore form one consistent metric.
+ * monorepo and can badly distort languages such as Python. Raw code bytes are
+ * additive across repositories and therefore form one consistent metric.
  */
 function aggregateLanguages(repositoryDetails) {
   const totals = new Map();
@@ -3661,7 +3766,9 @@ async function buildPublicContributionPortfolio(
   personalCodeContributions,
 ) {
   const publicContributionDetails = repositoryDetails.filter(
-    (detail) => detail.publicContribution,
+    (detail) =>
+      detail.publicContribution ||
+      isOwnedOpenSourceDetail(detail),
   );
 
   const results = await mapLimit(
@@ -3670,6 +3777,8 @@ async function buildPublicContributionPortfolio(
     1,
     async (detail) => {
       const repository = detail.repository;
+      const ownedOpenSource = isOwnedOpenSourceDetail(detail);
+      const licenseSpdx = repositorySpdxIdentifier(repository) || null;
       const identities = contributionIdentitiesForScope(
         detail.scope,
         repository.full_name,
@@ -3802,7 +3911,7 @@ async function buildPublicContributionPortfolio(
       // A public repository is included only when GitHub verifies actual
       // engineering activity from at least one configured identity. Discovery
       // relationships alone are not enough.
-      const verified =
+      const verified = ownedOpenSource ||
         attributedCommits > 0 ||
         authoredPullRequests > 0 ||
         reviewedPullRequests > 0;
@@ -3818,6 +3927,10 @@ async function buildPublicContributionPortfolio(
 
       return {
         verified,
+        relationship: ownedOpenSource
+          ? "owned-open-source"
+          : "verified-contribution",
+        licenseSpdx,
         fullName: repository.full_name,
         url: repository.html_url,
         languages: composition.languages,
@@ -3835,7 +3948,9 @@ async function buildPublicContributionPortfolio(
           directPullRequestActivity?.reviewSubmissions ?? 0,
         reviewScanCapped: false,
         attributedIdentities,
-        evidence: repository.contribution_evidence ?? [],
+        evidence: ownedOpenSource
+          ? [`${licenseSpdx} license`, "profile ownership"]
+          : repository.contribution_evidence ?? [],
       };
     },
   );
@@ -3862,6 +3977,8 @@ async function buildPublicContributionPortfolio(
   }
 
   return projects.sort((first, second) =>
+    Number(second.relationship === "owned-open-source") -
+      Number(first.relationship === "owned-open-source") ||
     second.attributedCommits - first.attributedCommits ||
     second.reviewedPullRequests - first.reviewedPullRequests ||
     second.sourceFiles - first.sourceFiles ||
@@ -4434,11 +4551,14 @@ function lockedCardText(
     letterSpacing = null,
   } = {},
 ) {
+  const muted = fill === THEME.muted;
+  const adaptiveSize = muted ? size * 1.07 : size;
+  const adaptiveWeight = muted ? Math.max(600, weight) : weight;
   const spacing = letterSpacing === null
     ? ""
     : ` letter-spacing="${letterSpacing}"`;
 
-  return `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}"${spacing}>${escapeXml(value)}</text>`;
+  return `<text x="${x}" y="${y}" fill="${fill}" font-size="${adaptiveSize.toFixed(2)}" font-weight="${adaptiveWeight}" text-anchor="${anchor}"${spacing}>${escapeXml(value)}</text>`;
 }
 
 function lockedCardLabel(
@@ -4448,7 +4568,7 @@ function lockedCardLabel(
   qualifier = "",
   {
     anchor = "start",
-    size = 9.2,
+    size = 9.8,
     letterSpacing = null,
   } = {},
 ) {
@@ -4456,7 +4576,7 @@ function lockedCardLabel(
     ? ""
     : ` letter-spacing="${letterSpacing}"`;
 
-  return `<text x="${x}" y="${y}" fill="#D0D7DE" font-size="${size}" font-weight="600" text-anchor="${anchor}"${spacing}><tspan>${escapeXml(primary)}</tspan><tspan fill="${THEME.muted}" font-weight="500">${escapeXml(qualifier)}</tspan></text>`;
+  return `<text x="${x}" y="${y}" fill="#D0D7DE" font-size="${size}" font-weight="600" text-anchor="${anchor}"${spacing}><tspan>${escapeXml(primary)}</tspan><tspan fill="${THEME.muted}" font-weight="600">${escapeXml(qualifier)}</tspan></text>`;
 }
 
 function lockedMetricIcon(name, x, y, color) {
@@ -4480,18 +4600,20 @@ function boundedPercentage(value) {
 }
 
 function lockedCardShell({ id, title, description, definitions, body }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360" role="img" aria-labelledby="${id}-title ${id}-description">
+  const width = 720;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="360" viewBox="0 0 ${width} 360" role="img" aria-labelledby="${id}-title ${id}-description">
   <title id="${id}-title">${escapeXml(title)}</title>
   <desc id="${id}-description">${escapeXml(description)}</desc>
   <style>text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}</style>
   <defs>${definitions}</defs>
-  <rect x=".5" y=".5" width="759" height="359" rx="2" fill="${THEME.background}" stroke="${THEME.border}"/>
+  <rect x=".5" y=".5" width="${width - 1}" height="359" rx="12" fill="${THEME.background}" stroke="${THEME.border}"/>
   ${body}
 </svg>`;
 }
 
 /**
- * Renders the approved 760×360 Contribution Engine overview.
+ * Renders the approved 720×360 Contribution Engine overview.
  *
  * The visual structure is intentionally locked. Only validated values and
  * percentage-bar lengths change between workflow runs.
@@ -4520,16 +4642,17 @@ function renderOverview(data) {
     "From repository scale to sustained delivery and engineering quality",
     { size: 11, fill: THEME.muted, weight: 400 },
   );
-  body += lockedCardDot(570, 31, THEME.green, 3);
-  body += lockedCardText(732, 34, "PRIVATE + PUBLIC · DAILY", {
+  body += lockedCardDot(530, 31, THEME.green, 3);
+  body += lockedCardText(692, 34, "PRIVATE + PUBLIC · DAILY", {
     size: 7.5,
     fill: THEME.muted,
     weight: 700,
     anchor: "end",
     letterSpacing: ".5",
   });
-  body += lockedCardLine(22, 68, 738, 68, THEME.border);
+  body += lockedCardLine(22, 68, 698, 68, THEME.border);
 
+  body += `<g transform="translate(15 0)">`;
   body += lockedCardText(28, 90, "REPOSITORY BASE", {
     size: 8.1,
     fill: THEME.blue,
@@ -4553,7 +4676,9 @@ function renderOverview(data) {
       body += lockedCardLine(28, y + 29, 205, y + 29, "#202730");
     }
   }
+  body += `</g>`;
 
+  body += `<g transform="translate(-20 0)">`;
   body += `<path d="M211 177 C254 177 265 160 307 160" fill="none" stroke="${THEME.blue}" stroke-opacity=".4" stroke-width="2"/>`;
   body += `<path d="M453 160 C495 160 506 177 548 177" fill="none" stroke="${THEME.purple}" stroke-opacity=".4" stroke-width="2"/>`;
   body += `<circle cx="380" cy="169" r="68" fill="${THEME.blue}" opacity=".08" filter="url(#overview-glow)"/>`;
@@ -4607,7 +4732,9 @@ function renderOverview(data) {
     letterSpacing: ".35",
   });
   body += lockedCardLine(380, 232, 380, 238, THEME.green, 1, ".45");
+  body += `</g>`;
 
+  body += `<g transform="translate(-35 0)">`;
   body += lockedCardText(552, 90, "COLLABORATION REACH", {
     size: 8.1,
     fill: THEME.purple,
@@ -4641,8 +4768,10 @@ function renderOverview(data) {
   body += lockedCardLabel(616, 267, "Owned repository stars", "", {
     size: 8.8,
   });
+  body += `</g>`;
 
-  body += lockedCardLine(22, 283, 738, 283, THEME.border);
+  body += lockedCardLine(22, 283, 698, 283, THEME.border);
+  body += `<g transform="translate(15 0)">`;
   body += lockedCardText(28, 301, "ENGINEERING QUALITY", {
     size: 7.8,
     fill: THEME.cyan,
@@ -4665,7 +4794,9 @@ function renderOverview(data) {
     weight: 650,
     anchor: "end",
   });
+  body += `</g>`;
 
+  body += `<g transform="translate(-35 0)">`;
   body += lockedMetricIcon("test", 398, 303, THEME.green);
   body += lockedCardText(434, 324, formatPercentage(testCoverage), {
     size: 17,
@@ -4681,6 +4812,7 @@ function renderOverview(data) {
     weight: 650,
     anchor: "end",
   });
+  body += `</g>`;
 
   return lockedCardShell({
     id: "github-overview",
@@ -4693,7 +4825,7 @@ function renderOverview(data) {
 }
 
 /**
- * Renders the approved 760×360 Fire Orbit streak card.
+ * Renders the approved 720×360 Fire Orbit streak card.
  *
  * The circular fire centerpiece is the only circular badge; all supporting
  * semantic icons remain unframed for clarity and quick scanning.
@@ -4716,16 +4848,17 @@ function renderStreak(streak) {
     "Consistency, momentum and all-time contribution history",
     { size: 11, fill: THEME.muted, weight: 400 },
   );
-  body += lockedCardDot(570, 31, THEME.green, 3);
-  body += lockedCardText(732, 34, "PRIVATE + PUBLIC · DAILY", {
+  body += lockedCardDot(530, 31, THEME.green, 3);
+  body += lockedCardText(692, 34, "PRIVATE + PUBLIC · DAILY", {
     size: 7.5,
     fill: THEME.muted,
     weight: 700,
     anchor: "end",
     letterSpacing: ".5",
   });
-  body += lockedCardLine(22, 68, 738, 68, THEME.border);
+  body += lockedCardLine(22, 68, 698, 68, THEME.border);
 
+  body += `<g transform="translate(15 0)">`;
   body += lockedCardText(28, 91, "ALL-TIME CONSISTENCY", {
     size: 8.1,
     fill: THEME.blue,
@@ -4749,7 +4882,9 @@ function renderStreak(streak) {
       body += lockedCardLine(28, y + 27, 212, y + 27, "#202730");
     }
   }
+  body += `</g>`;
 
+  body += `<g transform="translate(-20 0)">`;
   body += `<circle cx="380" cy="163" r="72" fill="${THEME.orange}" opacity=".1" filter="url(#streak-glow)"/>`;
   body += `<circle cx="380" cy="163" r="66" fill="url(#streak-core)" stroke="url(#streak-ring)" stroke-width="3"/>`;
   body += `<circle cx="380" cy="163" r="56" fill="none" stroke="#4B2B1F" stroke-dasharray="2 7"/>`;
@@ -4793,7 +4928,9 @@ function renderStreak(streak) {
   body += lockedCardLabel(444, 274, "Active-day rate", " · 12m", {
     size: 7.6,
   });
+  body += `</g>`;
 
+  body += `<g transform="translate(-35 0)">`;
   body += lockedCardText(548, 91, "ROLLING 12-MONTH PULSE", {
     size: 8.1,
     fill: THEME.purple,
@@ -4817,23 +4954,25 @@ function renderStreak(streak) {
       body += lockedCardLine(548, y + 27, 732, y + 27, "#202730");
     }
   }
+  body += `</g>`;
 
   const peakValue = plural(streak.peakContributionCount, "contribution");
   const peakDate = streak.peakContributionDate
     ? formatDate(streak.peakContributionDate)
     : "—";
 
-  body += lockedCardLine(22, 289, 738, 289, THEME.border);
+  body += lockedCardLine(22, 289, 698, 289, THEME.border);
   body += lockedCardText(28, 307, "ACTIVITY TIMELINE", {
     size: 7.8,
     fill: THEME.muted,
     weight: 750,
     letterSpacing: ".9",
   });
-  body += lockedCardLine(43, 323, 717, 323, "#252C35", 2);
-  body += lockedCardDot(43, 323, THEME.blue, 4);
-  body += lockedCardDot(380, 323, THEME.yellow, 5);
-  body += lockedCardDot(717, 323, THEME.green, 4);
+  body += lockedCardLine(58, 323, 682, 323, "#252C35", 2);
+  body += lockedCardDot(58, 323, THEME.blue, 4);
+  body += lockedCardDot(360, 323, THEME.yellow, 5);
+  body += lockedCardDot(682, 323, THEME.green, 4);
+  body += `<g transform="translate(15 0)">`;
   body += lockedCardText(43, 342, formatDate(streak.first), {
     size: 9.2,
     fill: "#D0D7DE",
@@ -4843,6 +4982,7 @@ function renderStreak(streak) {
     size: 7.1,
     fill: THEME.muted,
   });
+  body += `</g><g transform="translate(-20 0)">`;
   body += lockedCardText(380, 342, peakValue, {
     size: 9.2,
     fill: THEME.yellow,
@@ -4854,6 +4994,7 @@ function renderStreak(streak) {
     fill: THEME.muted,
     anchor: "middle",
   });
+  body += `</g><g transform="translate(-35 0)">`;
   body += lockedCardText(717, 342, formatDate(streak.latest), {
     size: 9.2,
     fill: "#D0D7DE",
@@ -4865,6 +5006,7 @@ function renderStreak(streak) {
     fill: THEME.muted,
     anchor: "end",
   });
+  body += `</g>`;
 
   return lockedCardShell({
     id: "contribution-streak",
@@ -5343,7 +5485,7 @@ function renderPersonalLanguageContributions(data) {
     title: "Personal Code Contribution",
     iconName: "branch",
     accent: THEME.cyan,
-    subtitle: `GitHub-attributed default-branch changes · last ${config.codeActivityYears} years${capNote}`,
+    subtitle: `GitHub-attributed default-branch source changes · ${config.codeActivityYears}y · ${compactNumber(data.analyzedCommits)}/${compactNumber(data.discoveredCommits)} commits fully analyzed${capNote}`,
     body,
   });
 }
@@ -5390,7 +5532,7 @@ function renderLanguages(languages, scopeSummary) {
     title: "Engineering Language Footprint",
     iconName: "code",
     accent: THEME.cyan,
-    subtitle: `GitHub Linguist code-byte composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} verified public contribution projects`,
+    subtitle: `Code-byte composition across ${scopeSummary.personal} personal repositories + ${scopeSummary.publicContributed} verified public projects · Linguist with source-tree fallback`,
     body: `
       <defs><clipPath id="language-bar"><rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5"/></clipPath></defs>
       <rect x="${barX}" y="${barY}" width="${barWidth}" height="13" rx="6.5" fill="${THEME.track}"/>
@@ -5887,8 +6029,9 @@ function renderPublicContributionPortfolio(projects) {
           2,
         );
 
-      const projectNumber =
-        String(index + 1).padStart(2, "0");
+      const relationshipLabel = project.relationship === "owned-open-source"
+        ? "OWNED OPEN SOURCE"
+        : "VERIFIED CONTRIBUTION";
 
       return `<g data-project-index="${index + 1}">
       <rect x="${projectX + 5}" y="${y + 7}" width="${projectWidth - 2}" height="${blockHeight}" rx="16" fill="#000000" fill-opacity=".22"/>
@@ -5903,8 +6046,8 @@ function renderPublicContributionPortfolio(projects) {
         className: "value",
         lineHeight: 21,
       })}
-      <rect x="${width - 142}" y="${y + 18}" width="100" height="25" rx="12.5" fill="${accent}" fill-opacity=".16" stroke="${accent}" stroke-opacity=".72"/>
-      <text x="${width - 92}" y="${y + 35}" text-anchor="middle" class="metricLabel">PROJECT ${projectNumber}</text>
+      <rect x="${width - 230}" y="${y + 18}" width="188" height="25" rx="12.5" fill="${accent}" fill-opacity=".16" stroke="${accent}" stroke-opacity=".72"/>
+      <text x="${width - 136}" y="${y + 35}" text-anchor="middle" class="metricLabel">${relationshipLabel}</text>
       ${svgTextLines({
         lines: identityLines,
         x: contentX,
@@ -5965,11 +6108,16 @@ function renderPublicContributionPortfolio(projects) {
   return cardShell({
     width,
     height,
-    title: "Public Open-Source Contributions",
+    title: projects.length === 1
+      ? "Open-Source Project Analytics"
+      : "Public Open-Source Contributions",
     iconName: "branch",
     accent: THEME.green,
-    subtitle:
-      "Each verified repository is rendered as an independent adaptive project card",
+    subtitle: projects.length === 1
+      ? (projects[0].relationship === "owned-open-source"
+          ? `Profile-owned project Â· ${projects[0].licenseSpdx} open-source license`
+          : "GitHub-verified personal contribution to a public project")
+      : "Each verified repository is rendered as an independent adaptive project card",
     body: `${body}${footer}`,
   });
 }
@@ -6065,13 +6213,13 @@ function renderDelivery(data) {
   ];
 
   return cardShell({
-    width: 560,
-    height: 280,
+    width: 600,
+    height: 360,
     title: "Delivery & Collaboration",
     iconName: "rocket",
     accent: THEME.green,
     subtitle: "Contribution and repository-delivery signals with explicit time ranges",
-    body: metricGrid(metrics, 78, 2, 560),
+    body: metricGrid(metrics, 82, 2, 600),
   });
 }
 
@@ -6128,13 +6276,13 @@ function renderPortfolio(data) {
   ];
 
   return cardShell({
-    width: 560,
-    height: 342,
+    width: 600,
+    height: 360,
     title: "Repository Portfolio",
     iconName: "repo",
     accent: THEME.blue,
     subtitle: `${data.scanned} repositories scanned successfully · aggregate-only private data`,
-    body: metricGrid(metrics, 78, 2, 560),
+    body: metricGrid(metrics, 82, 2, 600),
   });
 }
 
@@ -6265,6 +6413,28 @@ async function writeCards(cards) {
   }
 }
 
+async function writeOpenSourceProjectManifest(projects) {
+  const entries = projects.map((project) => ({
+    fullName: project.fullName,
+    url: project.url,
+    filename: openSourceProjectFilename(project.fullName),
+    relationship: project.relationship,
+    licenseSpdx: project.licenseSpdx,
+  }));
+  const uniqueFilenames = new Set(entries.map((entry) => entry.filename));
+  if (uniqueFilenames.size !== entries.length) {
+    throw new Error("Open-source project asset filenames must be unique.");
+  }
+
+  const outputPath = path.join(config.outputDirectory, OPEN_SOURCE_PROJECT_MANIFEST);
+  await fs.writeFile(
+    outputPath,
+    `${JSON.stringify({ version: 1, projects: entries }, null, 2)}\n`,
+    "utf8",
+  );
+  console.log(`Generated ${path.relative(process.cwd(), outputPath)}`);
+}
+
 async function runSummaryCardSelfTest() {
   const today = isoDate(new Date());
   const overviewFixture = {
@@ -6320,15 +6490,23 @@ async function runSummaryCardSelfTest() {
   const streakSvg = renderStreak(streakFixture);
 
   const checks = [
-    [overviewSvg, 'width="760" height="360"'],
-    [overviewSvg, 'viewBox="0 0 760 360"'],
+    [overviewSvg, 'width="720" height="360"'],
+    [overviewSvg, 'viewBox="0 0 720 360"'],
+    [overviewSvg, 'width="719" height="359" rx="12"'],
+    [overviewSvg, 'transform="translate(15 0)"'],
+    [overviewSvg, 'transform="translate(-20 0)"'],
+    [overviewSvg, 'transform="translate(-35 0)"'],
     [overviewSvg, "444"],
     [overviewSvg, "9.9K"],
     [overviewSvg, "&lt;1 month"],
     [overviewSvg, "77.8%"],
     [overviewSvg, "68.4%"],
-    [streakSvg, 'width="760" height="360"'],
-    [streakSvg, 'viewBox="0 0 760 360"'],
+    [streakSvg, 'width="720" height="360"'],
+    [streakSvg, 'viewBox="0 0 720 360"'],
+    [streakSvg, 'width="719" height="359" rx="12"'],
+    [streakSvg, 'transform="translate(15 0)"'],
+    [streakSvg, 'transform="translate(-20 0)"'],
+    [streakSvg, 'transform="translate(-35 0)"'],
     [streakSvg, "DAY STREAK"],
     [streakSvg, "49 weeks"],
     [streakSvg, "20 contributions"],
@@ -6428,6 +6606,38 @@ async function runDataPipelineSelfTest() {
   assert(
     Math.abs(languagePercentages.get("Jupyter Notebook") - 45) < 0.0001,
     "Jupyter Linguist bytes are missing from the footprint.",
+  );
+
+  const treeLanguageFixture = repositoryTreeLanguageBytes([
+    { type: "blob", path: "android/MainActivity.java", size: 900 },
+    { type: "blob", path: "android/App.kt", size: 600 },
+    { type: "blob", path: "ios/App.swift", size: 500 },
+    { type: "blob", path: "flutter/lib/main.dart", size: 400 },
+    { type: "blob", path: "web/app.min.js", size: 10_000 },
+    { type: "blob", path: "vendor/generated/output.java", size: 10_000 },
+    { type: "tree", path: "android", size: 0 },
+  ]);
+  assert(
+    treeLanguageFixture.Java === 900 &&
+      treeLanguageFixture.Kotlin === 600 &&
+      treeLanguageFixture.Swift === 500 &&
+      treeLanguageFixture.Dart === 400 &&
+      treeLanguageFixture.JavaScript === undefined,
+    "source-tree language-byte fallback is incomplete or includes generated assets.",
+  );
+  const treeCompositionFixture = repositoryLanguageComposition({
+    languages: treeLanguageFixture,
+    paths: [
+      "android/MainActivity.java",
+      "android/App.kt",
+      "ios/App.swift",
+      "flutter/lib/main.dart",
+    ],
+  });
+  assert(
+    treeCompositionFixture.languages.length === 4 &&
+      treeCompositionFixture.languages.every((item) => item.percentage > 0),
+    "source-tree language bytes do not produce a complete composition.",
   );
 
   const repositoryChunks = chunkValues(
@@ -6706,6 +6916,31 @@ async function runDataPipelineSelfTest() {
     "a filtered metadata candidate is mutated instead of remaining null.",
   );
 
+  const ownedOpenSourceFixture = {
+    scope: REPOSITORY_SCOPE.PERSONAL,
+    repository: {
+      full_name: `${username}/licensed-project`,
+      owner: { login: username, type: "User" },
+      private: false,
+      visibility: "public",
+      license: { spdx_id: "AGPL-3.0-only" },
+    },
+  };
+  assert(
+    isOwnedOpenSourceDetail(ownedOpenSourceFixture),
+    "a profile-owned public repository with an open-source SPDX license is excluded.",
+  );
+  assert(
+    !isOwnedOpenSourceDetail({
+      ...ownedOpenSourceFixture,
+      repository: {
+        ...ownedOpenSourceFixture.repository,
+        license: { spdx_id: "NOASSERTION" },
+      },
+    }),
+    "an owned repository without a recognized open-source license is included.",
+  );
+
   const filteredMetadataFixture =
     collectPublicContributionMetadataResults([
       {
@@ -6806,7 +7041,7 @@ async function runDataPipelineSelfTest() {
   );
 
   console.log(
-    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, profile-owned scope chunking and exact subdivision, credential-scoped Search serialization, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
+    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist and source-tree byte aggregation, identifier deduplication, profile-owned scope chunking and exact subdivision, credential-scoped Search serialization, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
   );
 }
 
@@ -6996,8 +7231,11 @@ async function main() {
     repositoryDetails,
     personalCodeContributions,
   );
+  const verifiedExternalProjects = publicContributionPortfolio.filter(
+    (project) => project.relationship === "verified-contribution",
+  );
   const verifiedPublicRepositoryNames = new Set(
-    publicContributionPortfolio.map((project) => project.fullName.toLowerCase()),
+    verifiedExternalProjects.map((project) => project.fullName.toLowerCase()),
   );
 
   const engineeringFootprintDetails = repositoryDetails.filter(
@@ -7019,7 +7257,7 @@ async function main() {
   const personalFootprintCount = engineeringFootprintDetails.filter(
     (detail) => detail.scope === REPOSITORY_SCOPE.PERSONAL,
   ).length;
-  const publicContributedFootprintCount = publicContributionPortfolio.length;
+  const publicContributedFootprintCount = verifiedExternalProjects.length;
 
   const languages = aggregateLanguages(engineeringFootprintDetails);
   const technologyDetection = buildTechnologyDetection(
@@ -7199,9 +7437,6 @@ async function main() {
       technologyImpact,
       engineeringFootprintDetails.length,
     ),
-    "public-contribution-portfolio.svg": renderPublicContributionPortfolio(
-      publicContributionPortfolio,
-    ),
     "engineering-domains.svg": renderDomains(domains),
     "delivery-collaboration.svg": renderDelivery(delivery),
     "repository-portfolio.svg": renderPortfolio(portfolio),
@@ -7209,10 +7444,16 @@ async function main() {
     ...aiCards,
   };
 
+  for (const project of publicContributionPortfolio) {
+    cards[openSourceProjectFilename(project.fullName)] =
+      renderPublicContributionPortfolio([project]);
+  }
+
   await writeCards(cards);
+  await writeOpenSourceProjectManifest(publicContributionPortfolio);
 
   console.log(
-    `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${publicContributionPortfolio.length} external public projects contributed to, ${repositoryDetails.length} repositories scanned, 7 AI engineering cards generated.`,
+    `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${verifiedExternalProjects.length} external public projects contributed to, ${publicContributionPortfolio.length - verifiedExternalProjects.length} owned open-source projects, ${repositoryDetails.length} repositories scanned, 7 AI engineering cards generated.`,
   );
 }
 

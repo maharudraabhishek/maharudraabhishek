@@ -188,13 +188,14 @@ function icon(name, x, y, color, size = 16) {
 function cardShell({ width, height, title, iconName, accent, subtitle = "", body }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeXml(title)}">
   <style>
-    .title{fill:${THEME.title};font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .subtitle{fill:${THEME.muted};font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .label{fill:${THEME.muted};font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .value{fill:${THEME.text};font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .small{fill:${THEME.text};font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .tiny{fill:${THEME.muted};font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .empty{fill:${THEME.muted};font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .title{fill:${THEME.title};font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:${THEME.muted};font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:${THEME.muted};font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:${THEME.text};font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:${THEME.text};font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:${THEME.muted};font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compactLabel{fill:${THEME.text};font:600 11.2px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:${THEME.muted};font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
   <rect x=".5" y=".5" width="${width - 1}" height="${height - 1}" rx="12" fill="${THEME.background}" stroke="${THEME.border}"/>
   ${icon(iconName, 20, 17, accent, 18)}
@@ -914,7 +915,7 @@ function renderCompactDiscipline({
     return `<rect x="${x}" y="${y}" width="${tileWidth}" height="${tileHeight}" rx="8" fill="${accent}" fill-opacity=".075" stroke="${accent}" stroke-opacity=".42"/>
       ${icon(metric.icon, x + 10, y + 10, accent, 14)}
       <text x="${x + 32}" y="${y + 21}" class="small">${escapeXml(compactNumber(metric.value))}</text>
-      <text x="${x + 10}" y="${y + 38}" class="tiny">${escapeXml(metric.label)}</text>`;
+      <text x="${x + 10}" y="${y + 38}" class="compactLabel">${escapeXml(metric.label)}</text>`;
   }).join("");
 
   return cardShell({

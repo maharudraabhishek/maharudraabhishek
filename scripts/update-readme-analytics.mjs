@@ -19,6 +19,7 @@ const START_MARKER =
   "<!-- ENGINEERING_ANALYTICS:START -->";
 const END_MARKER =
   "<!-- ENGINEERING_ANALYTICS:END -->";
+const OPEN_SOURCE_PROJECT_MANIFEST = "open-source-projects.json";
 
 const CARDS = Object.freeze([
   ["github-overview.svg", "GitHub overview"],
@@ -32,7 +33,6 @@ const CARDS = Object.freeze([
   ["engineering-domains.svg", "Derived engineering domains"],
   ["github-activity-graph.svg", "GitHub activity graph for the last 12 months"],
   ["contribution-graph.svg", "GitHub contribution calendar"],
-  ["public-contribution-portfolio.svg", "Public open-source contribution portfolio"],
   ["ai-engineering-overview.svg", "AI engineering overview"],
   ["ai-engineering-trophies.svg", "AI engineering trophies"],
   ["agentic-workflow-maturity.svg", "Agentic workflow maturity"],
@@ -49,6 +49,7 @@ const CARDS = Object.freeze([
 const MANAGED_ASSET_FILENAMES = Object.freeze([
   ...new Set([
     ...CARDS.map(([filename]) => filename),
+    "public-contribution-portfolio.svg",
     "github-languages.svg",
     "activity-timeline.svg",
     "engineering-trophies.svg",
@@ -82,7 +83,6 @@ const CARD = Object.freeze({
   domains: Object.freeze(["engineering-domains.svg", "Derived engineering domains"]),
   activity_graph: Object.freeze(["github-activity-graph.svg", "GitHub activity graph for the last 12 months"]),
   contribution_calendar: Object.freeze(["contribution-graph.svg", "GitHub contribution calendar"]),
-  open_source: Object.freeze(["public-contribution-portfolio.svg", "Public open-source contribution portfolio"]),
   ai_overview: Object.freeze(["ai-engineering-overview.svg", "AI engineering overview"]),
   ai_trophies: Object.freeze(["ai-engineering-trophies.svg", "AI engineering trophies"]),
   ai_maturity: Object.freeze(["agentic-workflow-maturity.svg", "Agentic workflow maturity"]),
@@ -107,6 +107,15 @@ function escapeRegExp(value) {
     .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function containsManagedReference(value) {
   const lower = String(value).toLowerCase();
 
@@ -114,6 +123,7 @@ function containsManagedReference(value) {
     MANAGED_ASSET_FILENAMES.some((filename) =>
       lower.includes(filename.toLowerCase())
     ) ||
+    lower.includes("open-source-project-") ||
     MANAGED_EXTERNAL_HOSTS.some((host) =>
       lower.includes(host.toLowerCase())
     )
@@ -252,10 +262,41 @@ function cleanExistingAnalytics(readme) {
     .trim();
 }
 
-async function validateAndHashAssets() {
+async function loadOpenSourceProjects() {
+  const manifestPath = path.join(ASSET_DIRECTORY, OPEN_SOURCE_PROJECT_MANIFEST);
+  const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+  if (manifest?.version !== 1 || !Array.isArray(manifest.projects)) {
+    throw new Error(`${manifestPath} must use open-source project manifest version 1.`);
+  }
+  const filenames = new Set();
+  const names = new Set();
+  for (const project of manifest.projects) {
+    const fullName = String(project?.fullName ?? "");
+    const filename = String(project?.filename ?? "");
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(fullName) ||
+        !/^open-source-project-[a-z0-9._-]+-[0-9a-f]{8}\.svg$/.test(filename) ||
+        project?.url !== `https://github.com/${fullName}` ||
+        !["owned-open-source", "verified-contribution"].includes(project?.relationship) ||
+        (project?.relationship === "owned-open-source" &&
+          !/^[A-Za-z0-9.+-]+$/.test(String(project?.licenseSpdx ?? ""))) ||
+        filenames.has(filename) || names.has(fullName.toLowerCase())) {
+      throw new Error(`Invalid or duplicate project entry in ${manifestPath}: ${fullName || "unknown"}`);
+    }
+    filenames.add(filename);
+    names.add(fullName.toLowerCase());
+  }
+  return manifest.projects;
+}
+
+async function validateAndHashAssets(openSourceProjects) {
   const hash = crypto.createHash("sha256");
 
-  for (const [filename] of CARDS) {
+  const filenames = [
+    ...CARDS.map(([filename]) => filename),
+    ...openSourceProjects.map((project) => project.filename),
+    OPEN_SOURCE_PROJECT_MANIFEST,
+  ];
+  for (const filename of filenames) {
     const assetPath = path.join(
       ASSET_DIRECTORY,
       filename,
@@ -266,7 +307,7 @@ async function validateAndHashAssets() {
       throw new Error(`${assetPath} is empty.`);
     }
 
-    if (!content.toString("utf8").includes("<svg")) {
+    if (filename.endsWith(".svg") && !content.toString("utf8").includes("<svg")) {
       throw new Error(
         `${assetPath} is not a valid SVG document.`,
       );
@@ -350,6 +391,29 @@ ${rows.join("\n")}
 </table>`;
 }
 
+function openSourceProjectCards(projects, version) {
+  if (projects.length === 0) {
+    return `<p align="center"><em>No qualifying open-source projects were returned by the current GitHub analytics run.</em></p>`;
+  }
+
+  return projects.map((project) => {
+    const fullName = escapeHtml(project.fullName);
+    const url = escapeHtml(project.url);
+    const filename = escapeHtml(project.filename);
+    const relationship = project.relationship === "owned-open-source"
+      ? "Owned open-source project"
+      : "Verified open-source contribution";
+    const alt = escapeHtml(`${project.fullName} — ${relationship}`);
+    return `<p align="center">
+  <a href="${url}"><strong>${fullName} ↗</strong></a><br />
+  <sub>${relationship}</sub>
+</p>
+<p align="center">
+  <img src="./assets/${filename}?v=${version}" alt="${alt}" width="100%" />
+</p>`;
+  }).join("\n\n");
+}
+
 function profileViewBadge() {
   const encodedUsername =
     encodeURIComponent(username);
@@ -367,15 +431,15 @@ function profileViewBadge() {
  * GitHub Overview and Contribution Streak intentionally occupy independent
  * full-width rows; all other card arrangements remain unchanged.
  */
-function buildAnalyticsBlock(version) {
+function buildAnalyticsBlock(version, openSourceProjects) {
   return `${START_MARKER}
 ## 📊 GitHub Analytics
 
 > Personal contribution cards count GitHub-attributed work. Full public-project composition is shown separately and is not a personal-authorship claim.
 
-${naturalWidthCard(CARD.overview, version, 760)}
+${naturalWidthCard(CARD.overview, version, 720)}
 
-${naturalWidthCard(CARD.streak, version, 760)}
+${naturalWidthCard(CARD.streak, version, 720)}
 
 ${fullWidthCard(CARD.github_trophies, version)}
 
@@ -423,7 +487,7 @@ ${fullWidthCard(CARD.contribution_calendar, version)}
 
 > Public project cards separate full project composition from verified personal commits, pull requests, reviews and approvals.
 
-${fullWidthCard(CARD.open_source, version)}
+${openSourceProjectCards(openSourceProjects, version)}
 
 ### 👁️ Profile Views
 
@@ -437,7 +501,7 @@ function countOccurrences(value, needle) {
     : 0;
 }
 
-function validateSingleManagedBlock(readme) {
+function validateSingleManagedBlock(readme, openSourceProjects) {
   if (
     countOccurrences(readme, START_MARKER) !== 1 ||
     countOccurrences(readme, END_MARKER) !== 1
@@ -472,6 +536,15 @@ function validateSingleManagedBlock(readme) {
     }
   }
 
+  for (const project of openSourceProjects) {
+    if (countOccurrences(readme, project.filename) !== 1) {
+      throw new Error(`README.md must reference ${project.filename} exactly once.`);
+    }
+    if (countOccurrences(readme, `href="${project.url}"`) !== 1) {
+      throw new Error(`README.md must link ${project.fullName} exactly once.`);
+    }
+  }
+
   if (
     countOccurrences(
       readme,
@@ -497,13 +570,14 @@ async function main() {
     readme = "";
   }
 
-  const version = await validateAndHashAssets();
+  const openSourceProjects = await loadOpenSourceProjects();
+  const version = await validateAndHashAssets(openSourceProjects);
   const existing = cleanExistingAnalytics(readme);
-  const block = buildAnalyticsBlock(version);
+  const block = buildAnalyticsBlock(version, openSourceProjects);
   const updated =
     `${existing}${existing ? "\n\n" : ""}${block}\n`;
 
-  validateSingleManagedBlock(updated);
+  validateSingleManagedBlock(updated, openSourceProjects);
 
   await fs.writeFile(
     README_FILE,

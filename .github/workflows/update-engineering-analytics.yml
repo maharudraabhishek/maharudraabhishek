@@ -67,7 +67,7 @@ jobs:
           # username format, aliases, and repository exclusions.
           node scripts/github-analytics-config.mjs --validate
 
-          # Exercises the locked 760×360 renderers with non-production fixture
+          # Exercises the compact 720×360 renderers with non-production fixture
           # values. This requires no token and proves dynamic interpolation,
           # XML safety, and summary-metric invariants before API work begins.
           node scripts/generate-engineering-analytics.mjs \

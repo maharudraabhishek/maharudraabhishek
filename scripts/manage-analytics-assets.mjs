@@ -10,7 +10,6 @@ export const ANALYTICS_ASSET_FILENAMES = Object.freeze([
   "github-activity-graph.svg",
   "personal-code-contribution.svg",
   "language-spectrum.svg",
-  "public-contribution-portfolio.svg",
   "frameworks-platforms.svg",
   "engineering-domains.svg",
   "delivery-collaboration.svg",
@@ -28,22 +27,26 @@ export const ANALYTICS_ASSET_FILENAMES = Object.freeze([
   "agentic-orchestration.svg"
 ]);
 
+export const OPEN_SOURCE_PROJECT_MANIFEST = "open-source-projects.json";
+const OPEN_SOURCE_PROJECT_FILENAME_PATTERN =
+  /^open-source-project-[a-z0-9._-]+-[0-9a-f]{8}\.svg$/;
+
 const SECRET_PATTERN =
   /github_pat_|ghp_|PRIVATE_STATS_TOKEN|Authorization:\s*Bearer/i;
 
 const LOCKED_SUMMARY_CARD_MARKERS = Object.freeze({
   "github-overview.svg": Object.freeze([
-    'width="760" height="360"',
-    'viewBox="0 0 760 360"',
-    'width="759" height="359" rx="2"',
+    'width="720" height="360"',
+    'viewBox="0 0 720 360"',
+    'width="719" height="359" rx="12"',
     'id="overview-flow"',
     "From repository scale to sustained delivery and engineering quality",
     "ENGINEERING QUALITY",
   ]),
   "contribution-streak.svg": Object.freeze([
-    'width="760" height="360"',
-    'viewBox="0 0 760 360"',
-    'width="759" height="359" rx="2"',
+    'width="720" height="360"',
+    'viewBox="0 0 720 360"',
+    'width="719" height="359" rx="12"',
     'id="streak-ring"',
     "DAY STREAK",
     "ACTIVITY TIMELINE",
@@ -216,6 +219,65 @@ async function validateSvgFile(directoryPath, filename) {
   }
 }
 
+async function readOpenSourceProjectManifest(directoryPath) {
+  const manifestPath = path.join(directoryPath, OPEN_SOURCE_PROJECT_MANIFEST);
+  const content = await fs.readFile(manifestPath, "utf8");
+  if (!content.trim() || SECRET_PATTERN.test(content)) {
+    throw new Error(`${manifestPath} is empty or contains potential secret material.`);
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(content);
+  } catch (error) {
+    throw new Error(`${manifestPath} is not valid JSON: ${error.message}`);
+  }
+  if (manifest?.version !== 1 || !Array.isArray(manifest.projects)) {
+    throw new Error(`${manifestPath} must use open-source project manifest version 1.`);
+  }
+
+  const filenames = new Set();
+  const fullNames = new Set();
+  for (const project of manifest.projects) {
+    const fullName = String(project?.fullName ?? "");
+    const filename = String(project?.filename ?? "");
+    const url = String(project?.url ?? "");
+    if (!/^[^/\s]+\/[^/\s]+$/.test(fullName)) {
+      throw new Error(`Invalid repository name in ${manifestPath}: ${fullName}`);
+    }
+    if (!OPEN_SOURCE_PROJECT_FILENAME_PATTERN.test(filename)) {
+      throw new Error(`Invalid project SVG filename in ${manifestPath}: ${filename}`);
+    }
+    if (url !== `https://github.com/${fullName}`) {
+      throw new Error(`Repository URL must match its GitHub full name in ${manifestPath}: ${fullName}`);
+    }
+    if (!["owned-open-source", "verified-contribution"].includes(project.relationship)) {
+      throw new Error(`Invalid project relationship in ${manifestPath}: ${fullName}`);
+    }
+    if (
+      project.relationship === "owned-open-source" &&
+      !/^[A-Za-z0-9.+-]+$/.test(String(project.licenseSpdx ?? ""))
+    ) {
+      throw new Error(`Owned open-source project is missing SPDX metadata in ${manifestPath}: ${fullName}`);
+    }
+    if (filenames.has(filename) || fullNames.has(fullName.toLowerCase())) {
+      throw new Error(`Duplicate open-source project entry in ${manifestPath}: ${fullName}`);
+    }
+    filenames.add(filename);
+    fullNames.add(fullName.toLowerCase());
+  }
+  return manifest;
+}
+
+async function expectedAssetFilenames(directoryPath) {
+  const manifest = await readOpenSourceProjectManifest(directoryPath);
+  return [
+    ...ANALYTICS_ASSET_FILENAMES,
+    OPEN_SOURCE_PROJECT_MANIFEST,
+    ...manifest.projects.map((project) => project.filename),
+  ];
+}
+
 /**
  * Requires a directory to contain exactly the current generated-card contract.
  *
@@ -248,9 +310,7 @@ async function validateExactAssetSet(directoryPath) {
     );
   }
 
-  const expectedFiles = [
-    ...ANALYTICS_ASSET_FILENAMES,
-  ].sort();
+  const expectedFiles = (await expectedAssetFilenames(directoryPath)).sort();
 
   const missingFiles = expectedFiles.filter(
     (filename) => !actualFiles.includes(filename),
@@ -278,7 +338,7 @@ async function validateExactAssetSet(directoryPath) {
     );
   }
 
-  for (const filename of ANALYTICS_ASSET_FILENAMES) {
+  for (const filename of expectedFiles.filter((name) => name.endsWith(".svg"))) {
     await validateSvgFile(
       directoryPath,
       filename,
@@ -313,10 +373,8 @@ async function publishAssets() {
   });
 
   try {
-    for (
-      const filename
-      of ANALYTICS_ASSET_FILENAMES
-    ) {
+    const expectedFiles = await expectedAssetFilenames(stagingDirectory);
+    for (const filename of expectedFiles) {
       const sourcePath = path.join(
         stagingDirectory,
         filename,
@@ -330,10 +388,7 @@ async function publishAssets() {
         sourcePath,
         destinationPath,
       );
-      await fs.chmod(
-        destinationPath,
-        0o644,
-      );
+      await fs.chmod(destinationPath, 0o644);
     }
 
     await validateExactAssetSet(
@@ -362,7 +417,7 @@ async function publishAssets() {
 
   console.log(
     `Published ${
-      ANALYTICS_ASSET_FILENAMES.length
+      (await expectedAssetFilenames(assetDirectory)).length
     } freshly generated SVG assets to ${
       path.relative(
         workspaceDirectory,
@@ -372,9 +427,10 @@ async function publishAssets() {
   );
 }
 
-function printAssetFilenames() {
+async function printAssetFilenames() {
+  const filenames = await expectedAssetFilenames(assetDirectory);
   process.stdout.write(
-    `${ANALYTICS_ASSET_FILENAMES.join("\n")}\n`,
+    `${filenames.filter((filename) => filename.endsWith(".svg")).join("\n")}\n`,
   );
 }
 
@@ -422,7 +478,7 @@ async function main() {
       break;
 
     case "list":
-      printAssetFilenames();
+      await printAssetFilenames();
       break;
 
     default:
