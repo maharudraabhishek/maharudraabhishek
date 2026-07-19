@@ -18,13 +18,13 @@
   <text x="48" y="49" class="subtitle">All-time streak history with rolling 12-month consistency</text>
   <rect x="20" y="70" width="265.3333333333333" height="67" rx="11" fill="#F0883E" fill-opacity=".09" stroke="#F0883E" stroke-opacity=".5"/>
       <g transform="translate(34 84) scale(1.125)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.2 1.2c.8 2.9-.6 4.1-1.5 5.2-.8 1-.7 2.2.2 2.8-.1-1.4.8-2.1 1.7-3 .8 1.3 2.5 2.5 2.5 4.8A3.1 3.1 0 0 1 8 14.2 4.7 4.7 0 0 1 3.3 9.5c0-3.2 2.1-5.5 4.9-8.3z"/></g>
-      <text x="66" y="101" class="metricValue">4 days</text>
+      <text x="66" y="101" class="metricValue">5 days</text>
       <text x="34" y="125" class="metricLabel">Current streak</text><rect x="297.3333333333333" y="70" width="265.3333333333333" height="67" rx="11" fill="#D29922" fill-opacity=".09" stroke="#D29922" stroke-opacity=".5"/>
       <g transform="translate(311.3333333333333 84) scale(1.125)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.2l2.05 4.15 4.58.67-3.31 3.23.78 4.56L8 11.65l-4.1 2.16.78-4.56L1.37 6.02l4.58-.67L8 1.2z"/></g>
       <text x="343.3333333333333" y="101" class="metricValue">9 days</text>
       <text x="311.3333333333333" y="125" class="metricLabel">Longest streak · all time</text><rect x="574.6666666666666" y="70" width="265.3333333333333" height="67" rx="11" fill="#3FB950" fill-opacity=".09" stroke="#3FB950" stroke-opacity=".5"/>
       <g transform="translate(588.6666666666666 84) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
-      <text x="620.6666666666666" y="101" class="metricValue">102</text>
+      <text x="620.6666666666666" y="101" class="metricValue">103</text>
       <text x="588.6666666666666" y="125" class="metricLabel">Active days · all time</text><rect x="20" y="147" width="820" height="39" rx="10" fill="#21262D" stroke="#30363D"/>
       <text x="34" y="163" class="tiny">FIRST RECORDED</text>
       <text x="34" y="178" class="small">Feb 22, 2018</text>
@@ -33,12 +33,12 @@
       <text x="307.3333333333333" y="178" class="small">Saturday</text>
       <line x1="566.6666666666666" y1="155" x2="566.6666666666666" y2="178" stroke="#30363D"/>
       <text x="580.6666666666666" y="163" class="tiny">LATEST RECORDED</text>
-      <text x="580.6666666666666" y="178" class="small">Jul 18, 2026</text><rect x="20" y="197" width="266.6666666666667" height="34" rx="8" fill="#3FB950" fill-opacity=".055" stroke="#3FB950" stroke-opacity=".34"/>
+      <text x="580.6666666666666" y="178" class="small">Jul 19, 2026</text><rect x="20" y="197" width="266.6666666666667" height="34" rx="8" fill="#3FB950" fill-opacity=".055" stroke="#3FB950" stroke-opacity=".34"/>
       <g transform="translate(30 206) scale(0.875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
-      <text x="51" y="212" class="small">220</text>
+      <text x="51" y="212" class="small">224</text>
       <text x="51" y="225" class="tiny">Contributions · 12 months</text><rect x="296.6666666666667" y="197" width="266.6666666666667" height="34" rx="8" fill="#39C5CF" fill-opacity=".055" stroke="#39C5CF" stroke-opacity=".34"/>
       <g transform="translate(306.6666666666667 206) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1v4M11 1v4M2 7h12"/></g>
-      <text x="327.6666666666667" y="212" class="small">40</text>
+      <text x="327.6666666666667" y="212" class="small">41</text>
       <text x="327.6666666666667" y="225" class="tiny">Active days · 12 months</text><rect x="573.3333333333334" y="197" width="266.6666666666667" height="34" rx="8" fill="#A371F7" fill-opacity=".055" stroke="#A371F7" stroke-opacity=".34"/>
       <g transform="translate(583.3333333333334 206) scale(0.875)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1v4M11 1v4M2 7h12"/></g>
       <text x="604.3333333333334" y="212" class="small">11 weeks</text>
@@ -50,6 +50,6 @@
       <text x="327.6666666666667" y="254" class="small">33 contributions</text>
       <text x="327.6666666666667" y="267" class="tiny">Peak · Jul 18, 2026</text><rect x="573.3333333333334" y="239" width="266.6666666666667" height="34" rx="8" fill="#F0883E" fill-opacity=".055" stroke="#F0883E" stroke-opacity=".34"/>
       <g transform="translate(583.3333333333334 248) scale(0.875)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
-      <text x="604.3333333333334" y="254" class="small">11.0%</text>
+      <text x="604.3333333333334" y="254" class="small">11.2%</text>
       <text x="604.3333333333334" y="267" class="tiny">Active-day rate · 12 months</text>
 </svg>
