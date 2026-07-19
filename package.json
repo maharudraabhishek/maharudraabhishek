@@ -1,0 +1,27 @@
+{
+  "name": "github-engineering-analytics-action",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Reusable GitHub Action for evidence-based profile engineering analytics.",
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test",
+    "build": "node scripts/build-action.mjs",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "check": "pnpm lint && pnpm test && pnpm build && pnpm verify:dist"
+  },
+  "dependencies": {
+    "@actions/core": "^1.11.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@vercel/ncc": "^0.44.1",
+    "eslint": "^9.39.2",
+    "yaml": "^2.8.1"
+  }
+}

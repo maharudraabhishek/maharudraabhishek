@@ -1,0 +1,61 @@
+name: GitHub Engineering Analytics
+description: Generate evidence-based GitHub engineering analytics SVGs for a profile repository.
+author: MahaRudra Abhishek
+
+branding:
+  icon: bar-chart-2
+  color: blue
+
+inputs:
+  github-username:
+    description: Primary GitHub username. Defaults to the caller repository owner.
+    required: false
+  aliases:
+    description: Optional comma-separated contribution identities.
+    required: false
+  config-path:
+    description: Optional JavaScript configuration file in the caller workspace.
+    required: false
+  include-private:
+    description: Include repositories accessible through the caller-owned private token.
+    required: false
+  output-directory:
+    description: Directory where generated analytics assets are written.
+    required: false
+  readme-path:
+    description: README file containing the managed analytics markers.
+    required: false
+  update-readme:
+    description: Update the managed README analytics block.
+    required: false
+  insert-readme-markers:
+    description: Insert markers at the end of the README when they are missing.
+    required: false
+  attribution:
+    description: Add project attribution below generated analytics.
+    required: false
+  strict-mode:
+    description: Fail when required analytics cannot be generated completely.
+    required: false
+
+outputs:
+  generated-files:
+    description: JSON array of generated workspace-relative file paths.
+  generated-card-count:
+    description: Number of generated SVG cards.
+  repositories-analyzed:
+    description: Number of repositories included in analytics.
+  repositories-skipped:
+    description: Number of repositories excluded, inaccessible, or skipped.
+  readme-updated:
+    description: Whether the managed README block changed.
+  changes-detected:
+    description: Whether generated output differs from existing files.
+  output-directory:
+    description: Validated workspace-relative generated asset directory.
+  readme-path:
+    description: Validated workspace-relative README path.
+
+runs:
+  using: node24
+  main: dist/index.js

@@ -1,0 +1,55 @@
+name: Test GitHub Analytics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: test-github-analytics-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test-analytics:
+    name: Generate isolated test analytics
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out profile repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Generate test analytics
+        uses: ./
+        with:
+          github-username: ${{ github.repository_owner }}
+          config-path: .github/github-analytics.config.mjs
+          include-private: false
+          output-directory: assets/github-analytics-test
+          readme-path: README-test.md
+          update-readme: true
+          insert-readme-markers: false
+          attribution: true
+          strict-mode: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Commit isolated test output
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git add -- assets/github-analytics-test README-test.md
+
+          if git diff --cached --quiet; then
+            echo "No test analytics changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test: generate isolated GitHub analytics"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

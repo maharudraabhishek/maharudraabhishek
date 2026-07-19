@@ -1,0 +1,186 @@
+name: Generate GitHub Analytics
+
+on:
+  workflow_call:
+    inputs:
+      github-username:
+        description: Primary GitHub username.
+        required: false
+        type: string
+        default: ""
+      aliases:
+        description: Optional comma-separated aliases.
+        required: false
+        type: string
+        default: ""
+      config-path:
+        description: Optional config file path.
+        required: false
+        type: string
+        default: ""
+      include-private:
+        description: Include private repository analytics.
+        required: false
+        type: boolean
+        default: false
+      output-directory:
+        description: Generated asset directory.
+        required: false
+        type: string
+        default: assets/github-analytics
+      readme-path:
+        description: Profile README path.
+        required: false
+        type: string
+        default: README.md
+      update-readme:
+        description: Update the managed README block.
+        required: false
+        type: boolean
+        default: true
+      insert-readme-markers:
+        description: Insert managed markers when missing.
+        required: false
+        type: boolean
+        default: false
+      attribution:
+        description: Include project attribution.
+        required: false
+        type: boolean
+        default: true
+      strict-mode:
+        description: Fail when analytics are incomplete.
+        required: false
+        type: boolean
+        default: true
+      commit-message:
+        description: Commit message for generated changes.
+        required: false
+        type: string
+        default: "chore: update GitHub analytics"
+    secrets:
+      private-stats-token:
+        description: Optional caller-owned token for private analytics.
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-engineering-analytics-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate and commit analytics
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out caller repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Validate caller context
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ inputs['commit-message'] }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_REF_TYPE:-}" != "branch" || -z "${GITHUB_REF_NAME:-}" ]]; then
+            echo "::error::Analytics commits require a checked-out branch context."
+            exit 1
+          fi
+
+          node -e 'const value=process.env.COMMIT_MESSAGE ?? ""; if (!value.trim() || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value)) { throw new Error("commit-message is empty or contains control characters") }'
+
+      - name: Generate GitHub analytics
+        id: analytics
+        uses: maharudraabhishek/maharudraabhishek@v1
+        with:
+          github-username: ${{ inputs['github-username'] }}
+          aliases: ${{ inputs.aliases }}
+          config-path: ${{ inputs['config-path'] }}
+          include-private: ${{ inputs['include-private'] }}
+          output-directory: ${{ inputs['output-directory'] }}
+          readme-path: ${{ inputs['readme-path'] }}
+          update-readme: ${{ inputs['update-readme'] }}
+          insert-readme-markers: ${{ inputs['insert-readme-markers'] }}
+          attribution: ${{ inputs.attribution }}
+          strict-mode: ${{ inputs['strict-mode'] }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PRIVATE_STATS_TOKEN: ${{ secrets['private-stats-token'] }}
+
+      - name: Stage and validate intended changes
+        id: changes
+        shell: bash
+        env:
+          OUTPUT_DIRECTORY: ${{ steps.analytics.outputs.output-directory }}
+          README_PATH: ${{ steps.analytics.outputs.readme-path }}
+          UPDATE_README: ${{ inputs['update-readme'] }}
+        run: |
+          set -euo pipefail
+
+          git add -- "$OUTPUT_DIRECTORY"
+          if [[ "$UPDATE_README" == "true" ]]; then
+            git add -- "$README_PATH"
+          fi
+
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No analytics changes detected." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          while IFS= read -r changed_file; do
+            allowed=false
+            if [[ "$changed_file" == "$OUTPUT_DIRECTORY" ||
+                  "$changed_file" == "$OUTPUT_DIRECTORY/"* ]]; then
+              allowed=true
+            fi
+            if [[ "$UPDATE_README" == "true" && "$changed_file" == "$README_PATH" ]]; then
+              allowed=true
+            fi
+            if [[ "$allowed" != "true" ]]; then
+              echo "::error::Refusing to commit unexpected file: $changed_file"
+              exit 1
+            fi
+          done < <(git diff --cached --name-only)
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit generated analytics
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ inputs['commit-message'] }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "$COMMIT_MESSAGE"
+
+      - name: Push generated analytics
+        if: steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+            echo "Committed and pushed generated analytics." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "Initial push raced with another update; rebasing once."
+          git fetch origin "$GITHUB_REF_NAME"
+          git rebase "origin/$GITHUB_REF_NAME"
+          if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+            echo "::error::Push failed after one rebase. Branch protection may block GitHub Actions writes; see docs/TROUBLESHOOTING.md."
+            exit 1
+          fi
+          echo "Committed and pushed generated analytics after rebase." >> "$GITHUB_STEP_SUMMARY"

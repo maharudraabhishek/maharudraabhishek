@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   aiEvidencePriority,
   buildAiEngineeringCards,
@@ -9,6 +10,7 @@ import {
 import {
   loadAnalyticsConfig,
 } from "./github-analytics-config.mjs";
+import { getRuntimeContext } from "../src/core/runtime-context.mjs";
 
 const API_VERSION = "2022-11-28";
 const GRAPHQL_ENDPOINT = "https://api.github.com/graphql";
@@ -32,153 +34,189 @@ const dataPipelineSelfTest = process.argv.includes(
   "--self-test-data-pipeline",
 );
 const offlineSelfTest = summaryCardSelfTest || dataPipelineSelfTest;
-const token = offlineSelfTest
-  ? "offline-summary-card-self-test"
-  : requiredEnvironment("PRIVATE_STATS_TOKEN");
+let runtimeInitialized = false;
+let includePrivate;
+let username;
+let publicGithubToken;
+let contributorIdentities;
+let globalContributorIdentities;
+let config;
+let REST_HEADERS;
+let PUBLIC_REST_HEADERS;
+let ANONYMOUS_REST_HEADERS;
+let PUBLIC_RAW_HEADERS;
 
-// Identity settings are loaded from the single user-editable config file.
-// The generator contains no profile-specific username or public alias.
-const analyticsConfig = await loadAnalyticsConfig();
-const username = analyticsConfig.profileUsername;
-const contributorProfiles =
-  analyticsConfig.publicContributorProfiles;
-const contributorIdentities =
-  analyticsConfig.publicContributorIdentities;
-const globalContributorIdentities =
-  analyticsConfig.globalPublicContributorIdentities;
+/** Initializes the legacy engine only when its shared entry point is called. */
+async function initializeRuntime() {
+  if (runtimeInitialized) return;
+  const runtimeContext = getRuntimeContext();
+  includePrivate = runtimeContext?.includePrivate ??
+    booleanEnvironment("INCLUDE_PRIVATE", true);
+  const privateOrPublicToken = offlineSelfTest
+    ? "offline-summary-card-self-test"
+    : includePrivate
+      ? runtimeContext?.privateToken || requiredEnvironment("PRIVATE_STATS_TOKEN")
+      : runtimeContext?.publicToken ||
+        process.env.GITHUB_TOKEN?.trim() ||
+        requiredEnvironment("PUBLIC_GITHUB_TOKEN");
 
-// Use the workflow's built-in GitHub App installation token for external
-// public repositories. GitHub GraphQL requires authentication, while REST
-// requests retain an anonymous fallback for public data.
-const publicGithubToken = offlineSelfTest
-  ? "offline-public-token"
-  : requiredEnvironment("PUBLIC_GITHUB_TOKEN");
+  // Identity settings come from validated runtime options or the owner CLI's
+  // single user-editable config; the engine contains no personal identity.
+  const analyticsConfig = runtimeContext?.analyticsConfig ??
+    await loadAnalyticsConfig();
+  username = analyticsConfig.profileUsername;
+  contributorIdentities = analyticsConfig.publicContributorIdentities;
+  globalContributorIdentities = analyticsConfig.globalPublicContributorIdentities;
 
-const config = Object.freeze({
-  outputDirectory: path.resolve(
-    process.env.OUTPUT_DIRECTORY?.trim() || "assets",
-  ),
-  maxRepositories: integerEnvironment("MAX_REPOSITORIES", 500, {
-    min: 0,
-    max: 5_000,
-  }),
-  repositoryConcurrency: integerEnvironment("REPOSITORY_CONCURRENCY", 4, {
-    min: 1,
-    max: 10,
-  }),
-  manifestConcurrency: integerEnvironment("MANIFEST_CONCURRENCY", 2, {
-    min: 1,
-    max: 5,
-  }),
-  maxManifestFilesPerRepository: integerEnvironment(
-    "MAX_MANIFEST_FILES_PER_REPOSITORY",
-    40,
-    { min: 1, max: 100 },
-  ),
-  includeArchivedRepositories: booleanEnvironment(
-    "INCLUDE_ARCHIVED_REPOSITORIES",
-    true,
-  ),
-  includeForkedRepositories: booleanEnvironment(
-    "INCLUDE_FORKED_REPOSITORIES",
-    false,
-  ),
-  minimumScanSuccessRatio: numberEnvironment(
-    "MIN_SCAN_SUCCESS_RATIO",
-    1,
-    { min: 0, max: 1 },
-  ),
-  affiliations:
-    process.env.REPOSITORY_AFFILIATIONS?.trim() ||
-    "owner,collaborator,organization_member",
-  // Repository exclusions declared in the shared config are the source
-  // of truth. EXCLUDE_REPOSITORIES remains an optional runtime extension for
-  // advanced callers, but the reusable workflow does not set user names here.
-  excludedRepositories: new Set([
-    ...analyticsConfig.excludedRepositories.map(
-      (repository) => repository.toLowerCase(),
+  publicGithubToken = offlineSelfTest
+    ? "offline-public-token"
+    : runtimeContext?.publicToken ||
+      process.env.GITHUB_TOKEN?.trim() ||
+      requiredEnvironment("PUBLIC_GITHUB_TOKEN");
+
+  config = Object.freeze({
+    outputDirectory: path.resolve(
+      runtimeContext?.outputDirectory ||
+        process.env.OUTPUT_DIRECTORY?.trim() ||
+        "assets",
     ),
-    ...parseCsv(process.env.EXCLUDE_REPOSITORIES),
-  ]),
-  debugPrivateRepositories: booleanEnvironment(
-    "DEBUG_PRIVATE_REPOSITORIES",
-    false,
-  ),
-  codeActivityYears: integerEnvironment("CODE_ACTIVITY_YEARS", 10, {
-    min: 1,
-    max: 20,
-  }),
-  maxCommitsPerRepository: integerEnvironment(
-    "MAX_COMMITS_PER_REPOSITORY",
-    250,
-    { min: 1, max: 1_000 },
-  ),
-  maxAnalyzedCommits: integerEnvironment(
-    "MAX_ANALYZED_COMMITS",
-    2_500,
-    { min: 1, max: 4_000 },
-  ),
-  commitListConcurrency: integerEnvironment(
-    "COMMIT_LIST_CONCURRENCY",
-    2,
-    { min: 1, max: 5 },
-  ),
-  commitDetailConcurrency: integerEnvironment(
-    "COMMIT_DETAIL_CONCURRENCY",
-    3,
-    { min: 1, max: 6 },
-  ),
-  maxPublicContributedRepositories: integerEnvironment(
-    "MAX_PUBLIC_CONTRIBUTED_REPOSITORIES",
-    100,
-    { min: 0, max: 500 },
-  ),
-  maxPublicContributionSearchCandidates: integerEnvironment(
-    "MAX_PUBLIC_CONTRIBUTION_SEARCH_CANDIDATES",
-    500,
-    { min: 1, max: 4_000 },
-  ),
-  maxPublicContributorsPerRepository: integerEnvironment(
-    "MAX_PUBLIC_CONTRIBUTORS_PER_REPOSITORY",
-    1_000,
-    { min: 100, max: 10_000 },
-  ),
-  requestTimeoutMilliseconds: integerEnvironment(
-    "GITHUB_REQUEST_TIMEOUT_MS",
-    60_000,
-    { min: 5_000, max: 300_000 },
-  ),
-  maxPullRequestsPerPublicRepository: integerEnvironment(
-    "MAX_PULL_REQUESTS_PER_PUBLIC_REPOSITORY",
-    2000,
-    { min: 1, max: 10000 },
-  ),
-  pullRequestReviewConcurrency: integerEnvironment(
-    "PULL_REQUEST_REVIEW_CONCURRENCY",
-    4,
-    { min: 1, max: 10 },
-  ),
-});
+    maxRepositories: integerEnvironment("MAX_REPOSITORIES", 500, {
+      min: 0,
+      max: 5_000,
+    }),
+    repositoryConcurrency: integerEnvironment("REPOSITORY_CONCURRENCY", 4, {
+      min: 1,
+      max: 10,
+    }),
+    manifestConcurrency: integerEnvironment("MANIFEST_CONCURRENCY", 2, {
+      min: 1,
+      max: 5,
+    }),
+    maxManifestFilesPerRepository: integerEnvironment(
+      "MAX_MANIFEST_FILES_PER_REPOSITORY",
+      40,
+      { min: 1, max: 100 },
+    ),
+    includeArchivedRepositories: booleanEnvironment(
+      "INCLUDE_ARCHIVED_REPOSITORIES",
+      true,
+    ),
+    includeForkedRepositories: booleanEnvironment(
+      "INCLUDE_FORKED_REPOSITORIES",
+      false,
+    ),
+    minimumScanSuccessRatio: numberEnvironment(
+      "MIN_SCAN_SUCCESS_RATIO",
+      1,
+      { min: 0, max: 1 },
+    ),
+    affiliations: process.env.REPOSITORY_AFFILIATIONS?.trim() ||
+      "owner,collaborator,organization_member",
+    excludedRepositories: new Set([
+      ...analyticsConfig.excludedRepositories.map(
+        (repository) => repository.toLowerCase(),
+      ),
+      ...parseCsv(process.env.EXCLUDE_REPOSITORIES),
+    ]),
+    debugPrivateRepositories: booleanEnvironment(
+      "DEBUG_PRIVATE_REPOSITORIES",
+      false,
+    ),
+    codeActivityYears: integerEnvironment("CODE_ACTIVITY_YEARS", 10, {
+      min: 1,
+      max: 20,
+    }),
+    maxCommitsPerRepository: integerEnvironment(
+      "MAX_COMMITS_PER_REPOSITORY",
+      250,
+      { min: 1, max: 1_000 },
+    ),
+    maxAnalyzedCommits: integerEnvironment(
+      "MAX_ANALYZED_COMMITS",
+      2_500,
+      { min: 1, max: 4_000 },
+    ),
+    commitListConcurrency: integerEnvironment(
+      "COMMIT_LIST_CONCURRENCY",
+      2,
+      { min: 1, max: 5 },
+    ),
+    commitDetailConcurrency: integerEnvironment(
+      "COMMIT_DETAIL_CONCURRENCY",
+      3,
+      { min: 1, max: 6 },
+    ),
+    maxPublicContributedRepositories: integerEnvironment(
+      "MAX_PUBLIC_CONTRIBUTED_REPOSITORIES",
+      100,
+      { min: 0, max: 500 },
+    ),
+    maxPublicContributionSearchCandidates: integerEnvironment(
+      "MAX_PUBLIC_CONTRIBUTION_SEARCH_CANDIDATES",
+      500,
+      { min: 1, max: 4_000 },
+    ),
+    maxPublicContributorsPerRepository: integerEnvironment(
+      "MAX_PUBLIC_CONTRIBUTORS_PER_REPOSITORY",
+      1_000,
+      { min: 100, max: 10_000 },
+    ),
+    requestTimeoutMilliseconds: integerEnvironment(
+      "GITHUB_REQUEST_TIMEOUT_MS",
+      60_000,
+      { min: 5_000, max: 300_000 },
+    ),
+    maxPullRequestsPerPublicRepository: integerEnvironment(
+      "MAX_PULL_REQUESTS_PER_PUBLIC_REPOSITORY",
+      2000,
+      { min: 1, max: 10000 },
+    ),
+    pullRequestReviewConcurrency: integerEnvironment(
+      "PULL_REQUEST_REVIEW_CONCURRENCY",
+      4,
+      { min: 1, max: 10 },
+    ),
+  });
 
-const REST_HEADERS = Object.freeze({
-  Accept: "application/vnd.github+json",
-  Authorization: `Bearer ${token}`,
-  "X-GitHub-Api-Version": API_VERSION,
-  "User-Agent": `${username}-private-readme-analytics`,
-});
+  REST_HEADERS = Object.freeze({
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${privateOrPublicToken}`,
+    "X-GitHub-Api-Version": API_VERSION,
+    "User-Agent": `${username}-private-readme-analytics`,
+  });
+  PUBLIC_REST_HEADERS = Object.freeze({
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${publicGithubToken}`,
+    "X-GitHub-Api-Version": API_VERSION,
+    "User-Agent": `${username}-public-readme-analytics`,
+  });
+  ANONYMOUS_REST_HEADERS = Object.freeze({
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": API_VERSION,
+    "User-Agent": `${username}-public-readme-analytics`,
+  });
+  PUBLIC_RAW_HEADERS = Object.freeze({
+    Accept: "text/plain",
+    "User-Agent": `${username}-public-readme-analytics`,
+  });
+  runtimeInitialized = true;
+}
 
-const PUBLIC_REST_HEADERS = Object.freeze({
-  Accept: "application/vnd.github+json",
-  Authorization: `Bearer ${publicGithubToken}`,
-  "X-GitHub-Api-Version": API_VERSION,
-  "User-Agent": `${username}-public-readme-analytics`,
-});
-
-const ANONYMOUS_REST_HEADERS = Object.freeze({
-  Accept: "application/vnd.github+json",
-  "X-GitHub-Api-Version": API_VERSION,
-  "User-Agent": `${username}-public-readme-analytics`,
-});
+/** Clears in-memory credentials and run-specific state after Action execution. */
+export function resetAnalyticsRuntime() {
+  includePrivate = undefined;
+  username = undefined;
+  publicGithubToken = undefined;
+  contributorIdentities = undefined;
+  globalContributorIdentities = undefined;
+  config = undefined;
+  REST_HEADERS = undefined;
+  PUBLIC_REST_HEADERS = undefined;
+  ANONYMOUS_REST_HEADERS = undefined;
+  PUBLIC_RAW_HEADERS = undefined;
+  searchRequestQueues.clear();
+  runtimeInitialized = false;
+}
 
 // GitHub recommends serializing REST Search requests to avoid secondary rate
 // limits. Keep one queue per credential so private, workflow-token, and
@@ -189,11 +227,6 @@ const ANONYMOUS_REST_HEADERS = Object.freeze({
 // that triggers GitHub's secondary Search limit.
 const searchRequestQueues = new Map();
 const anonymousSearchCredential = Symbol("anonymous-search-credential");
-
-const PUBLIC_RAW_HEADERS = Object.freeze({
-  Accept: "text/plain",
-  "User-Agent": `${username}-public-readme-analytics`,
-});
 
 const REPOSITORY_SCOPE = Object.freeze({
   PERSONAL: "personal",
@@ -1313,9 +1346,16 @@ async function fetchAllRepositories() {
   const repositories = [];
 
   for (let page = 1; ; page += 1) {
+    const endpoint = includePrivate
+      ? `/user/repos?visibility=all&affiliation=${encodeURIComponent(config.affiliations)}&sort=full_name&direction=asc&per_page=100&page=${page}`
+      : `/users/${encodeURIComponent(username)}/repos?type=owner&sort=full_name&direction=asc&per_page=100&page=${page}`;
     const pageItems = await rest(
-      `/user/repos?visibility=all&affiliation=${encodeURIComponent(config.affiliations)}&sort=full_name&direction=asc&per_page=100&page=${page}`,
-      { label: "Repository listing" },
+      endpoint,
+      {
+        label: includePrivate
+          ? "Private-capable repository listing"
+          : "Public repository listing",
+      },
     );
 
     repositories.push(...pageItems);
@@ -6246,6 +6286,10 @@ function renderDelivery(data) {
 }
 
 function renderPortfolio(data) {
+  const privateMetric = repositoryPortfolioPrivateMetric(
+    data.private,
+    data.privateAccessible,
+  );
   const metrics = [
     {
       icon: "repo",
@@ -6262,8 +6306,8 @@ function renderPortfolio(data) {
     {
       icon: "lock",
       color: THEME.purple,
-      value: compactNumber(data.private),
-      label: "Private repositories",
+      value: privateMetric.value,
+      label: privateMetric.label,
     },
     {
       icon: "activity",
@@ -6303,7 +6347,9 @@ function renderPortfolio(data) {
     title: "Repository Portfolio",
     iconName: "repo",
     accent: THEME.blue,
-    subtitle: `${data.scanned} repositories scanned successfully · aggregate-only private data`,
+    subtitle: data.privateAccessible
+      ? `${data.scanned} repositories scanned successfully · aggregate-only private data`
+      : `${data.scanned} repositories scanned successfully · public data only`,
     body: metricGrid(metrics, 82, 2, 600, {
       rowGap: 74,
       valueClass: "pairedValue",
@@ -6311,6 +6357,13 @@ function renderPortfolio(data) {
       labelOffset: 21,
     }),
   });
+}
+
+/** Keeps inaccessible private data distinct from a verified numeric zero. */
+export function repositoryPortfolioPrivateMetric(count, accessible) {
+  return accessible
+    ? Object.freeze({ value: compactNumber(count), label: "Private repositories" })
+    : Object.freeze({ value: "N/A", label: "Private repositories (not accessible)" });
 }
 
 
@@ -7101,8 +7154,9 @@ async function runDataPipelineSelfTest() {
   );
 }
 
-async function main() {
-  console.log("Fetching authenticated account...");
+export async function generateAnalytics() {
+  await initializeRuntime();
+  console.log("Validating GitHub authentication...");
   console.log(
     `Configured public identities: ${contributorIdentities.join(", ")} · global discovery: ${globalContributorIdentities.join(", ")}`,
   );
@@ -7111,12 +7165,17 @@ async function main() {
   });
 
   if (
+    includePrivate &&
     String(authenticatedUser?.login ?? "").toLowerCase() !==
     username.toLowerCase()
   ) {
     throw new Error(
       `PRIVATE_STATS_TOKEN belongs to '${authenticatedUser?.login ?? "unknown"}', not '${username}'.`,
     );
+  }
+
+  if (!includePrivate && !authenticatedUser?.login) {
+    throw new Error("GITHUB_TOKEN authentication did not return an identity.");
   }
 
   console.log(
@@ -7342,6 +7401,7 @@ async function main() {
     total: verifiedRepositories.length,
     public: verifiedRepositories.filter((repository) => !repository.private).length,
     private: verifiedRepositories.filter((repository) => repository.private).length,
+    privateAccessible: includePrivate,
     active: activeRepositories,
     archived: verifiedRepositories.filter((repository) => repository.archived).length,
     documented: engineeringFootprintDetails.filter((detail) =>
@@ -7511,12 +7571,45 @@ async function main() {
   console.log(
     `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${verifiedExternalProjects.length} external public projects contributed to, ${publicContributionPortfolio.length - verifiedExternalProjects.length} owned open-source projects, ${repositoryDetails.length} repositories scanned, 7 AI engineering cards generated.`,
   );
+
+  return Object.freeze({
+    generatedFiles: Object.freeze([
+      ...Object.keys(cards),
+      OPEN_SOURCE_PROJECT_MANIFEST,
+    ].sort()),
+    generatedCardCount: Object.keys(cards).length,
+    repositoriesAnalyzed: repositoryDetails.length,
+    repositoriesSkipped:
+      repositorySelectionSummary.excludedExternalPrivateOrInternal +
+      repositorySelectionSummary.excludedExternalWithoutContributionRelationship +
+      repositorySelectionSummary.excludedByAnalyticsFilters +
+      failedScans,
+    warnings: Object.freeze(
+      failedScans > 0
+        ? [`${failedScans} selected repository scan(s) failed.`]
+        : [],
+    ),
+  });
 }
 
-if (summaryCardSelfTest) {
-  await runSummaryCardSelfTest();
-} else if (dataPipelineSelfTest) {
-  await runDataPipelineSelfTest();
-} else {
-  await main();
+const isDirectExecution = process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url) &&
+  path.basename(process.argv[1]) === "generate-engineering-analytics.mjs";
+
+async function runDirect() {
+  await initializeRuntime();
+  if (summaryCardSelfTest) {
+    await runSummaryCardSelfTest();
+  } else if (dataPipelineSelfTest) {
+    await runDataPipelineSelfTest();
+  } else {
+    await generateAnalytics();
+  }
+}
+
+if (isDirectExecution) {
+  runDirect().catch((error) => {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+  });
 }
