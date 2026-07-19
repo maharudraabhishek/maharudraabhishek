@@ -7154,29 +7154,44 @@ async function runDataPipelineSelfTest() {
   );
 }
 
+/**
+ * Validates the active credential without assuming a repository installation
+ * token has a user identity. GitHub Actions GITHUB_TOKEN can call repository
+ * and public-data APIs but correctly rejects the user-only /user endpoint.
+ */
+export async function validateGitHubAuthentication({
+  includePrivateMode = includePrivate,
+  profileUsername = username,
+  request = rest,
+  publicHeaders = PUBLIC_REST_HEADERS,
+} = {}) {
+  if (!includePrivateMode) {
+    await request("/rate_limit", {
+      headers: publicHeaders,
+      label: "GITHUB_TOKEN authentication request",
+    });
+    return Object.freeze({ mode: "public", login: null });
+  }
+
+  const authenticatedUser = await request("/user", {
+    label: "PRIVATE_STATS_TOKEN identity request",
+  });
+  const authenticatedLogin = String(authenticatedUser?.login ?? "");
+  if (authenticatedLogin.toLowerCase() !== profileUsername.toLowerCase()) {
+    throw new Error(
+      `PRIVATE_STATS_TOKEN belongs to '${authenticatedLogin || "unknown"}', not '${profileUsername}'.`,
+    );
+  }
+  return Object.freeze({ mode: "private", login: authenticatedLogin });
+}
+
 export async function generateAnalytics() {
   await initializeRuntime();
   console.log("Validating GitHub authentication...");
   console.log(
     `Configured public identities: ${contributorIdentities.join(", ")} · global discovery: ${globalContributorIdentities.join(", ")}`,
   );
-  const authenticatedUser = await rest("/user", {
-    label: "Authenticated-user request",
-  });
-
-  if (
-    includePrivate &&
-    String(authenticatedUser?.login ?? "").toLowerCase() !==
-    username.toLowerCase()
-  ) {
-    throw new Error(
-      `PRIVATE_STATS_TOKEN belongs to '${authenticatedUser?.login ?? "unknown"}', not '${username}'.`,
-    );
-  }
-
-  if (!includePrivate && !authenticatedUser?.login) {
-    throw new Error("GITHUB_TOKEN authentication did not return an identity.");
-  }
+  await validateGitHubAuthentication();
 
   console.log(
     "Fetching token-accessible repositories and public repositories linked to commits, pull requests, or reviews...",

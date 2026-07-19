@@ -8,6 +8,10 @@
   named `private-stats-token` secret.
 - **403:** inspect the safe error summary for a missing permission, SSO policy,
   or primary/secondary rate limit. Permission failures are not retried.
+- **`Resource not accessible by integration` from `/user`:** update to a
+  release containing the public installation-token authentication fix. Public
+  mode validates `GITHUB_TOKEN` without requiring a user-only endpoint;
+  private mode still verifies PAT identity through `/user`.
 - **404:** GitHub often uses 404 for inaccessible repositories. Confirm the
   token's selected repositories; the Action does not treat it as zero data.
 - **429 or explicit rate limit:** the engine honors bounded `Retry-After` or

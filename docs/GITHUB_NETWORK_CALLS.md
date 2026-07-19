@@ -8,7 +8,8 @@ easy to understand. No token values are logged or stored in the repository.
 
 | Request scope | Credential | Purpose |
 |---|---|---|
-| Profile-owned public and private repositories | `PRIVATE_STATS_TOKEN` | Lists personal repositories, scans them, and counts personal collaboration activity. |
+| Profile-owned public repositories in public mode | `${{ github.token }}` / `GITHUB_TOKEN` | Lists and scans public repositories without requiring a PAT. |
+| Profile-owned public and private repositories in private mode | `PRIVATE_STATS_TOKEN` | Lists personal repositories, scans them, and counts personal collaboration activity. |
 | External public repositories | `${{ github.token }}` / `PUBLIC_GITHUB_TOKEN` | Discovers and verifies open-source contributions. |
 | External public REST fallback | No credential | Reads public data only when the workflow token cannot access it. |
 
@@ -20,7 +21,7 @@ separate search identities, and result identifiers are deduplicated.
 
 | Area | API type | Main requests | Why it is needed |
 |---|---|---|---|
-| Authentication | REST | `GET /user` | Confirms that `PRIVATE_STATS_TOKEN` belongs to the configured profile. |
+| Authentication | REST | `GET /rate_limit` in public mode; `GET /user` in private mode | Validates the repository installation token without assuming a user identity, while confirming that a private PAT belongs to the configured profile. |
 | Repository inventory | REST | `GET /user/repos` | Lists profile-accessible repositories before selecting analytics candidates. |
 | Public contribution discovery | GraphQL and REST Search | `repositoriesContributedTo`, yearly contribution collections, `/search/issues` | Finds external public repositories with commits, authored PRs, or reviews from either configured identity. |
 | Public repository verification | REST and GraphQL | `GET /repos/{owner}/{repo}`, lifecycle queries | Confirms candidate metadata and contribution evidence. |
