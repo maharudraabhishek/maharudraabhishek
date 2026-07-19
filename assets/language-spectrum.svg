@@ -1,94 +1,100 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="394" viewBox="0 0 900 394" role="img" aria-label="Engineering Language Footprint">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="428" viewBox="0 0 900 428" role="img" aria-label="Engineering Language Footprint">
   <style>
-    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .metricLabel{fill:#F0F6FC;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .metricNote{fill:#8B949E;font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
-    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
-  <rect x=".5" y=".5" width="899" height="393" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <rect x=".5" y=".5" width="899" height="427" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
   <text x="48" y="31" class="title">Engineering Language Footprint</text>
-  <text x="48" y="49" class="subtitle">GitHub Linguist code-byte composition across 23 personal repositories + 4 verified public contribution projects</text>
+  <text x="48" y="49" class="subtitle">Code-byte composition across 24 personal repositories + 4 verified public projects · Linguist with source-tree fallback</text>
   
       <defs><clipPath id="language-bar"><rect x="28" y="68" width="844" height="13" rx="6.5"/></clipPath></defs>
       <rect x="28" y="68" width="844" height="13" rx="6.5" fill="#21262D"/>
-      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="159.011" height="13" fill="#F1E05A"/><rect x="187.011" y="68" width="140.496" height="13" fill="#00B4AB"/><rect x="327.507" y="68" width="122.085" height="13" fill="#3178C6"/><rect x="449.592" y="68" width="107.342" height="13" fill="#F34B7D"/><rect x="556.934" y="68" width="76.250" height="13" fill="#A97BFF"/><rect x="633.184" y="68" width="74.988" height="13" fill="#F05138"/><rect x="708.172" y="68" width="41.886" height="13" fill="#B07219"/><rect x="750.059" y="68" width="36.337" height="13" fill="#58A6FF"/><rect x="786.395" y="68" width="34.078" height="13" fill="#DA5B0B"/><rect x="820.473" y="68" width="16.761" height="13" fill="#DA3434"/><rect x="837.234" y="68" width="12.162" height="13" fill="#555555"/><rect x="849.396" y="68" width="6.792" height="13" fill="#F0883E"/><rect x="856.187" y="68" width="5.672" height="13" fill="#E34C26"/><rect x="861.859" y="68" width="5.145" height="13" fill="#427819"/><rect x="867.004" y="68" width="1.696" height="13" fill="#89E051"/><rect x="868.700" y="68" width="1.686" height="13" fill="#563D7C"/><rect x="870.387" y="68" width="0.681" height="13" fill="#3572A5"/><rect x="871.067" y="68" width="0.575" height="13" fill="#DB61A2"/><rect x="871.643" y="68" width="0.148" height="13" fill="#C1F12E"/><rect x="871.791" y="68" width="0.098" height="13" fill="#701516"/><rect x="871.889" y="68" width="0.054" height="13" fill="#4F5D95"/><rect x="871.943" y="68" width="0.048" height="13" fill="#384D54"/><rect x="871.991" y="68" width="0.009" height="13" fill="#438EFF"/></g>
-      <circle cx="33" cy="106" r="5" fill="#F1E05A"/>
-      <text x="46" y="110" class="small">JavaScript</text>
-      <text x="186" y="110" class="label">18.8%</text>
-      <text x="246" y="110" class="tiny">10 repos</text><circle cx="323" cy="106" r="5" fill="#00B4AB"/>
-      <text x="336" y="110" class="small">Dart</text>
-      <text x="476" y="110" class="label">16.6%</text>
-      <text x="536" y="110" class="tiny">7 repos</text><circle cx="613" cy="106" r="5" fill="#3178C6"/>
-      <text x="626" y="110" class="small">TypeScript</text>
-      <text x="766" y="110" class="label">14.5%</text>
-      <text x="826" y="110" class="tiny">5 repos</text><circle cx="33" cy="140" r="5" fill="#F34B7D"/>
-      <text x="46" y="144" class="small">C++</text>
-      <text x="186" y="144" class="label">12.7%</text>
-      <text x="246" y="144" class="tiny">3 repos</text><circle cx="323" cy="140" r="5" fill="#A97BFF"/>
-      <text x="336" y="144" class="small">Kotlin</text>
-      <text x="476" y="144" class="label">9.0%</text>
-      <text x="536" y="144" class="tiny">7 repos</text><circle cx="613" cy="140" r="5" fill="#F05138"/>
-      <text x="626" y="144" class="small">Swift</text>
-      <text x="766" y="144" class="label">8.9%</text>
-      <text x="826" y="144" class="tiny">8 repos</text><circle cx="33" cy="174" r="5" fill="#B07219"/>
-      <text x="46" y="178" class="small">Java</text>
-      <text x="186" y="178" class="label">5.0%</text>
-      <text x="246" y="178" class="tiny">7 repos</text><circle cx="323" cy="174" r="5" fill="#58A6FF"/>
+      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="143.693" height="13" fill="#00B4AB"/><rect x="171.693" y="68" width="117.921" height="13" fill="#F1E05A"/><rect x="289.614" y="68" width="105.599" height="13" fill="#F05138"/><rect x="395.213" y="68" width="105.344" height="13" fill="#A97BFF"/><rect x="500.556" y="68" width="94.027" height="13" fill="#3178C6"/><rect x="594.583" y="68" width="90.979" height="13" fill="#B07219"/><rect x="685.562" y="68" width="79.296" height="13" fill="#F34B7D"/><rect x="764.858" y="68" width="26.843" height="13" fill="#58A6FF"/><rect x="791.701" y="68" width="25.174" height="13" fill="#DA5B0B"/><rect x="816.875" y="68" width="12.381" height="13" fill="#DA3434"/><rect x="829.256" y="68" width="10.835" height="13" fill="#083FA1"/><rect x="840.091" y="68" width="9.037" height="13" fill="#555555"/><rect x="849.128" y="68" width="5.869" height="13" fill="#CB171E"/><rect x="854.997" y="68" width="5.017" height="13" fill="#F0883E"/><rect x="860.014" y="68" width="4.190" height="13" fill="#E34C26"/><rect x="864.204" y="68" width="3.801" height="13" fill="#427819"/><rect x="868.005" y="68" width="1.557" height="13" fill="#89E051"/><rect x="869.562" y="68" width="1.246" height="13" fill="#563D7C"/><rect x="870.808" y="68" width="0.503" height="13" fill="#3572A5"/><rect x="871.311" y="68" width="0.425" height="13" fill="#DB61A2"/><rect x="871.736" y="68" width="0.109" height="13" fill="#C1F12E"/><rect x="871.845" y="68" width="0.072" height="13" fill="#701516"/><rect x="871.918" y="68" width="0.040" height="13" fill="#4F5D95"/><rect x="871.958" y="68" width="0.035" height="13" fill="#384D54"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
+      <circle cx="33" cy="106" r="5" fill="#00B4AB"/>
+      <text x="46" y="110" class="small">Dart</text>
+      <text x="186" y="110" class="label">17.0%</text>
+      <text x="246" y="110" class="tiny">8 repos</text><circle cx="323" cy="106" r="5" fill="#F1E05A"/>
+      <text x="336" y="110" class="small">JavaScript</text>
+      <text x="476" y="110" class="label">14.0%</text>
+      <text x="536" y="110" class="tiny">11 repos</text><circle cx="613" cy="106" r="5" fill="#F05138"/>
+      <text x="626" y="110" class="small">Swift</text>
+      <text x="766" y="110" class="label">12.5%</text>
+      <text x="826" y="110" class="tiny">9 repos</text><circle cx="33" cy="140" r="5" fill="#A97BFF"/>
+      <text x="46" y="144" class="small">Kotlin</text>
+      <text x="186" y="144" class="label">12.5%</text>
+      <text x="246" y="144" class="tiny">8 repos</text><circle cx="323" cy="140" r="5" fill="#3178C6"/>
+      <text x="336" y="144" class="small">TypeScript</text>
+      <text x="476" y="144" class="label">11.1%</text>
+      <text x="536" y="144" class="tiny">6 repos</text><circle cx="613" cy="140" r="5" fill="#B07219"/>
+      <text x="626" y="144" class="small">Java</text>
+      <text x="766" y="144" class="label">10.8%</text>
+      <text x="826" y="144" class="tiny">8 repos</text><circle cx="33" cy="174" r="5" fill="#F34B7D"/>
+      <text x="46" y="178" class="small">C++</text>
+      <text x="186" y="178" class="label">9.4%</text>
+      <text x="246" y="178" class="tiny">3 repos</text><circle cx="323" cy="174" r="5" fill="#58A6FF"/>
       <text x="336" y="178" class="small">Mustache</text>
-      <text x="476" y="178" class="label">4.3%</text>
+      <text x="476" y="178" class="label">3.2%</text>
       <text x="536" y="178" class="tiny">1 repo</text><circle cx="613" cy="174" r="5" fill="#DA5B0B"/>
       <text x="626" y="178" class="small">Jupyter Notebook</text>
-      <text x="766" y="178" class="label">4.0%</text>
+      <text x="766" y="178" class="label">3.0%</text>
       <text x="826" y="178" class="tiny">1 repo</text><circle cx="33" cy="208" r="5" fill="#DA3434"/>
       <text x="46" y="212" class="small">CMake</text>
-      <text x="186" y="212" class="label">2.0%</text>
-      <text x="246" y="212" class="tiny">1 repo</text><circle cx="323" cy="208" r="5" fill="#555555"/>
-      <text x="336" y="212" class="small">C</text>
-      <text x="476" y="212" class="label">1.4%</text>
-      <text x="536" y="212" class="tiny">1 repo</text><circle cx="613" cy="208" r="5" fill="#F0883E"/>
-      <text x="626" y="212" class="small">PLpgSQL</text>
-      <text x="766" y="212" class="label">0.8%</text>
-      <text x="826" y="212" class="tiny">1 repo</text><circle cx="33" cy="242" r="5" fill="#E34C26"/>
-      <text x="46" y="246" class="small">HTML</text>
+      <text x="186" y="212" class="label">1.5%</text>
+      <text x="246" y="212" class="tiny">1 repo</text><circle cx="323" cy="208" r="5" fill="#083FA1"/>
+      <text x="336" y="212" class="small">Markdown</text>
+      <text x="476" y="212" class="label">1.3%</text>
+      <text x="536" y="212" class="tiny">2 repos</text><circle cx="613" cy="208" r="5" fill="#555555"/>
+      <text x="626" y="212" class="small">C</text>
+      <text x="766" y="212" class="label">1.1%</text>
+      <text x="826" y="212" class="tiny">2 repos</text><circle cx="33" cy="242" r="5" fill="#CB171E"/>
+      <text x="46" y="246" class="small">YAML</text>
       <text x="186" y="246" class="label">0.7%</text>
-      <text x="246" y="246" class="tiny">3 repos</text><circle cx="323" cy="242" r="5" fill="#427819"/>
-      <text x="336" y="246" class="small">Makefile</text>
+      <text x="246" y="246" class="tiny">1 repo</text><circle cx="323" cy="242" r="5" fill="#F0883E"/>
+      <text x="336" y="246" class="small">PLpgSQL</text>
       <text x="476" y="246" class="label">0.6%</text>
-      <text x="536" y="246" class="tiny">1 repo</text><circle cx="613" cy="242" r="5" fill="#89E051"/>
-      <text x="626" y="246" class="small">Shell</text>
-      <text x="766" y="246" class="label">0.2%</text>
-      <text x="826" y="246" class="tiny">3 repos</text><circle cx="33" cy="276" r="5" fill="#563D7C"/>
-      <text x="46" y="280" class="small">CSS</text>
-      <text x="186" y="280" class="label">0.2%</text>
-      <text x="246" y="280" class="tiny">4 repos</text><circle cx="323" cy="276" r="5" fill="#3572A5"/>
-      <text x="336" y="280" class="small">Python</text>
-      <text x="476" y="280" class="label">&lt;0.1%</text>
-      <text x="536" y="280" class="tiny">1 repo</text><circle cx="613" cy="276" r="5" fill="#DB61A2"/>
-      <text x="626" y="280" class="small">ANTLR</text>
-      <text x="766" y="280" class="label">&lt;0.1%</text>
-      <text x="826" y="280" class="tiny">1 repo</text><circle cx="33" cy="310" r="5" fill="#C1F12E"/>
-      <text x="46" y="314" class="small">Batchfile</text>
+      <text x="536" y="246" class="tiny">1 repo</text><circle cx="613" cy="242" r="5" fill="#E34C26"/>
+      <text x="626" y="246" class="small">HTML</text>
+      <text x="766" y="246" class="label">0.5%</text>
+      <text x="826" y="246" class="tiny">3 repos</text><circle cx="33" cy="276" r="5" fill="#427819"/>
+      <text x="46" y="280" class="small">Makefile</text>
+      <text x="186" y="280" class="label">0.5%</text>
+      <text x="246" y="280" class="tiny">1 repo</text><circle cx="323" cy="276" r="5" fill="#89E051"/>
+      <text x="336" y="280" class="small">Shell</text>
+      <text x="476" y="280" class="label">0.2%</text>
+      <text x="536" y="280" class="tiny">4 repos</text><circle cx="613" cy="276" r="5" fill="#563D7C"/>
+      <text x="626" y="280" class="small">CSS</text>
+      <text x="766" y="280" class="label">0.1%</text>
+      <text x="826" y="280" class="tiny">4 repos</text><circle cx="33" cy="310" r="5" fill="#3572A5"/>
+      <text x="46" y="314" class="small">Python</text>
       <text x="186" y="314" class="label">&lt;0.1%</text>
-      <text x="246" y="314" class="tiny">2 repos</text><circle cx="323" cy="310" r="5" fill="#701516"/>
-      <text x="336" y="314" class="small">Ruby</text>
+      <text x="246" y="314" class="tiny">1 repo</text><circle cx="323" cy="310" r="5" fill="#DB61A2"/>
+      <text x="336" y="314" class="small">ANTLR</text>
       <text x="476" y="314" class="label">&lt;0.1%</text>
-      <text x="536" y="314" class="tiny">1 repo</text><circle cx="613" cy="310" r="5" fill="#4F5D95"/>
-      <text x="626" y="314" class="small">PHP</text>
+      <text x="536" y="314" class="tiny">1 repo</text><circle cx="613" cy="310" r="5" fill="#C1F12E"/>
+      <text x="626" y="314" class="small">Batchfile</text>
       <text x="766" y="314" class="label">&lt;0.1%</text>
-      <text x="826" y="314" class="tiny">1 repo</text><circle cx="33" cy="344" r="5" fill="#384D54"/>
-      <text x="46" y="348" class="small">Dockerfile</text>
+      <text x="826" y="314" class="tiny">2 repos</text><circle cx="33" cy="344" r="5" fill="#701516"/>
+      <text x="46" y="348" class="small">Ruby</text>
       <text x="186" y="348" class="label">&lt;0.1%</text>
-      <text x="246" y="348" class="tiny">2 repos</text><circle cx="323" cy="344" r="5" fill="#438EFF"/>
-      <text x="336" y="348" class="small">Objective-C</text>
+      <text x="246" y="348" class="tiny">1 repo</text><circle cx="323" cy="344" r="5" fill="#4F5D95"/>
+      <text x="336" y="348" class="small">PHP</text>
       <text x="476" y="348" class="label">&lt;0.1%</text>
-      <text x="536" y="348" class="tiny">6 repos</text>
+      <text x="536" y="348" class="tiny">1 repo</text><circle cx="613" cy="344" r="5" fill="#384D54"/>
+      <text x="626" y="348" class="small">Dockerfile</text>
+      <text x="766" y="348" class="label">&lt;0.1%</text>
+      <text x="826" y="348" class="tiny">2 repos</text><circle cx="33" cy="378" r="5" fill="#438EFF"/>
+      <text x="46" y="382" class="small">Objective-C</text>
+      <text x="186" y="382" class="label">&lt;0.1%</text>
+      <text x="246" y="382" class="tiny">6 repos</text>
     
 </svg>

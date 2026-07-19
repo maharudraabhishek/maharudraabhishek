@@ -1,47 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Personal Code Contribution">
   <style>
-    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .metricLabel{fill:#F0F6FC;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .metricNote{fill:#8B949E;font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
-    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
   <rect x=".5" y=".5" width="999" height="559" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
   <text x="48" y="31" class="title">Personal Code Contribution</text>
-  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch changes · last 10 years</text>
+  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 192/192 commits fully analyzed</text>
   <circle cx="31" cy="79" r="5" fill="#083FA1"/>
       <text x="44" y="84" class="small">Markdown</text>
-      <text x="196" y="84" class="label">50.4%</text>
+      <text x="196" y="84" class="label">50.3%</text>
       <rect x="256" y="72" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="72" width="165.0" height="8" rx="4" fill="#083FA1"/>
-      <text x="44" y="104" class="tiny">245.3K changed lines · 127 commits · 1.3K files</text><circle cx="521" cy="79" r="5" fill="#F1E05A"/>
+      <text x="44" y="104" class="tiny">246.9K changed lines · 129 commits · 1.4K files</text><circle cx="521" cy="79" r="5" fill="#F1E05A"/>
       <text x="534" y="84" class="small">JavaScript</text>
-      <text x="686" y="84" class="label">22.1%</text>
+      <text x="686" y="84" class="label">21.9%</text>
       <rect x="746" y="72" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="72" width="72.3" height="8" rx="4" fill="#F1E05A"/>
+      <rect x="746" y="72" width="71.8" height="8" rx="4" fill="#F1E05A"/>
       <text x="534" y="104" class="tiny">107.5K changed lines · 73 commits · 477 files</text><circle cx="31" cy="135" r="5" fill="#3178C6"/>
       <text x="44" y="140" class="small">TypeScript</text>
-      <text x="196" y="140" class="label">20.4%</text>
+      <text x="196" y="140" class="label">20.6%</text>
       <rect x="256" y="128" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="128" width="66.7" height="8" rx="4" fill="#3178C6"/>
-      <text x="44" y="160" class="tiny">99.2K changed lines · 26 commits · 419 files</text><circle cx="521" cy="135" r="5" fill="#E38C00"/>
+      <rect x="256" y="128" width="67.6" height="8" rx="4" fill="#3178C6"/>
+      <text x="44" y="160" class="tiny">101.2K changed lines · 27 commits · 475 files</text><circle cx="521" cy="135" r="5" fill="#E38C00"/>
       <text x="534" y="140" class="small">SQL</text>
       <text x="686" y="140" class="label">2.1%</text>
       <rect x="746" y="128" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="128" width="6.9" height="8" rx="4" fill="#E38C00"/>
+      <rect x="746" y="128" width="6.8" height="8" rx="4" fill="#E38C00"/>
       <text x="534" y="160" class="tiny">10.2K changed lines · 32 commits · 58 files</text><circle cx="31" cy="191" r="5" fill="#CB171E"/>
       <text x="44" y="196" class="small">YAML</text>
       <text x="196" y="196" class="label">2.1%</text>
       <rect x="256" y="184" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="184" width="6.8" height="8" rx="4" fill="#CB171E"/>
-      <text x="44" y="216" class="tiny">10.1K changed lines · 61 commits · 46 files</text><circle cx="521" cy="191" r="5" fill="#B07219"/>
+      <text x="44" y="216" class="tiny">10.1K changed lines · 62 commits · 49 files</text><circle cx="521" cy="191" r="5" fill="#B07219"/>
       <text x="534" y="196" class="small">Java</text>
       <text x="686" y="196" class="label">0.8%</text>
       <rect x="746" y="184" width="165" height="8" rx="4" fill="#21262D"/>
@@ -73,20 +73,20 @@
       <rect x="256" y="352" width="1.0" height="8" rx="4" fill="#555555"/>
       <text x="44" y="384" class="tiny">1.1K changed lines · 4 commits · 6 files</text><circle cx="521" cy="359" r="5" fill="#563D7C"/>
       <text x="534" y="364" class="small">CSS</text>
-      <text x="686" y="364" class="label">&lt;0.1%</text>
+      <text x="686" y="364" class="label">0.1%</text>
       <rect x="746" y="352" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="746" y="352" width="1.0" height="8" rx="4" fill="#563D7C"/>
-      <text x="534" y="384" class="tiny">352 changed lines · 6 commits · 3 files</text><circle cx="31" cy="415" r="5" fill="#3572A5"/>
-      <text x="44" y="420" class="small">Python</text>
+      <text x="534" y="384" class="tiny">605 changed lines · 7 commits · 4 files</text><circle cx="31" cy="415" r="5" fill="#89E051"/>
+      <text x="44" y="420" class="small">Shell</text>
       <text x="196" y="420" class="label">&lt;0.1%</text>
       <rect x="256" y="408" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="408" width="1.0" height="8" rx="4" fill="#3572A5"/>
-      <text x="44" y="440" class="tiny">132 changed lines · 2 commits · 1 files</text><circle cx="521" cy="415" r="5" fill="#89E051"/>
-      <text x="534" y="420" class="small">Shell</text>
+      <rect x="256" y="408" width="1.0" height="8" rx="4" fill="#89E051"/>
+      <text x="44" y="440" class="tiny">371 changed lines · 2 commits · 5 files</text><circle cx="521" cy="415" r="5" fill="#3572A5"/>
+      <text x="534" y="420" class="small">Python</text>
       <text x="686" y="420" class="label">&lt;0.1%</text>
       <rect x="746" y="408" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="408" width="1.0" height="8" rx="4" fill="#89E051"/>
-      <text x="534" y="440" class="tiny">65 changed lines · 1 commits · 1 files</text><circle cx="31" cy="471" r="5" fill="#384D54"/>
+      <rect x="746" y="408" width="1.0" height="8" rx="4" fill="#3572A5"/>
+      <text x="534" y="440" class="tiny">132 changed lines · 2 commits · 1 files</text><circle cx="31" cy="471" r="5" fill="#384D54"/>
       <text x="44" y="476" class="small">Dockerfile</text>
       <text x="196" y="476" class="label">&lt;0.1%</text>
       <rect x="256" y="464" width="165" height="8" rx="4" fill="#21262D"/>
