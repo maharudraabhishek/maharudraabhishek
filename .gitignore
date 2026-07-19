@@ -1,6 +1,8 @@
 README.analytics.md
 node_modules/
+.pnpm-store/
 .github-analytics-run-*/
+.action-dist-*/
 /docs/previews/
 /docs/internal/
 SETUP.md

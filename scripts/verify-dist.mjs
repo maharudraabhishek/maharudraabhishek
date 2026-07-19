@@ -1,10 +1,9 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
-const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "analytics-dist-"));
+const temporaryRoot = await fs.mkdtemp(path.join(repositoryRoot, ".action-dist-"));
 const rebuiltDirectory = path.join(temporaryRoot, "dist");
 
 try {
