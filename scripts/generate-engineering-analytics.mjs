@@ -17,6 +17,9 @@ const MAX_TRANSIENT_RETRY_DELAY_MS = 60_000;
 const MAX_RATE_LIMIT_WAIT_MS = 15 * 60_000;
 const REQUEST_RETRIES = 4;
 const MAX_CONTENT_BYTES = 1_000_000;
+// GitHub's issue and pull-request Search endpoint permits at most five
+// repository qualifiers in a single query.
+const MAX_REPOSITORY_SEARCH_QUALIFIERS = 5;
 
 const summaryCardSelfTest = process.argv.includes(
   "--self-test-summary-cards",
@@ -2451,7 +2454,7 @@ async function searchCountsByContributorIdentity(
         )
         .filter(Boolean),
     )],
-    10,
+    MAX_REPOSITORY_SEARCH_QUALIFIERS,
   );
 
   const results = await mapLimit(
@@ -6257,12 +6260,12 @@ async function runDataPipelineSelfTest() {
       { length: 21 },
       (_, index) => `owner/personal-${index + 1}`,
     ),
-    10,
+    MAX_REPOSITORY_SEARCH_QUALIFIERS,
   );
   assert(
-    repositoryChunks.length === 3 &&
-      repositoryChunks[0].length === 10 &&
-      repositoryChunks[2].length === 1,
+    repositoryChunks.length === 5 &&
+      repositoryChunks[0].length === MAX_REPOSITORY_SEARCH_QUALIFIERS &&
+      repositoryChunks.at(-1).length === 1,
     "profile-owned repository Search scopes are not chunked safely.",
   );
   assert(
