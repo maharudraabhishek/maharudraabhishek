@@ -17,8 +17,8 @@ const MAX_TRANSIENT_RETRY_DELAY_MS = 60_000;
 const MAX_RATE_LIMIT_WAIT_MS = 15 * 60_000;
 const REQUEST_RETRIES = 4;
 const MAX_CONTENT_BYTES = 1_000_000;
-// GitHub's issue and pull-request Search endpoint permits at most five
-// repository qualifiers in a single query.
+// Keep compound issue and pull-request Search queries conservatively bounded;
+// any repository combination GitHub rejects is subdivided recursively below.
 const MAX_REPOSITORY_SEARCH_QUALIFIERS = 5;
 // Leave a small margin below GitHub's documented Search request windows. The
 // anonymous fallback has the lower public-search allowance.
@@ -2504,6 +2504,110 @@ function calculateStreak(days) {
 }
 
 /**
+ * Matches only GitHub's structured repository-scope validation failure. Other
+ * 422 responses remain terminal because subdividing a malformed query would
+ * mask the actual defect and consume additional Search quota.
+ */
+function invalidRepositorySearchScopeError(error) {
+  if (error?.status !== 422) return false;
+
+  return (error?.diagnostics?.errors ?? []).some((item) =>
+    String(item?.resource ?? "").toLowerCase() === "search" &&
+    String(item?.field ?? "").toLowerCase() === "q" &&
+    String(item?.code ?? "").toLowerCase() === "invalid" &&
+    /listed users and repositories cannot be searched/i.test(
+      String(item?.message ?? ""),
+    )
+  );
+}
+
+function personalRepositoryDiagnosticName(repositoryFullName) {
+  return config.debugPrivateRepositories
+    ? repositoryFullName
+    : "the isolated profile-owned repository";
+}
+
+async function searchPersonalRepositoryIdentifiers(
+  repositoryFullNames,
+  identity,
+  queryFactory,
+  label,
+  {
+    searchIdentifiers = searchRepositoryIssueIdentifiers,
+    scopeLabel = null,
+    warn = console.warn,
+  } = {},
+) {
+  const repositoryQualifiers = repositoryFullNames
+    .map((fullName) => `repo:${fullName}`)
+    .join(" OR ");
+  const repositoryScope = repositoryFullNames.length === 1
+    ? repositoryQualifiers
+    : `(${repositoryQualifiers})`;
+  const personalQuery = `${queryFactory(identity)} ${repositoryScope}`;
+  const activeScopeLabel = scopeLabel ??
+    `${label} (${identity}; profile-owned repositories)`;
+
+  try {
+    return await searchIdentifiers(
+      personalQuery,
+      activeScopeLabel,
+      null,
+      REST_HEADERS,
+    );
+  } catch (error) {
+    if (!invalidRepositorySearchScopeError(error)) throw error;
+
+    if (repositoryFullNames.length > 1) {
+      const middle = Math.ceil(repositoryFullNames.length / 2);
+      const partitions = [
+        repositoryFullNames.slice(0, middle),
+        repositoryFullNames.slice(middle),
+      ];
+      const keys = new Set();
+      let complete = true;
+      let reportedTotal = 0;
+
+      warn(
+        `${activeScopeLabel} was rejected as a combined repository scope; subdividing it and retrying the same Search qualifiers.`,
+      );
+      for (const [partitionIndex, partition] of partitions.entries()) {
+        const result = await searchPersonalRepositoryIdentifiers(
+          partition,
+          identity,
+          queryFactory,
+          label,
+          {
+            searchIdentifiers,
+            warn,
+            scopeLabel:
+              `${activeScopeLabel}; isolated partition ${partitionIndex + 1}/${partitions.length}`,
+          },
+        );
+        for (const key of result.keys) keys.add(key);
+        complete &&= result.complete;
+        reportedTotal += safeInteger(result.reportedTotal);
+      }
+
+      return { keys, complete, reportedTotal };
+    }
+
+    const [repositoryFullName] = repositoryFullNames;
+    if (!repositoryFullName) throw error;
+    const singletonError = new Error(
+      `${activeScopeLabel} remained invalid after repository-scope isolation for ${personalRepositoryDiagnosticName(repositoryFullName)}. ` +
+        "Ensure PRIVATE_STATS_TOKEN can access that repository and grants Metadata: read, Issues: read, and Pull requests: read. " +
+        `Cause: ${error.message}`,
+      { cause: error },
+    );
+    singletonError.name = error.name;
+    singletonError.status = error.status;
+    singletonError.diagnostics = error.diagnostics;
+    throw singletonError;
+  }
+}
+
+/**
  * Searches all-time collaboration activity across disjoint credential scopes.
  *
  * Every repository owned by the primary profile—public or private—is queried
@@ -2541,19 +2645,16 @@ async function searchCountsByContributorIdentity(
         const [chunkIndex, repositoryChunk]
         of personalRepositoryChunks.entries()
       ) {
-        const repositoryScope = repositoryChunk
-          .map((fullName) =>
-            `repo:${fullName}`,
-          )
-          .join(" OR ");
-        const personalQuery =
-          `${queryFactory(identity)} (${repositoryScope})`;
         const personalResult =
-          await searchRepositoryIssueIdentifiers(
-            personalQuery,
-            `${label} (${identity}; profile-owned repositories ${chunkIndex + 1}/${personalRepositoryChunks.length})`,
-            null,
-            REST_HEADERS,
+          await searchPersonalRepositoryIdentifiers(
+            repositoryChunk,
+            identity,
+            queryFactory,
+            label,
+            {
+              scopeLabel:
+                `${label} (${identity}; profile-owned repositories ${chunkIndex + 1}/${personalRepositoryChunks.length})`,
+            },
           );
 
         if (!personalResult.complete) {
@@ -6342,6 +6443,105 @@ async function runDataPipelineSelfTest() {
       repositoryChunks.at(-1).length === 1,
     "profile-owned repository Search scopes are not chunked safely.",
   );
+
+  const invalidRepositoryScopeError = () => {
+    const error = new Error("fixture repository scope rejection");
+    error.status = 422;
+    error.diagnostics = Object.freeze({
+      message: "Validation Failed",
+      summary:
+        "Validation Failed · Search/q/invalid/The listed users and repositories cannot be searched either because the resources do not exist or you do not have permission to view them.",
+      errors: Object.freeze([
+        Object.freeze({
+          resource: "Search",
+          field: "q",
+          code: "invalid",
+          message:
+            "The listed users and repositories cannot be searched either because the resources do not exist or you do not have permission to view them.",
+        }),
+      ]),
+    });
+    return error;
+  };
+  const repositoryIsolationCalls = [];
+  const isolatedRepositoryResult =
+    await searchPersonalRepositoryIdentifiers(
+      ["owner/test-app", "owner/web-app"],
+      "historical-login",
+      (identity) => `author:${identity} is:pr`,
+      "Fixture pull-request search",
+      {
+        warn: () => undefined,
+        searchIdentifiers: async (query) => {
+          const repositoryNames = [
+            ...query.matchAll(/repo:([^\s)]+)/g),
+          ].map((match) => match[1]);
+          repositoryIsolationCalls.push(query);
+          if (repositoryNames.length > 1) {
+            throw invalidRepositoryScopeError();
+          }
+          const keys = new Set(
+            repositoryNames.map((name) => `${name.toLowerCase()}#1`),
+          );
+          return {
+            keys,
+            reportedTotal: keys.size,
+            complete: true,
+          };
+        },
+      },
+    );
+  assert(
+    repositoryIsolationCalls.join("|") ===
+      "author:historical-login is:pr (repo:owner/test-app OR repo:owner/web-app)|author:historical-login is:pr repo:owner/test-app|author:historical-login is:pr repo:owner/web-app" &&
+      [...isolatedRepositoryResult.keys].sort().join(",") ===
+        "owner/test-app#1,owner/web-app#1" &&
+      isolatedRepositoryResult.complete,
+    "an invalid combined repository Search scope is not subdivided and unioned exactly.",
+  );
+
+  const unrelatedValidationError = new Error("malformed fixture query");
+  unrelatedValidationError.status = 422;
+  unrelatedValidationError.diagnostics = Object.freeze({
+    message: "Validation Failed",
+    summary: "Validation Failed · Search/q/invalid/Malformed qualifier",
+    errors: Object.freeze([]),
+  });
+  const preservedValidationError = await searchPersonalRepositoryIdentifiers(
+    ["owner/repository"],
+    "example",
+    (identity) => `author:${identity} is:pr`,
+    "Malformed fixture search",
+    {
+      searchIdentifiers: async () => {
+        throw unrelatedValidationError;
+      },
+    },
+  ).catch((error) => error);
+  assert(
+    preservedValidationError === unrelatedValidationError,
+    "repository-scope subdivision masked an unrelated Search validation error.",
+  );
+  const singletonScopeError = await searchPersonalRepositoryIdentifiers(
+    ["owner/private-repository"],
+    "example",
+    (identity) => `author:${identity} is:pr`,
+    "Singleton fixture search",
+    {
+      searchIdentifiers: async () => {
+        throw invalidRepositoryScopeError();
+      },
+    },
+  ).catch((error) => error);
+  assert(
+    singletonScopeError.status === 422 &&
+      singletonScopeError.message.includes("PRIVATE_STATS_TOKEN") &&
+      (
+        config.debugPrivateRepositories ||
+        !singletonScopeError.message.includes("owner/private-repository")
+      ),
+    "an invalid singleton Search scope did not fail closed with redacted permission guidance.",
+  );
   assert(
     externalPublicCollaborationQuery(
       "author:example is:pr",
@@ -6606,7 +6806,7 @@ async function runDataPipelineSelfTest() {
   );
 
   console.log(
-    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, profile-owned scope chunking, credential-scoped Search serialization, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
+    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, profile-owned scope chunking and exact subdivision, credential-scoped Search serialization, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
   );
 }
 
