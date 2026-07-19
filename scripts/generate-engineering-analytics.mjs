@@ -20,6 +20,10 @@ const MAX_CONTENT_BYTES = 1_000_000;
 // GitHub's issue and pull-request Search endpoint permits at most five
 // repository qualifiers in a single query.
 const MAX_REPOSITORY_SEARCH_QUALIFIERS = 5;
+// Leave a small margin below GitHub's documented Search request windows. The
+// anonymous fallback has the lower public-search allowance.
+const AUTHENTICATED_SEARCH_INTERVAL_MS = 2_100;
+const ANONYMOUS_SEARCH_INTERVAL_MS = 6_100;
 
 const summaryCardSelfTest = process.argv.includes(
   "--self-test-summary-cards",
@@ -180,7 +184,9 @@ const ANONYMOUS_REST_HEADERS = Object.freeze({
 // limits. Keep one queue per credential so private, workflow-token, and
 // anonymous searches do not block one another. A queued
 // request retains its slot while requestJson honors Retry-After/reset headers,
-// preventing sibling requests from waking and retrying as a burst.
+// preventing sibling requests from waking and retrying as a burst. Each queue
+// also spaces successful requests so a valid workload does not create a burst
+// that triggers GitHub's secondary Search limit.
 const searchRequestQueues = new Map();
 const anonymousSearchCredential = Symbol("anonymous-search-credential");
 
@@ -1129,19 +1135,45 @@ function searchCredentialKey(headers) {
   return authorization || anonymousSearchCredential;
 }
 
-async function enqueueSearchRequest(headers, request) {
+function searchRequestIntervalMilliseconds(headers) {
+  return headers?.Authorization || headers?.authorization
+    ? AUTHENTICATED_SEARCH_INTERVAL_MS
+    : ANONYMOUS_SEARCH_INTERVAL_MS;
+}
+
+async function enqueueSearchRequest(
+  headers,
+  request,
+  minimumIntervalMilliseconds = 0,
+) {
   const credentialKey = searchCredentialKey(headers);
-  const previousRequest = searchRequestQueues.get(credentialKey) ??
-    Promise.resolve();
-  const scheduledRequest = previousRequest
+  const previousState = searchRequestQueues.get(credentialKey) ?? {
+    tail: Promise.resolve(),
+    nextAllowedAt: 0,
+  };
+  const scheduledRequest = previousState.tail
     .catch(() => undefined)
-    .then(request);
-  searchRequestQueues.set(credentialKey, scheduledRequest);
+    .then(async () => {
+      const waitMilliseconds = Math.max(
+        0,
+        previousState.nextAllowedAt - Date.now(),
+      );
+      if (waitMilliseconds > 0) await sleep(waitMilliseconds);
+
+      try {
+        return await request();
+      } finally {
+        previousState.nextAllowedAt =
+          Date.now() + minimumIntervalMilliseconds;
+      }
+    });
+  previousState.tail = scheduledRequest;
+  searchRequestQueues.set(credentialKey, previousState);
 
   try {
     return await scheduledRequest;
   } finally {
-    if (searchRequestQueues.get(credentialKey) === scheduledRequest) {
+    if (searchRequestQueues.get(credentialKey)?.tail === scheduledRequest) {
       searchRequestQueues.delete(credentialKey);
     }
   }
@@ -1156,6 +1188,7 @@ async function rest(pathOrUrl, options = {}) {
     return enqueueSearchRequest(
       options.headers ?? REST_HEADERS,
       () => requestJson(url, options),
+      searchRequestIntervalMilliseconds(options.headers ?? REST_HEADERS),
     );
   }
 
@@ -6326,6 +6359,13 @@ async function runDataPipelineSelfTest() {
   const publicSearchHeaders = Object.freeze({
     Authorization: "Bearer public-test",
   });
+  assert(
+    searchRequestIntervalMilliseconds(privateSearchHeaders) ===
+      AUTHENTICATED_SEARCH_INTERVAL_MS &&
+      searchRequestIntervalMilliseconds({}) ===
+        ANONYMOUS_SEARCH_INTERVAL_MS,
+    "Search credential pacing does not distinguish authenticated and anonymous requests.",
+  );
   const searchExecutionOrder = [];
   let releasePrivateSearch;
   const privateSearchCooldown = new Promise((resolve) => {
