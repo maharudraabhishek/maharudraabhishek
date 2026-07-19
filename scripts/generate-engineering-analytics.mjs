@@ -40,11 +40,12 @@ const contributorIdentities =
 const globalContributorIdentities =
   analyticsConfig.globalPublicContributorIdentities;
 
-// Use the workflow's built-in GitHub App installation token for public
-// organization repositories. This avoids organization-specific PAT policies
-// while preserving an authenticated public-API rate limit.
-const publicGithubToken =
-  process.env.PUBLIC_GITHUB_TOKEN?.trim() ?? "";
+// Use the workflow's built-in GitHub App installation token for external
+// public repositories. GitHub GraphQL requires authentication, while REST
+// requests retain an anonymous fallback for public data.
+const publicGithubToken = offlineSelfTest
+  ? "offline-public-token"
+  : requiredEnvironment("PUBLIC_GITHUB_TOKEN");
 
 const config = Object.freeze({
   outputDirectory: path.resolve(
@@ -125,6 +126,21 @@ const config = Object.freeze({
     100,
     { min: 0, max: 500 },
   ),
+  maxPublicContributionSearchCandidates: integerEnvironment(
+    "MAX_PUBLIC_CONTRIBUTION_SEARCH_CANDIDATES",
+    500,
+    { min: 1, max: 4_000 },
+  ),
+  maxPublicContributorsPerRepository: integerEnvironment(
+    "MAX_PUBLIC_CONTRIBUTORS_PER_REPOSITORY",
+    1_000,
+    { min: 100, max: 10_000 },
+  ),
+  requestTimeoutMilliseconds: integerEnvironment(
+    "GITHUB_REQUEST_TIMEOUT_MS",
+    60_000,
+    { min: 5_000, max: 300_000 },
+  ),
   maxPullRequestsPerPublicRepository: integerEnvironment(
     "MAX_PULL_REQUESTS_PER_PUBLIC_REPOSITORY",
     2000,
@@ -146,9 +162,7 @@ const REST_HEADERS = Object.freeze({
 
 const PUBLIC_REST_HEADERS = Object.freeze({
   Accept: "application/vnd.github+json",
-  ...(publicGithubToken
-    ? { Authorization: `Bearer ${publicGithubToken}` }
-    : {}),
+  Authorization: `Bearer ${publicGithubToken}`,
   "X-GitHub-Api-Version": API_VERSION,
   "User-Agent": `${username}-public-readme-analytics`,
 });
@@ -801,11 +815,9 @@ async function requestJson(
     body,
     label = "GitHub API request",
     optionalStatuses = [],
-    allowAnonymousFallback = false,
   } = {},
 ) {
-  let activeHeaders = headers;
-  let anonymousFallbackUsed = false;
+  const activeHeaders = headers;
   let retryAttempt = 0;
 
   while (true) {
@@ -816,6 +828,9 @@ async function requestJson(
         method,
         headers: activeHeaders,
         body,
+        signal: AbortSignal.timeout(
+          config.requestTimeoutMilliseconds,
+        ),
       });
     } catch (error) {
       if (retryAttempt >= REQUEST_RETRIES) {
@@ -870,21 +885,6 @@ async function requestJson(
       continue;
     }
 
-    if (
-      allowAnonymousFallback &&
-      !anonymousFallbackUsed &&
-      Object.hasOwn(activeHeaders, "Authorization") &&
-      responseAllowsPublicFallback(response.status, diagnostics)
-    ) {
-      anonymousFallbackUsed = true;
-      activeHeaders = PUBLIC_REST_HEADERS;
-      retryAttempt = 0;
-      console.warn(
-        `${label} was not accessible with the personal token; retrying as a public repository request.`,
-      );
-      continue;
-    }
-
     if (optionalStatuses.includes(response.status)) {
       return null;
     }
@@ -918,7 +918,12 @@ async function requestText(
     let response;
 
     try {
-      response = await fetch(url, { headers });
+      response = await fetch(url, {
+        headers,
+        signal: AbortSignal.timeout(
+          config.requestTimeoutMilliseconds,
+        ),
+      });
     } catch (error) {
       if (attempt === REQUEST_RETRIES) {
         throw new Error(
@@ -1057,17 +1062,6 @@ function responseIsRateLimited(response, diagnostics) {
   );
 }
 
-function responseAllowsPublicFallback(status, diagnostics) {
-  if (status !== 403 && status !== 404) return false;
-
-  return (
-    status === 404 ||
-    /resource not accessible by personal access token|forbidden|requires authentication/i.test(
-      diagnostics.summary,
-    )
-  );
-}
-
 function rateLimitRetryDelayMilliseconds(response, attempt) {
   const retryAfter = Number(response.headers.get("retry-after"));
   if (Number.isFinite(retryAfter) && retryAfter > 0) {
@@ -1192,31 +1186,55 @@ async function fetchAllRepositories() {
 
     repositories.push(...pageItems);
 
-    if (pageItems.length < 100) break;
     if (
       config.maxRepositories > 0 &&
-      repositories.length >= config.maxRepositories
+      repositories.length > config.maxRepositories
     ) {
-      break;
+      throw new Error(
+        `Repository listing exceeded MAX_REPOSITORIES=${config.maxRepositories}. Raise the cap rather than publishing analytics from a truncated repository set.`,
+      );
     }
+
+    if (pageItems.length < 100) break;
   }
 
-  return config.maxRepositories > 0
-    ? repositories.slice(0, config.maxRepositories)
-    : repositories;
+  return repositories;
 }
 
+
+/**
+ * Returns a stable reason when a GitHub Search candidate is not eligible for
+ * the external public-contribution portfolio. These are expected filters, not
+ * API failures: global PR/review search can legitimately return profile-owned,
+ * private, empty, or otherwise unsupported repositories.
+ */
+function publicContributionRepositoryExclusionReason(repository) {
+  if (!repository?.full_name || !repository.owner?.login) {
+    return "missing repository identity metadata";
+  }
+  if (
+    repository.private ||
+    String(repository.visibility ?? "public").toLowerCase() !== "public"
+  ) {
+    return "repository is not public";
+  }
+  if (
+    String(repository.owner.login).toLowerCase() === username.toLowerCase()
+  ) {
+    return "repository is owned by the profile account";
+  }
+  if (!repository.default_branch) {
+    return "repository has no default branch";
+  }
+  return null;
+}
 
 function normalizePublicContributionRepository(
   repository,
   evidence = [],
   identities = [],
 ) {
-  if (!repository?.full_name || !repository.owner?.login) return null;
-  if (repository.private || String(repository.visibility ?? "public").toLowerCase() !== "public") return null;
-  if (String(repository.owner.login).toLowerCase() === username.toLowerCase()) return null;
-  if (String(repository.owner.type ?? repository.owner.__typename ?? "").toLowerCase() !== "organization") return null;
-  if (!repository.default_branch) return null;
+  if (publicContributionRepositoryExclusionReason(repository)) return null;
 
   return {
     ...repository,
@@ -1230,6 +1248,82 @@ function normalizePublicContributionRepository(
     contribution_identities: [...new Set(
       identities.map((identity) => String(identity).toLowerCase()).filter(Boolean),
     )],
+  };
+}
+
+/**
+ * Adds search evidence without mutating the normalized repository object.
+ * Returning null is intentional for an ineligible discovery candidate and is
+ * handled as a filtered result by the caller rather than as a failed request.
+ */
+function enrichPublicContributionRepository(
+  repository,
+  evidence = [],
+  identities = [],
+) {
+  if (!repository) return null;
+
+  return {
+    ...repository,
+    contribution_evidence: [...new Set([
+      ...(repository.contribution_evidence ?? []),
+      ...evidence.filter(Boolean),
+    ])],
+    contribution_identities: [...new Set([
+      ...(repository.contribution_identities ?? []),
+      ...identities
+        .map((identity) => String(identity).toLowerCase())
+        .filter(Boolean),
+    ])],
+  };
+}
+
+/**
+ * Collapses settled metadata lookups into eligible repositories, expected
+ * exclusions, and hard failures. Keeping this boundary pure makes the null
+ * filtering behavior deterministic and regression-testable without GitHub.
+ */
+function collectPublicContributionMetadataResults(metadataResults) {
+  const repositories = [];
+  const metadataFailures = [];
+  const exclusionCounts = new Map();
+  let filteredCount = 0;
+
+  for (const result of metadataResults) {
+    if (result.status === "rejected") {
+      metadataFailures.push(
+        result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason),
+      );
+      continue;
+    }
+
+    const candidate = result.value;
+    if (!candidate || typeof candidate !== "object") {
+      metadataFailures.push(
+        "Public repository metadata lookup returned an invalid result object.",
+      );
+      continue;
+    }
+
+    if (!candidate.repository) {
+      const reason =
+        candidate.exclusionReason ??
+        "repository did not satisfy the external public-contribution policy";
+      exclusionCounts.set(reason, (exclusionCounts.get(reason) ?? 0) + 1);
+      filteredCount += 1;
+      continue;
+    }
+
+    repositories.push(candidate.repository);
+  }
+
+  return {
+    repositories,
+    metadataFailures,
+    exclusionCounts,
+    filteredCount,
   };
 }
 
@@ -1300,14 +1394,14 @@ async function fetchRepositoriesContributedToConnection(
   const repositories = new Map();
   let after = null;
 
-  while (repositories.size < config.maxPublicContributedRepositories) {
+  while (true) {
     const query = `
       query PublicContributedRepositories($login: String!, $after: String) {
         user(login: $login) {
           repositoriesContributedTo(
             first: 100
             after: $after
-            includeUserRepositories: false
+            includeUserRepositories: true
             contributionTypes: [COMMIT, PULL_REQUEST, PULL_REQUEST_REVIEW]
             privacy: PUBLIC
             orderBy: { field: UPDATED_AT, direction: DESC }
@@ -1333,7 +1427,15 @@ async function fetchRepositoriesContributedToConnection(
         identity,
       );
       if (repository) mergeContributionCandidate(repositories, repository);
-      if (repositories.size >= config.maxPublicContributedRepositories) break;
+    }
+
+    if (
+      repositories.size >
+      config.maxPublicContributedRepositories
+    ) {
+      throw new Error(
+        `${label} found more than MAX_PUBLIC_CONTRIBUTED_REPOSITORIES=${config.maxPublicContributedRepositories} eligible repositories. Raise the cap rather than truncating discovery.`,
+      );
     }
 
     if (!connection?.pageInfo?.hasNextPage) break;
@@ -1515,45 +1617,60 @@ async function searchPublicContributionRepositoryNames(
     }
     if (items.length < 100 || page * 100 >= reportedTotal) break;
   }
-  if (repositories.size > config.maxPublicContributedRepositories) {
-    throw new Error(
-      `Public contribution discovery found ${repositories.size} repositories for ${identity}, exceeding MAX_PUBLIC_CONTRIBUTED_REPOSITORIES=${config.maxPublicContributedRepositories}. Raise the cap rather than publishing a partial portfolio.`,
-    );
-  }
   return [...repositories.values()];
 }
 
-async function fetchPublicRepositoryMetadata(
+async function fetchPublicRepositoryMetadataCandidate(
   fullName,
   evidence,
   identities = [],
 ) {
+  const evidenceItems = (
+    Array.isArray(evidence) ? evidence : [evidence]
+  ).filter(Boolean);
   const encoded = fullName.split("/").map(encodeURIComponent).join("/");
   let repository;
   let lastError;
-  for (const { headers } of publicSearchCredentialAttempts()) {
+  let successfulCredential = null;
+
+  for (const attempt of publicSearchCredentialAttempts()) {
     try {
       repository = await rest(`/repos/${encoded}`, {
-        label: `Public repository metadata (${fullName})`,
-        headers,
+        label: `Public repository metadata (${fullName}; ${attempt.name})`,
+        headers: attempt.headers,
       });
+      successfulCredential = attempt.name;
       break;
     } catch (error) {
       lastError = error;
     }
   }
+
   if (!repository) {
     throw lastError ?? new Error(
       `Could not load public repository metadata for ${fullName}.`,
     );
   }
 
+  const exclusionReason =
+    publicContributionRepositoryExclusionReason(repository);
   const normalized = normalizePublicContributionRepository(
     repository,
-    [evidence],
+    evidenceItems,
     identities,
   );
-  return normalized;
+
+  return {
+    requestedFullName: fullName,
+    resolvedFullName: repository.full_name ?? fullName,
+    credential: successfulCredential,
+    exclusionReason,
+    repository: enrichPublicContributionRepository(
+      normalized,
+      evidenceItems,
+      identities,
+    ),
+  };
 }
 
 async function fetchSearchDiscoveredContributionRepositories() {
@@ -1602,29 +1719,57 @@ async function fetchSearchDiscoveredContributionRepositories() {
     );
   }
 
+  const metadataCandidates = [...names.values()];
+  if (
+    metadataCandidates.length >
+    config.maxPublicContributionSearchCandidates
+  ) {
+    throw new Error(
+      `Public contribution PR/review searches produced ${metadataCandidates.length} unique repository candidates, exceeding MAX_PUBLIC_CONTRIBUTION_SEARCH_CANDIDATES=${config.maxPublicContributionSearchCandidates}. Raise the inspection cap rather than truncating discovery or exhausting the public API quota.`,
+    );
+  }
+
   const metadataResults = await mapLimit(
-    [...names.values()].slice(0, config.maxPublicContributedRepositories),
+    metadataCandidates,
     3,
-    async (item) => {
-      const repository = await fetchPublicRepositoryMetadata(
+    async (item) =>
+      fetchPublicRepositoryMetadataCandidate(
         item.fullName,
-        [...item.evidence][0],
+        [...item.evidence],
         [...item.identities],
-      );
-      repository.contribution_evidence = [...item.evidence];
-      repository.contribution_identities = [...item.identities];
-      return repository;
-    },
+      ),
   );
-  const metadataFailures = metadataResults
-    .filter((result) => result.status === "rejected")
-    .map((result) => result.reason.message);
+
+  const {
+    repositories,
+    metadataFailures,
+    exclusionCounts,
+    filteredCount,
+  } = collectPublicContributionMetadataResults(metadataResults);
+
   if (metadataFailures.length > 0) {
     throw new Error(
       `Public contribution metadata discovery was incomplete: ${metadataFailures.join("; ")}`,
     );
   }
-  return metadataResults.map((result) => result.value);
+
+  if (exclusionCounts.size > 0) {
+    const summary = [...exclusionCounts.entries()]
+      .sort(([first], [second]) => first.localeCompare(second))
+      .map(([reason, count]) => `${count} ${reason}`)
+      .join("; ");
+    console.log(
+      `PR/review search metadata filtered ${filteredCount} non-eligible candidate repositories: ${summary}.`,
+    );
+  }
+
+  if (repositories.length > config.maxPublicContributedRepositories) {
+    throw new Error(
+      `Public contribution search verified ${repositories.length} eligible external public repositories, exceeding MAX_PUBLIC_CONTRIBUTED_REPOSITORIES=${config.maxPublicContributedRepositories}. Raise the cap rather than publishing a partial portfolio.`,
+    );
+  }
+
+  return repositories;
 }
 
 async function fetchPublicContributedRepositories() {
@@ -1666,7 +1811,7 @@ async function fetchPublicContributedRepositories() {
       return;
     }
     console.log(
-      `${sourceName} discovery returned ${source.value.length} public organization repositories.`,
+      `${sourceName} discovery returned ${source.value.length} eligible external public repositories.`,
     );
     for (const repository of source.value) {
       mergeContributionCandidate(merged, repository);
@@ -2282,41 +2427,79 @@ function calculateStreak(days) {
 }
 
 /**
- * Searches global collaboration activity across both credential scopes.
+ * Searches all-time collaboration activity across disjoint credential scopes.
  *
- * The PAT is required for selected private repositories; the workflow token
- * (or anonymous fallback) covers external public repositories that a
- * fine-grained PAT may not be authorized to search. Result identifiers are
- * unioned across credentials and historical aliases to prevent double counts.
+ * Every repository owned by the primary profile—public or private—is queried
+ * with PRIVATE_STATS_TOKEN through explicit repo qualifiers. The external
+ * public query excludes the primary owner and uses the workflow token followed
+ * by anonymous REST fallback. Result identifiers are unioned across scopes and
+ * historical aliases so credential overlap can never double-count an item.
  */
 async function searchCountsByContributorIdentity(
   queryFactory,
   label,
-  { identities = globalContributorIdentities } = {},
+  {
+    identities = globalContributorIdentities,
+    personalRepositoryFullNames = [],
+  } = {},
 ) {
+  const personalRepositoryChunks = chunkValues(
+    [...new Set(
+      personalRepositoryFullNames
+        .map((fullName) =>
+          String(fullName ?? "").trim(),
+        )
+        .filter(Boolean),
+    )],
+    10,
+  );
+
   const results = await mapLimit(
     identities,
     1,
     async (identity) => {
-      const privateResult = await searchRepositoryIssueIdentifiers(
-        queryFactory(identity),
-        `${label} (${identity}; personal token)`,
-        null,
-        REST_HEADERS,
-      );
-      if (!privateResult.complete) {
-        throw new Error(
-          `${label} (${identity}; personal token) exceeded GitHub Search's 1,000-result retrieval boundary.`,
-        );
+      const personalKeys = new Set();
+
+      for (
+        const [chunkIndex, repositoryChunk]
+        of personalRepositoryChunks.entries()
+      ) {
+        const repositoryScope = repositoryChunk
+          .map((fullName) =>
+            `repo:${fullName}`,
+          )
+          .join(" OR ");
+        const personalQuery =
+          `${queryFactory(identity)} (${repositoryScope})`;
+        const personalResult =
+          await searchRepositoryIssueIdentifiers(
+            personalQuery,
+            `${label} (${identity}; profile-owned repositories ${chunkIndex + 1}/${personalRepositoryChunks.length})`,
+            null,
+            REST_HEADERS,
+          );
+
+        if (!personalResult.complete) {
+          throw new Error(
+            `${label} (${identity}; profile-owned repositories) exceeded GitHub Search's 1,000-result retrieval boundary.`,
+          );
+        }
+
+        for (const key of personalResult.keys) {
+          personalKeys.add(key);
+        }
       }
 
+      const externalPublicQuery = externalPublicCollaborationQuery(
+        queryFactory(identity),
+      );
       let publicResult = null;
       let lastPublicError = null;
       for (const attempt of publicSearchCredentialAttempts()) {
         try {
           publicResult = await searchRepositoryIssueIdentifiers(
-            queryFactory(identity),
-            `${label} (${identity}; ${attempt.name})`,
+            externalPublicQuery,
+            `${label} (${identity}; ${attempt.name}; external public scope)`,
             null,
             attempt.headers,
           );
@@ -2325,20 +2508,24 @@ async function searchCountsByContributorIdentity(
           lastPublicError = error;
         }
       }
+
       if (!publicResult) {
         throw lastPublicError ?? new Error(
-          `${label} (${identity}; public scope) had no usable credential.`,
+          `${label} (${identity}; external public scope) had no usable credential.`,
         );
       }
       if (!publicResult.complete) {
         throw new Error(
-          `${label} (${identity}; public scope) exceeded GitHub Search's 1,000-result retrieval boundary.`,
+          `${label} (${identity}; external public scope) exceeded GitHub Search's 1,000-result retrieval boundary.`,
         );
       }
 
       return {
         identity,
-        keys: new Set([...privateResult.keys, ...publicResult.keys]),
+        keys: new Set([
+          ...personalKeys,
+          ...publicResult.keys,
+        ]),
       };
     },
   );
@@ -2374,6 +2561,33 @@ async function searchCountsByContributorIdentity(
       count: item.keys.size,
     })),
   };
+}
+
+function chunkValues(values, maximumChunkSize) {
+  const chunks = [];
+  for (
+    let index = 0;
+    index < values.length;
+    index += maximumChunkSize
+  ) {
+    chunks.push(
+      values.slice(
+        index,
+        index + maximumChunkSize,
+      ),
+    );
+  }
+  return chunks;
+}
+
+/**
+ * Excludes repositories owned by the primary profile from the public search.
+ * Those repositories are queried separately with the PAT, preserving the
+ * explicit ownership-based credential boundary for both public and private
+ * personal repositories.
+ */
+function externalPublicCollaborationQuery(baseQuery) {
+  return `${baseQuery} -user:${username}`;
 }
 
 function publicSearchCredentialAttempts() {
@@ -2550,7 +2764,7 @@ async function fetchAuthoredCommitReferences(selection) {
     return { selection, commits: [], capped: false };
   }
 
-  // Public organization projects may contain work authored through historical
+  // External public projects may contain work authored through historical
   // GitHub accounts. Query every configured identity and merge by commit SHA
   // so one commit can never be counted twice.
   const identities = contributionIdentitiesForScope(scope, repository.full_name);
@@ -3070,11 +3284,14 @@ function repositoryLanguageComposition(detail) {
 }
 
 async function fetchAttributedContributorCommits(repository, identities) {
-  const identitySet = new Set(identities.map((identity) => identity.toLowerCase()));
+  const identitySet = new Set(
+    identities.map((identity) => identity.toLowerCase()),
+  );
   const matchedIdentities = new Set();
   let commits = 0;
+  let inspectedContributors = 0;
 
-  for (let page = 1; page <= 5; page += 1) {
+  for (let page = 1; ; page += 1) {
     const contributors = await publicRestWithFallback(
       `/repos/${repository.full_name}/contributors?anon=1&per_page=100&page=${page}`,
       {
@@ -3083,16 +3300,53 @@ async function fetchAttributedContributorCommits(repository, identities) {
       },
     );
     const items = Array.isArray(contributors) ? contributors : [];
-    for (const contributor of items) {
-      const login = String(contributor?.login ?? "").toLowerCase();
-      if (!identitySet.has(login)) continue;
-      commits += safeInteger(contributor.contributions);
-      matchedIdentities.add(contributor.login);
+
+    // Once the configured boundary has been fully inspected, the next page is
+    // a completeness probe. An empty page proves the prior full page was the
+    // final page; any item proves the configured cap would truncate results.
+    if (
+      inspectedContributors >=
+      config.maxPublicContributorsPerRepository
+    ) {
+      if (items.length === 0) break;
+
+      throw new Error(
+        `Repository contributors (${repository.full_name}) exceeded MAX_PUBLIC_CONTRIBUTORS_PER_REPOSITORY=${config.maxPublicContributorsPerRepository}. Raise the cap rather than publishing a potentially incomplete attributed-commit count.`,
+      );
     }
+
+    if (
+      inspectedContributors + items.length >
+      config.maxPublicContributorsPerRepository
+    ) {
+      throw new Error(
+        `Repository contributors (${repository.full_name}) exceeded MAX_PUBLIC_CONTRIBUTORS_PER_REPOSITORY=${config.maxPublicContributorsPerRepository}. Raise the cap rather than truncating the current contributor page.`,
+      );
+    }
+
+    inspectedContributors += items.length;
+
+    for (const contributor of items) {
+      const login = String(
+        contributor?.login ?? "",
+      ).toLowerCase();
+      if (!identitySet.has(login)) continue;
+
+      commits += safeInteger(
+        contributor.contributions,
+      );
+      matchedIdentities.add(
+        contributor.login,
+      );
+    }
+
     if (items.length < 100) break;
   }
 
-  return { commits, identities: [...matchedIdentities] };
+  return {
+    commits,
+    identities: [...matchedIdentities],
+  };
 }
 
 async function fetchPullRequestReviews(repository, pullRequestNumber) {
@@ -3301,15 +3555,22 @@ async function buildPublicContributionPortfolio(
 
       // A failed search remains unknown. A bounded direct scan independently
       // verifies it instead of silently converting the failure to zero.
-      const shouldInspectHistoricalReviews =
-        reviewedSearch.status === "unavailable" ||
-        discoveryEvidence.has("pull-request-review") ||
-        safeInteger(reviewedSearch.count) > 0;
       const relationshipNeedsExplanation =
         discoveryEvidence.has("repository-relationship") &&
         contributorActivity.commits === 0 &&
-        authoredSearch.status === "success" &&
-        authoredSearch.count === 0;
+        !(
+          authoredSearch.status === "success" &&
+          safeInteger(authoredSearch.count) > 0
+        ) &&
+        !(
+          reviewedSearch.status === "success" &&
+          safeInteger(reviewedSearch.count) > 0
+        );
+      const shouldInspectHistoricalReviews =
+        reviewedSearch.status === "unavailable" ||
+        discoveryEvidence.has("pull-request-review") ||
+        safeInteger(reviewedSearch.count) > 0 ||
+        relationshipNeedsExplanation;
       const shouldInspectPullRequests =
         authoredSearch.status === "unavailable" ||
         shouldInspectHistoricalReviews ||
@@ -5944,9 +6205,10 @@ async function runSummaryCardSelfTest() {
 }
 
 /**
- * Exercises the v20 accuracy invariants without contacting GitHub.
+ * Exercises the current accuracy invariants without contacting GitHub.
  * This deliberately tests the failure-prone seams: aliases, notebooks,
- * additive Linguist bytes, search-result deduplication, and 422 diagnostics.
+ * additive Linguist bytes, search-result deduplication, 422 diagnostics, and
+ * null-safe metadata filtering for global PR/review discovery.
  */
 async function runDataPipelineSelfTest() {
   const assert = (condition, message) => {
@@ -5990,6 +6252,27 @@ async function runDataPipelineSelfTest() {
     "Jupyter Linguist bytes are missing from the footprint.",
   );
 
+  const repositoryChunks = chunkValues(
+    Array.from(
+      { length: 21 },
+      (_, index) => `owner/personal-${index + 1}`,
+    ),
+    10,
+  );
+  assert(
+    repositoryChunks.length === 3 &&
+      repositoryChunks[0].length === 10 &&
+      repositoryChunks[2].length === 1,
+    "profile-owned repository Search scopes are not chunked safely.",
+  );
+  assert(
+    externalPublicCollaborationQuery(
+      "author:example is:pr",
+    ) ===
+      `author:example is:pr -user:${username}`,
+    "external public collaboration Search does not exclude the primary owner.",
+  );
+
   const duplicateKeyA = publicSearchResultKey(
     {
       repository_url: "https://api.github.com/repos/example/project",
@@ -6027,8 +6310,131 @@ async function runDataPipelineSelfTest() {
     "structured GitHub failure diagnostics were discarded.",
   );
 
+  const ineligiblePersonalRepository = normalizePublicContributionRepository(
+    {
+      full_name: `${username}/profile-owned-project`,
+      owner: { login: username, type: "User" },
+      private: false,
+      visibility: "public",
+      default_branch: "main",
+    },
+    ["pull-request"],
+    [username],
+  );
+  assert(
+    ineligiblePersonalRepository === null,
+    "profile-owned search candidates are not filtered.",
+  );
+  assert(
+    enrichPublicContributionRepository(
+      ineligiblePersonalRepository,
+      ["pull-request-review"],
+      [username],
+    ) === null,
+    "a filtered metadata candidate is mutated instead of remaining null.",
+  );
+
+  const filteredMetadataFixture =
+    collectPublicContributionMetadataResults([
+      {
+        status: "fulfilled",
+        value: {
+          repository: null,
+          exclusionReason: "repository is owned by the profile account",
+        },
+      },
+    ]);
+  assert(
+    filteredMetadataFixture.repositories.length === 0 &&
+      filteredMetadataFixture.metadataFailures.length === 0 &&
+      filteredMetadataFixture.filteredCount === 1,
+    "an expected metadata exclusion is treated as a failure or repository.",
+  );
+
+  const historicalIdentity =
+    contributorIdentities.find(
+      (identity) => identity.toLowerCase() !== username.toLowerCase(),
+    ) ?? "historical-alias";
+  const eligibleExternalUserRepository =
+    normalizePublicContributionRepository(
+      {
+        full_name: `${historicalIdentity}/legacy-public-project`,
+        owner: {
+          login: historicalIdentity,
+          type: "User",
+        },
+        private: false,
+        visibility: "public",
+        default_branch: "main",
+      },
+      ["pull-request", "pull-request-review"],
+      [username],
+    );
+  const enrichedExternalUserRepository =
+    enrichPublicContributionRepository(
+      eligibleExternalUserRepository,
+      ["pull-request-review", "pull-request"],
+      [username, historicalIdentity.toUpperCase()],
+    );
+  assert(
+    enrichedExternalUserRepository !==
+      eligibleExternalUserRepository &&
+      enrichedExternalUserRepository.contribution_evidence.length === 2 &&
+      enrichedExternalUserRepository.contribution_evidence.includes(
+        "pull-request",
+      ) &&
+      enrichedExternalUserRepository.contribution_evidence.includes(
+        "pull-request-review",
+      ) &&
+      enrichedExternalUserRepository.contribution_identities.includes(
+        historicalIdentity.toLowerCase(),
+      ),
+    "external user-owned repositories or merged evidence sets are not preserved.",
+  );
+
+  const eligibleOrganizationRepository =
+    normalizePublicContributionRepository(
+      {
+        full_name: "example-org/project",
+        owner: {
+          login: "example-org",
+          type: "Organization",
+        },
+        private: false,
+        visibility: "public",
+        default_branch: "main",
+      },
+      ["commit"],
+      [username],
+    );
+  assert(
+    eligibleOrganizationRepository?.full_name ===
+      "example-org/project",
+    "external organization repositories are no longer eligible.",
+  );
+
+  const collectedMetadataFixture =
+    collectPublicContributionMetadataResults([
+      {
+        status: "fulfilled",
+        value: {
+          repository: enrichedExternalUserRepository,
+          exclusionReason: null,
+        },
+      },
+      {
+        status: "rejected",
+        reason: new Error("metadata unavailable"),
+      },
+    ]);
+  assert(
+    collectedMetadataFixture.repositories.length === 1 &&
+      collectedMetadataFixture.metadataFailures[0] === "metadata unavailable",
+    "metadata aggregation does not preserve eligible repositories and hard failures.",
+  );
+
   console.log(
-    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, and GitHub diagnostics are intact.",
+    "Data pipeline self-test passed: aliases, Python/Jupyter classification, Linguist-byte aggregation, identifier deduplication, profile-owned scope chunking, owner-excluded public Search, GitHub diagnostics, null-safe public metadata filtering, user-owned external repositories, and complete evidence merging are intact.",
   );
 }
 
@@ -6121,7 +6527,7 @@ async function main() {
     repositoryDetails.length === 0
   ) {
     throw new Error(
-      "No selected repositories could be scanned. Ensure the token has Contents: read for personal repositories and that external organization repositories are public.",
+      "No selected repositories could be scanned. Ensure the token has Contents: read for personal repositories and that external contribution repositories are public.",
     );
   }
 
@@ -6166,6 +6572,21 @@ async function main() {
   );
 
   console.log("Fetching all-time collaboration counts...");
+  // Use the PAT for every repository owned by the primary profile, including
+  // repositories excluded from code-footprint scanning. Public global search
+  // explicitly excludes this owner, so credential scopes remain disjoint.
+  const personalRepositoryFullNames = accessibleRepositories
+    .filter(
+      (repository) =>
+        String(repository.owner?.login ?? "").toLowerCase() ===
+        username.toLowerCase(),
+    )
+    .map((repository) => repository.full_name)
+    .filter(Boolean);
+
+  const collaborationSearchOptions = {
+    personalRepositoryFullNames,
+  };
   const [
     pullRequestResult,
     mergedPullRequestResult,
@@ -6174,14 +6595,17 @@ async function main() {
     searchCountsByContributorIdentity(
       (identity) => `author:${identity} is:pr`,
       "Pull-request search",
+      collaborationSearchOptions,
     ),
     searchCountsByContributorIdentity(
       (identity) => `author:${identity} is:pr is:merged`,
       "Merged pull-request search",
+      collaborationSearchOptions,
     ),
     searchCountsByContributorIdentity(
       (identity) => `author:${identity} is:issue is:closed`,
       "Closed-issue search",
+      collaborationSearchOptions,
     ),
   ]);
 
@@ -6416,7 +6840,7 @@ async function main() {
   await writeCards(cards);
 
   console.log(
-    `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${publicContributionPortfolio.length} public organization projects contributed to, ${repositoryDetails.length} repositories scanned, 7 AI engineering cards generated.`,
+    `Analytics complete: ${languages.length} engineering-footprint languages, ${personalCodeContributions.languages.length} personal contribution languages, ${technologyDetection.counts.size} frameworks/platforms, ${publicContributionPortfolio.length} external public projects contributed to, ${repositoryDetails.length} repositories scanned, 7 AI engineering cards generated.`,
   );
 }
 
