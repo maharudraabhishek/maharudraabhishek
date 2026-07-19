@@ -6515,6 +6515,25 @@ async function runSummaryCardSelfTest() {
 
   const overviewSvg = renderOverview(overviewFixture);
   const streakSvg = renderStreak(streakFixture);
+  const deliverySvg = renderDelivery({
+    pullRequests: 42,
+    mergedPullRequests: 35,
+    reviewContributions: 18,
+    closedIssues: 21,
+    ciRepositories: 12,
+    activeRepositories: 16,
+  });
+  const portfolioSvg = renderPortfolio({
+    total: 37,
+    public: 24,
+    private: 13,
+    active: 16,
+    documented: 31,
+    withTests: 22,
+    withCi: 12,
+    archived: 3,
+    scanned: 37,
+  });
 
   const checks = [
     [overviewSvg, 'width="720" height="360"'],
@@ -6528,6 +6547,9 @@ async function runSummaryCardSelfTest() {
     [overviewSvg, "&lt;1 month"],
     [overviewSvg, "77.8%"],
     [overviewSvg, "68.4%"],
+    [overviewSvg, 'x="355" y="94"'],
+    [overviewSvg, 'x="132" y="321" width="202"'],
+    [overviewSvg, 'x="504" y="321" width="206"'],
     [streakSvg, 'width="720" height="360"'],
     [streakSvg, 'viewBox="0 0 720 360"'],
     [streakSvg, 'width="719" height="359" rx="12"'],
@@ -6538,6 +6560,13 @@ async function runSummaryCardSelfTest() {
     [streakSvg, "49 weeks"],
     [streakSvg, "20 contributions"],
     [streakSvg, "Monday"],
+    [streakSvg, 'font-size="9.2"'],
+    [deliverySvg, 'width="600" height="360"'],
+    [deliverySvg, 'class="pairedValue"'],
+    [deliverySvg, 'class="pairedLabel"'],
+    [portfolioSvg, 'width="600" height="360"'],
+    [portfolioSvg, 'class="pairedValue"'],
+    [portfolioSvg, 'class="pairedLabel"'],
   ];
 
   for (const [svg, expected] of checks) {
