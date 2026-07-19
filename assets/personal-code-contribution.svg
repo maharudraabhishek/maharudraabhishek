@@ -9,6 +9,10 @@
     .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricLabel{fill:#F0F6FC;font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricNote{fill:#8B949E;font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedValue{fill:#F0F6FC;font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedLabel{fill:#8B949E;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionValue{fill:#F0F6FC;font:700 14.4px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionLabel{fill:#8B949E;font:600 11.8px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
     .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>

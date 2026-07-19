@@ -9,6 +9,10 @@
     .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricLabel{fill:#F0F6FC;font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricNote{fill:#8B949E;font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedValue{fill:#F0F6FC;font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedLabel{fill:#8B949E;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionValue{fill:#F0F6FC;font:700 14.4px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionLabel{fill:#8B949E;font:600 11.8px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
     .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
@@ -23,26 +27,26 @@
       <rect x="19" y="81" width="962" height="96" rx="14" fill="#3FB950" fill-opacity=".065"/>
       <g transform="translate(42 93) scale(1.25)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="72" y="112" class="value"><tspan x="72" dy="0">maharudraabhishek/MoonTradr-public</tspan></text>
-      <rect x="770" y="92" width="188" height="25" rx="12.5" fill="#3FB950" fill-opacity=".16" stroke="#3FB950" stroke-opacity=".72"/>
-      <text x="864" y="109" text-anchor="middle" class="metricLabel">OWNED OPEN SOURCE</text>
+      <rect x="698" y="92" width="260" height="25" rx="12.5" fill="#3FB950" fill-opacity=".16" stroke="#3FB950" stroke-opacity=".72"/>
+      <text x="828" y="109" text-anchor="middle" class="metricLabel">OWNED OPEN SOURCE</text>
       <text x="42" y="136" class="label"><tspan x="42" dy="0">Attributed identities: maharudraabhishek</tspan></text>
       <text x="42" y="158" class="tiny"><tspan x="42" dy="0">Verified by: AGPL-3.0 license, profile ownership</tspan></text>
 
       <rect x="32" y="171" width="936" height="22" rx="7" fill="#3FB950" fill-opacity=".1"/>
       <text x="42" y="188" class="sectionLabel">FULL PROJECT COMPOSITION</text>
       <rect x="42" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="55" y="224" class="small">2</text>
-      <text x="55" y="239" class="tiny">Project commits</text><rect x="350.6666666666667" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="363.6666666666667" y="224" class="small">0</text>
-      <text x="363.6666666666667" y="239" class="tiny">Releases</text><rect x="659.3333333333334" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="672.3333333333334" y="224" class="small">3</text>
-      <text x="672.3333333333334" y="239" class="tiny">Languages</text><rect x="42" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="55" y="276" class="small">105</text>
-      <text x="55" y="291" class="tiny">Source files</text><rect x="350.6666666666667" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="363.6666666666667" y="276" class="small">0</text>
-      <text x="363.6666666666667" y="291" class="tiny">Stars</text><rect x="659.3333333333334" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="672.3333333333334" y="276" class="small">0</text>
-      <text x="672.3333333333334" y="291" class="tiny">Forks</text>
+      <text x="55" y="224" class="compositionValue">2</text>
+      <text x="55" y="240" class="compositionLabel">Project commits</text><rect x="350.6666666666667" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
+      <text x="363.6666666666667" y="224" class="compositionValue">0</text>
+      <text x="363.6666666666667" y="240" class="compositionLabel">Releases</text><rect x="659.3333333333334" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
+      <text x="672.3333333333334" y="224" class="compositionValue">3</text>
+      <text x="672.3333333333334" y="240" class="compositionLabel">Languages</text><rect x="42" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
+      <text x="55" y="276" class="compositionValue">105</text>
+      <text x="55" y="292" class="compositionLabel">Source files</text><rect x="350.6666666666667" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
+      <text x="363.6666666666667" y="276" class="compositionValue">0</text>
+      <text x="363.6666666666667" y="292" class="compositionLabel">Stars</text><rect x="659.3333333333334" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
+      <text x="672.3333333333334" y="276" class="compositionValue">0</text>
+      <text x="672.3333333333334" y="292" class="compositionLabel">Forks</text>
 
       <rect x="32" y="311" width="936" height="183" rx="12" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
       <text x="42" y="328" class="sectionLabel">VERIFIED PERSONAL CONTRIBUTION</text>
