@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="660" height="422" viewBox="0 0 660 422" role="img" aria-label="Engineering Domains">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="659" height="421" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+  <text x="48" y="31" class="title">Engineering Domains</text>
+  <text x="48" y="49" class="subtitle">Heuristic classification derived from detected technologies and language composition</text>
+  <g transform="translate(24 67) scale(0.9375)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <text x="50" y="84" class="small">Mobile Engineering</text>
+      <rect x="278" y="72" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="72" width="132.9" height="9" rx="4.5" fill="#58A6FF"/>
+      <text x="630" y="84" text-anchor="end" class="label">42%</text><g transform="translate(24 113) scale(0.9375)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="50" y="130" class="small">Full-Stack Development</text>
+      <rect x="278" y="118" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="118" width="64.9" height="9" rx="4.5" fill="#A371F7"/>
+      <text x="630" y="130" text-anchor="end" class="label">20%</text><g transform="translate(24 159) scale(0.9375)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="50" y="176" class="small">Cloud &amp; DevOps</text>
+      <rect x="278" y="164" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="164" width="38.4" height="9" rx="4.5" fill="#3FB950"/>
+      <text x="630" y="176" text-anchor="end" class="label">12%</text><g transform="translate(24 205) scale(0.9375)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="50" y="222" class="small">Backend &amp; APIs</text>
+      <rect x="278" y="210" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="210" width="30.1" height="9" rx="4.5" fill="#F0883E"/>
+      <text x="630" y="222" text-anchor="end" class="label">9%</text><g transform="translate(24 251) scale(0.9375)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="50" y="268" class="small">AI/ML &amp; RAG</text>
+      <rect x="278" y="256" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="256" width="23.5" height="9" rx="4.5" fill="#39C5CF"/>
+      <text x="630" y="268" text-anchor="end" class="label">7%</text><g transform="translate(24 297) scale(0.9375)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="50" y="314" class="small">Data Engineering</text>
+      <rect x="278" y="302" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="302" width="20.2" height="9" rx="4.5" fill="#D29922"/>
+      <text x="630" y="314" text-anchor="end" class="label">6%</text><g transform="translate(24 343) scale(0.9375)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+      <text x="50" y="360" class="small">Developer Tooling</text>
+      <rect x="278" y="348" width="320" height="9" rx="4.5" fill="#21262D"/>
+      <rect x="278" y="348" width="10.1" height="9" rx="4.5" fill="#DB61A2"/>
+      <text x="630" y="360" text-anchor="end" class="label">3%</text>
+</svg>

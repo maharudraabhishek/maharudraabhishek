@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="280" viewBox="0 0 860 280" role="img" aria-label="GitHub Overview">
+  <style>
+    .title{fill:#58A6FF;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:500 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:500 9px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
+    .empty{fill:#8B949E;font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="859" height="279" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.2l2.05 4.15 4.58.67-3.31 3.23.78 4.56L8 11.65l-4.1 2.16.78-4.56L1.37 6.02l4.58-.67L8 1.2z"/></g>
+  <text x="48" y="31" class="title">GitHub Overview</text>
+  <text x="48" y="49" class="subtitle">Engineering scale, delivery, collaboration and repository health</text>
+  <rect x="20" y="70" width="197.5" height="67" rx="10" fill="#58A6FF" fill-opacity=".08" stroke="#58A6FF" stroke-opacity=".42"/>
+      <g transform="translate(32 83) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
+      <text x="60" y="100" class="metricValue">26</text>
+      <text x="32" y="124" class="metricLabel">Verified repositories</text><rect x="227.5" y="70" width="197.5" height="67" rx="10" fill="#F0883E" fill-opacity=".08" stroke="#F0883E" stroke-opacity=".42"/>
+      <g transform="translate(239.5 83) scale(1)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="267.5" y="100" class="metricValue">12</text>
+      <text x="239.5" y="124" class="metricLabel">Active repositories · 90d</text><rect x="435" y="70" width="197.5" height="67" rx="10" fill="#3FB950" fill-opacity=".08" stroke="#3FB950" stroke-opacity=".42"/>
+      <g transform="translate(447 83) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="475" y="100" class="metricValue">225</text>
+      <text x="447" y="124" class="metricLabel">Contributions · 12 months</text><rect x="642.5" y="70" width="197.5" height="67" rx="10" fill="#39C5CF" fill-opacity=".08" stroke="#39C5CF" stroke-opacity=".42"/>
+      <g transform="translate(654.5 83) scale(1)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2.5"/><path d="M0 8h5.5M10.5 8H16"/></g>
+      <text x="682.5" y="100" class="metricValue">112</text>
+      <text x="654.5" y="124" class="metricLabel">Commit contributions · all time</text><rect x="20" y="147" width="197.5" height="67" rx="10" fill="#3FB950" fill-opacity=".08" stroke="#3FB950" stroke-opacity=".42"/>
+      <g transform="translate(32 160) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
+      <text x="60" y="177" class="metricValue">56</text>
+      <text x="32" y="201" class="metricLabel">Merged PRs · all time</text><rect x="227.5" y="147" width="197.5" height="67" rx="10" fill="#DB61A2" fill-opacity=".08" stroke="#DB61A2" stroke-opacity=".42"/>
+      <g transform="translate(239.5 160) scale(1)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/></g>
+      <text x="267.5" y="177" class="metricValue">0</text>
+      <text x="239.5" y="201" class="metricLabel">PR reviews · all time</text><rect x="435" y="147" width="197.5" height="67" rx="10" fill="#A371F7" fill-opacity=".08" stroke="#A371F7" stroke-opacity=".42"/>
+      <g transform="translate(447 160) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
+      <text x="475" y="177" class="metricValue">3</text>
+      <text x="447" y="201" class="metricLabel">Public contribution repos</text><rect x="642.5" y="147" width="197.5" height="67" rx="10" fill="#58A6FF" fill-opacity=".08" stroke="#58A6FF" stroke-opacity=".42"/>
+      <g transform="translate(654.5 160) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/></g>
+      <text x="682.5" y="177" class="metricValue">1</text>
+      <text x="654.5" y="201" class="metricLabel">Public organizations</text><rect x="20" y="228" width="197.5" height="34" rx="9" fill="#21262D" stroke="#39C5CF" stroke-opacity=".45"/>
+      <g transform="translate(30 237) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="3" r="2"/><circle cx="8" cy="13" r="2"/><path d="M5 3h6M4 5l3 6M12 5l-3 6"/></g>
+      <text x="51" y="244" class="small">23.1%</text>
+      <text x="51" y="256" class="tiny">CI/CD coverage</text><rect x="227.5" y="228" width="197.5" height="34" rx="9" fill="#21262D" stroke="#3FB950" stroke-opacity=".45"/>
+      <g transform="translate(237.5 237) scale(0.875)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v4l-4 7a2 2 0 0 0 1.7 3h8.6A2 2 0 0 0 14 12l-4-7V1M4.5 10h7"/></g>
+      <text x="258.5" y="244" class="small">65.4%</text>
+      <text x="258.5" y="256" class="tiny">Test coverage</text><rect x="435" y="228" width="197.5" height="34" rx="9" fill="#21262D" stroke="#F0883E" stroke-opacity=".45"/>
+      <g transform="translate(445 237) scale(0.875)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M5 1v4M11 1v4M2 7h12"/></g>
+      <text x="466" y="244" class="small">8y 4m</text>
+      <text x="466" y="256" class="tiny">Contribution tenure</text><rect x="642.5" y="228" width="197.5" height="34" rx="9" fill="#21262D" stroke="#D29922" stroke-opacity=".45"/>
+      <g transform="translate(652.5 237) scale(0.875)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.2l2.05 4.15 4.58.67-3.31 3.23.78 4.56L8 11.65l-4.1 2.16.78-4.56L1.37 6.02l4.58-.67L8 1.2z"/></g>
+      <text x="673.5" y="244" class="small">2</text>
+      <text x="673.5" y="256" class="tiny">Owned repository stars</text>
+</svg>
