@@ -240,7 +240,7 @@ function removeManagedLines(readme) {
       ) return false;
 
       if (
-        /^> Public project cards separate full project composition/
+        /^> (?:✅ Verified open-source contributions: )?Public project cards separate full project composition/
           .test(trimmed)
       ) return false;
 
@@ -402,7 +402,7 @@ function openSourceProjectCards(projects, version) {
     const filename = escapeHtml(project.filename);
     const relationship = project.relationship === "owned-open-source"
       ? "Owned open-source project"
-      : "Verified open-source contribution";
+      : "✅ Verified open-source contribution";
     const alt = escapeHtml(`${project.fullName} — ${relationship}`);
     return `<p align="center">
   <a href="${url}"><strong>${fullName} ↗</strong></a><br />
@@ -485,7 +485,7 @@ ${fullWidthCard(CARD.contribution_calendar, version)}
 
 ### 🌐 Open-Source Contributions
 
-> Public project cards separate full project composition from verified personal commits, pull requests, reviews and approvals.
+> ✅ Verified open-source contributions: Public project cards separate full project composition from verified personal commits, pull requests, reviews and approvals.
 
 ${openSourceProjectCards(openSourceProjects, version)}
 

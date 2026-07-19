@@ -644,17 +644,98 @@ function metricGrid(metrics, width, startY = 78, columns = 2) {
 }
 
 function renderOverview(data) {
-  const metrics = [
-    { icon: "brain", color: THEME.purple, value: compactNumber(data.enabled.length), label: "AI-enabled repositories" },
+  const leftMetrics = [
     { icon: "bot", color: THEME.orange, value: compactNumber(data.claudeRepositories), label: "Claude-configured repositories" },
     { icon: "code", color: THEME.blue, value: compactNumber(data.codexRepositories), label: "Codex-configured repositories" },
     { icon: "layers", color: THEME.pink, value: compactNumber(data.bothRepositories), label: "Claude + Codex repositories" },
+  ];
+  const rightMetrics = [
     { icon: "network", color: THEME.green, value: compactNumber(data.mcpRepositories), label: "MCP-enabled repositories" },
     { icon: "bot", color: THEME.cyan, value: compactNumber(data.agentRepositories), label: "Repositories with agents" },
-    { icon: "activity", color: THEME.yellow, value: compactNumber(data.automationRepositories), label: "Repositories with AI automation" },
-    { icon: "shield", color: THEME.red, value: compactNumber(data.governedRepositories), label: "Governed AI repositories" },
+    { icon: "activity", color: THEME.yellow, value: compactNumber(data.automationRepositories), label: "AI automation repositories" },
   ];
-  return cardShell({ width: 720, height: 342, title: "AI Engineering Overview", iconName: "brain", accent: THEME.purple, subtitle: `${data.publicEnabled} public + ${data.privateEnabled} private AI-enabled repositories · configuration evidence, not AI-generated-code claims`, body: metricGrid(metrics, 720, 82, 2) });
+
+  const sideMetric = (metric, x, y) => `${icon(metric.icon, x, y - 17, metric.color, 17)}
+    <text x="${x + 29}" y="${y}" class="value">${escapeXml(metric.value)}</text>
+    <text x="${x + 29}" y="${y + 18}" class="label">${escapeXml(metric.label)}</text>`;
+
+  const bottomMetrics = [
+    {
+      icon: "shield",
+      color: THEME.red,
+      value: compactNumber(data.governedRepositories),
+      label: "Governed AI repos",
+      note: "Maturity level 4",
+    },
+    {
+      icon: "layers",
+      color: THEME.blue,
+      value: `${data.publicEnabled}/${data.privateEnabled}`,
+      label: "Public / private repos",
+      note: "AI-enabled scope",
+    },
+    {
+      icon: "activity",
+      color: THEME.orange,
+      value: `${data.averageMaturity.toFixed(1)}/4`,
+      label: "Average maturity",
+      note: "Evidence-based level",
+    },
+    {
+      icon: "spark",
+      color: THEME.green,
+      value: compactNumber(data.capabilities.length),
+      label: "Detected capabilities",
+      note: "Across enabled repos",
+    },
+  ];
+
+  const tileX = [20, 193, 366, 539];
+  const bottomTiles = bottomMetrics.map((metric, index) => {
+    const x = tileX[index];
+    return `<rect x="${x}" y="286" width="160" height="99" rx="12" fill="${metric.color}" fill-opacity=".08" stroke="${metric.color}" stroke-opacity=".45"/>
+      ${icon(metric.icon, x + 14, 301, metric.color, 17)}
+      <text x="${x + 43}" y="321" class="value">${escapeXml(metric.value)}</text>
+      <text x="${x + 14}" y="349" class="small">${escapeXml(metric.label)}</text>
+      <text x="${x + 14}" y="370" class="tiny">${escapeXml(metric.note)}</text>`;
+  }).join("");
+
+  const definitions = `<defs>
+    <linearGradient id="ai-overview-ring" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${THEME.purple}"/><stop offset=".52" stop-color="${THEME.cyan}"/><stop offset="1" stop-color="${THEME.green}"/></linearGradient>
+    <radialGradient id="ai-overview-core"><stop stop-color="#211B38"/><stop offset=".65" stop-color="#121722"/><stop offset="1" stop-color="${THEME.background}"/></radialGradient>
+    <filter id="ai-overview-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+  </defs>`;
+
+  const body = `${definitions}
+    <line x1="20" y1="65" x2="700" y2="65" stroke="${THEME.border}"/>
+    <text x="24" y="83" class="tiny">MODEL &amp; AGENT CONFIGURATION</text>
+    <text x="506" y="83" class="tiny">TOOLS &amp; AUTOMATION</text>
+    ${leftMetrics.map((metric, index) => sideMetric(metric, 24, 112 + index * 51)).join("")}
+    ${rightMetrics.map((metric, index) => sideMetric(metric, 506, 112 + index * 51)).join("")}
+    <path d="M245 160 C275 160 282 160 290 160" fill="none" stroke="${THEME.purple}" stroke-opacity=".5" stroke-width="2"/>
+    <path d="M430 160 C438 160 445 160 475 160" fill="none" stroke="${THEME.green}" stroke-opacity=".5" stroke-width="2"/>
+    <circle cx="360" cy="160" r="82" fill="${THEME.purple}" opacity=".1" filter="url(#ai-overview-glow)"/>
+    <circle cx="360" cy="160" r="72" fill="url(#ai-overview-core)" stroke="url(#ai-overview-ring)" stroke-width="3"/>
+    <circle cx="360" cy="160" r="61" fill="none" stroke="#3A334D" stroke-dasharray="2 7"/>
+    ${icon("brain", 346, 104, THEME.purple, 28)}
+    <text x="360" y="174" text-anchor="middle" class="value" style="font-size:35px;font-weight:800">${escapeXml(compactNumber(data.enabled.length))}</text>
+    <text x="360" y="197" text-anchor="middle" class="small" style="fill:${THEME.green}">AI-ENABLED REPOS</text>
+    <text x="360" y="215" text-anchor="middle" class="tiny">CONFIGURATION EVIDENCE</text>
+    <circle cx="290" cy="160" r="4" fill="${THEME.purple}"/>
+    <circle cx="430" cy="160" r="4" fill="${THEME.green}"/>
+    <line x1="20" y1="254" x2="700" y2="254" stroke="${THEME.border}"/>
+    <text x="24" y="275" class="tiny">GOVERNANCE &amp; MATURITY</text>
+    ${bottomTiles}`;
+
+  return cardShell({
+    width: 720,
+    height: 405,
+    title: "AI Engineering Overview",
+    iconName: "brain",
+    accent: THEME.purple,
+    subtitle: `${data.publicEnabled} public + ${data.privateEnabled} private · repository configuration evidence, not AI-generated-code claims`,
+    body,
+  });
 }
 
 function renderMaturity(data) {

@@ -866,6 +866,10 @@ function cardShell({
     .metricValue{fill:${THEME.title};font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricLabel{fill:${THEME.text};font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .metricNote{fill:${THEME.muted};font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedValue{fill:${THEME.text};font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedLabel{fill:${THEME.muted};font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionValue{fill:${THEME.text};font:700 14.4px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionLabel{fill:${THEME.muted};font:600 11.8px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .sectionLabel{fill:${THEME.green};font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
     .empty{fill:${THEME.muted};font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
@@ -4522,7 +4526,18 @@ function hasCi(paths) {
   });
 }
 
-function metricGrid(metrics, startY = 78, columns = 2, width = 560) {
+function metricGrid(
+  metrics,
+  startY = 78,
+  columns = 2,
+  width = 560,
+  {
+    rowGap = 62,
+    valueClass = "value",
+    labelClass = "label",
+    labelOffset = 18,
+  } = {},
+) {
   const cellWidth = (width - 40) / columns;
 
   return metrics
@@ -4530,11 +4545,11 @@ function metricGrid(metrics, startY = 78, columns = 2, width = 560) {
       const column = index % columns;
       const row = Math.floor(index / columns);
       const x = 20 + column * cellWidth;
-      const y = startY + row * 62;
+      const y = startY + row * rowGap;
 
       return `${icon(metric.icon, x, y - 13, metric.color, 16)}
-      <text x="${x + 26}" y="${y}" class="value">${escapeXml(metric.value)}</text>
-      <text x="${x + 26}" y="${y + 18}" class="label">${escapeXml(metric.label)}</text>`;
+      <text x="${x + 26}" y="${y}" class="${valueClass}">${escapeXml(metric.value)}</text>
+      <text x="${x + 26}" y="${y + labelOffset}" class="${labelClass}">${escapeXml(metric.label)}</text>`;
     })
     .join("");
 }
@@ -4621,8 +4636,10 @@ function lockedCardShell({ id, title, description, definitions, body }) {
 function renderOverview(data) {
   const ciCoverage = boundedPercentage(data.ciCoverage);
   const testCoverage = boundedPercentage(data.testCoverage);
-  const ciBarWidth = (ciCoverage / 100) * 170;
-  const testBarWidth = (testCoverage / 100) * 176;
+  const ciTrackWidth = 202;
+  const testTrackWidth = 206;
+  const ciBarWidth = (ciCoverage / 100) * ciTrackWidth;
+  const testBarWidth = (testCoverage / 100) * testTrackWidth;
 
   const definitions = `
     <linearGradient id="overview-flow" x1="0" x2="1"><stop stop-color="${THEME.blue}"/><stop offset=".5" stop-color="${THEME.green}"/><stop offset="1" stop-color="${THEME.purple}"/></linearGradient>
@@ -4706,18 +4723,18 @@ function renderOverview(data) {
   body += lockedCardDot(307, 160, THEME.blue, 4);
   body += lockedCardDot(453, 160, THEME.purple, 4);
 
-  body += lockedMetricIcon("commit", 282, 70, THEME.cyan);
-  body += lockedCardText(318, 91, compactNumber(data.allTimeCommitContributions), {
+  body += lockedMetricIcon("commit", 282, 72, THEME.cyan);
+  body += lockedCardText(318, 94, compactNumber(data.allTimeCommitContributions), {
     size: 17,
     fill: THEME.cyan,
     weight: 780,
   });
   body += lockedCardLabel(
-    380,
-    107,
+    355,
+    94,
     "COMMIT CONTRIBUTIONS",
     " · ALL TIME",
-    { anchor: "middle", size: 7.8, letterSpacing: ".25" },
+    { size: 8, letterSpacing: ".2" },
   );
 
   body += lockedMetricIcon("pull", 329, 233, THEME.green);
@@ -4772,23 +4789,23 @@ function renderOverview(data) {
 
   body += lockedCardLine(22, 283, 698, 283, THEME.border);
   body += `<g transform="translate(15 0)">`;
-  body += lockedCardText(28, 301, "ENGINEERING QUALITY", {
+  body += lockedCardText(28, 300, "ENGINEERING QUALITY", {
     size: 7.8,
     fill: THEME.cyan,
     weight: 750,
     letterSpacing: ".95",
   });
 
-  body += lockedMetricIcon("workflow", 28, 303, THEME.cyan);
-  body += lockedCardText(64, 324, formatPercentage(ciCoverage), {
+  body += lockedMetricIcon("workflow", 28, 308, THEME.cyan);
+  body += lockedCardText(64, 329, formatPercentage(ciCoverage), {
     size: 17,
     fill: THEME.cyan,
     weight: 780,
   });
-  body += lockedCardLabel(64, 341, "CI/CD coverage", "", { size: 9 });
-  body += `<rect x="164" y="315" width="170" height="7" rx="3" fill="${THEME.track}"/>`;
-  body += `<rect x="164" y="315" width="${ciBarWidth.toFixed(2)}" height="7" rx="3" fill="${THEME.cyan}"/>`;
-  body += lockedCardText(334, 341, `${ciCoverage.toFixed(1)} / 100`, {
+  body += lockedCardLabel(64, 347, "CI/CD coverage", "", { size: 9.2 });
+  body += `<rect x="132" y="321" width="${ciTrackWidth}" height="7" rx="3" fill="${THEME.track}"/>`;
+  body += `<rect x="132" y="321" width="${ciBarWidth.toFixed(2)}" height="7" rx="3" fill="${THEME.cyan}"/>`;
+  body += lockedCardText(334, 347, `${ciCoverage.toFixed(1)} / 100`, {
     size: 7.4,
     fill: THEME.muted,
     weight: 650,
@@ -4797,16 +4814,16 @@ function renderOverview(data) {
   body += `</g>`;
 
   body += `<g transform="translate(-35 0)">`;
-  body += lockedMetricIcon("test", 398, 303, THEME.green);
-  body += lockedCardText(434, 324, formatPercentage(testCoverage), {
+  body += lockedMetricIcon("test", 398, 308, THEME.green);
+  body += lockedCardText(434, 329, formatPercentage(testCoverage), {
     size: 17,
     fill: THEME.green,
     weight: 780,
   });
-  body += lockedCardLabel(434, 341, "Test coverage", "", { size: 9 });
-  body += `<rect x="534" y="315" width="176" height="7" rx="3" fill="${THEME.track}"/>`;
-  body += `<rect x="534" y="315" width="${testBarWidth.toFixed(2)}" height="7" rx="3" fill="url(#overview-quality)"/>`;
-  body += lockedCardText(710, 341, `${testCoverage.toFixed(1)} / 100`, {
+  body += lockedCardLabel(434, 347, "Test coverage", "", { size: 9.2 });
+  body += `<rect x="504" y="321" width="${testTrackWidth}" height="7" rx="3" fill="${THEME.track}"/>`;
+  body += `<rect x="504" y="321" width="${testBarWidth.toFixed(2)}" height="7" rx="3" fill="url(#overview-quality)"/>`;
+  body += lockedCardText(710, 347, `${testCoverage.toFixed(1)} / 100`, {
     size: 7.4,
     fill: THEME.muted,
     weight: 650,
@@ -4912,21 +4929,21 @@ function renderStreak(streak) {
 
   body += lockedMetricIcon("activity", 300, 238, THEME.blue);
   body += lockedCardText(336, 259, streak.averagePerActiveDay.toFixed(1), {
-    size: 14,
+    size: 15,
     fill: THEME.blue,
     weight: 780,
   });
   body += lockedCardLabel(336, 274, "Average", " / active day", {
-    size: 7.6,
+    size: 9.2,
   });
   body += lockedMetricIcon("calendar", 408, 238, THEME.orange);
   body += lockedCardText(444, 259, formatPercentage(streak.activeDayRate), {
-    size: 14,
+    size: 15,
     fill: THEME.orange,
     weight: 780,
   });
   body += lockedCardLabel(444, 274, "Active-day rate", " · 12m", {
-    size: 7.6,
+    size: 9.2,
   });
   body += `</g>`;
 
@@ -5852,8 +5869,8 @@ function renderPublicContributionPortfolio(projects) {
             row * 52;
 
           return `<rect x="${metricX}" y="${metricY}" width="${summaryCellWidth}" height="42" rx="9" fill="${THEME.background}" stroke="${accent}" stroke-opacity=".34"/>
-      <text x="${metricX + 13}" y="${metricY + 19}" class="small">${escapeXml(metric.value)}</text>
-      <text x="${metricX + 13}" y="${metricY + 34}" class="tiny">${escapeXml(metric.label)}</text>`;
+      <text x="${metricX + 13}" y="${metricY + 19}" class="compositionValue">${escapeXml(metric.value)}</text>
+      <text x="${metricX + 13}" y="${metricY + 35}" class="compositionLabel">${escapeXml(metric.label)}</text>`;
         })
         .join("");
 
@@ -6031,7 +6048,7 @@ function renderPublicContributionPortfolio(projects) {
 
       const relationshipLabel = project.relationship === "owned-open-source"
         ? "OWNED OPEN SOURCE"
-        : "VERIFIED CONTRIBUTION";
+        : "✅ VERIFIED OPEN-SOURCE CONTRIBUTION";
 
       return `<g data-project-index="${index + 1}">
       <rect x="${projectX + 5}" y="${y + 7}" width="${projectWidth - 2}" height="${blockHeight}" rx="16" fill="#000000" fill-opacity=".22"/>
@@ -6046,8 +6063,8 @@ function renderPublicContributionPortfolio(projects) {
         className: "value",
         lineHeight: 21,
       })}
-      <rect x="${width - 230}" y="${y + 18}" width="188" height="25" rx="12.5" fill="${accent}" fill-opacity=".16" stroke="${accent}" stroke-opacity=".72"/>
-      <text x="${width - 136}" y="${y + 35}" text-anchor="middle" class="metricLabel">${relationshipLabel}</text>
+      <rect x="${width - 302}" y="${y + 18}" width="260" height="25" rx="12.5" fill="${accent}" fill-opacity=".16" stroke="${accent}" stroke-opacity=".72"/>
+      <text x="${width - 172}" y="${y + 35}" text-anchor="middle" class="metricLabel">${relationshipLabel}</text>
       ${svgTextLines({
         lines: identityLines,
         x: contentX,
@@ -6219,7 +6236,12 @@ function renderDelivery(data) {
     iconName: "rocket",
     accent: THEME.green,
     subtitle: "Contribution and repository-delivery signals with explicit time ranges",
-    body: metricGrid(metrics, 82, 2, 600),
+    body: metricGrid(metrics, 92, 2, 600, {
+      rowGap: 88,
+      valueClass: "pairedValue",
+      labelClass: "pairedLabel",
+      labelOffset: 21,
+    }),
   });
 }
 
@@ -6282,7 +6304,12 @@ function renderPortfolio(data) {
     iconName: "repo",
     accent: THEME.blue,
     subtitle: `${data.scanned} repositories scanned successfully · aggregate-only private data`,
-    body: metricGrid(metrics, 82, 2, 600),
+    body: metricGrid(metrics, 82, 2, 600, {
+      rowGap: 74,
+      valueClass: "pairedValue",
+      labelClass: "pairedLabel",
+      labelOffset: 21,
+    }),
   });
 }
 
