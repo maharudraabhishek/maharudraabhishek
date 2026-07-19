@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="355" viewBox="0 0 760 355" role="img" aria-label="MCP &amp; Tool Integration">
+  <style>
+    .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compactLabel{fill:#F0F6FC;font:600 11.2px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="759" height="354" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
+  <text x="48" y="31" class="title">MCP &amp; Tool Integration</text>
+  <text x="48" y="49" class="subtitle">Aggregate categories only · private MCP server details are never shown</text>
+  <rect x="20" y="72" width="172.5" height="60" rx="10" fill="#3FB950" fill-opacity=".08" stroke="#3FB950" stroke-opacity=".43"/>
+      <g transform="translate(32 85) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
+      <text x="60" y="101" class="value">0</text>
+      <text x="32" y="122" class="tiny">MCP repositories</text><rect x="202.5" y="72" width="172.5" height="60" rx="10" fill="#58A6FF" fill-opacity=".08" stroke="#58A6FF" stroke-opacity=".43"/>
+      <g transform="translate(214.5 85) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
+      <text x="242.5" y="101" class="value">0</text>
+      <text x="214.5" y="122" class="tiny">Configuration signals</text><rect x="385" y="72" width="172.5" height="60" rx="10" fill="#A371F7" fill-opacity=".08" stroke="#A371F7" stroke-opacity=".43"/>
+      <g transform="translate(397 85) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+      <text x="425" y="101" class="value">0</text>
+      <text x="397" y="122" class="tiny">Agent definitions</text><rect x="567.5" y="72" width="172.5" height="60" rx="10" fill="#39C5CF" fill-opacity=".08" stroke="#39C5CF" stroke-opacity=".43"/>
+      <g transform="translate(579.5 85) scale(1)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="607.5" y="101" class="value">6</text>
+      <text x="579.5" y="122" class="tiny">Tool categories</text>
+      <rect x="20" y="151" width="720" height="188" rx="12" fill="#21262D" stroke="#30363D"/>
+      <rect x="20" y="151" width="720" height="38" rx="12" fill="#3FB950" fill-opacity=".09"/>
+      <line x1="20" y1="189" x2="740" y2="189" stroke="#3FB950" stroke-opacity=".42"/>
+      <g transform="translate(34 162) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="60" y="176" class="small" style="font-weight:600">Detected tool categories</text>
+      <rect x="28" y="201" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <g transform="translate(39 209) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="62" y="221" class="small">Filesystem</text>
+      <rect x="300" y="207" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
+      <text x="333" y="221" text-anchor="middle" class="tiny">8 repos</text><rect x="386" y="201" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <g transform="translate(397 209) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="420" y="221" class="small">Cloud &amp; deployment</text>
+      <rect x="658" y="207" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
+      <text x="691" y="221" text-anchor="middle" class="tiny">4 repos</text><rect x="28" y="243" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <g transform="translate(39 251) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="62" y="263" class="small">Git hosting</text>
+      <rect x="300" y="249" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
+      <text x="333" y="263" text-anchor="middle" class="tiny">4 repos</text><rect x="386" y="243" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <g transform="translate(397 251) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="420" y="263" class="small">Browser &amp; web</text>
+      <rect x="658" y="249" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
+      <text x="691" y="263" text-anchor="middle" class="tiny">2 repos</text><rect x="28" y="285" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <g transform="translate(39 293) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="62" y="305" class="small">Custom APIs</text>
+      <rect x="300" y="291" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
+      <text x="333" y="305" text-anchor="middle" class="tiny">1 repos</text><rect x="386" y="285" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <g transform="translate(397 293) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
+      <text x="420" y="305" class="small">Databases</text>
+      <rect x="658" y="291" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
+      <text x="691" y="305" text-anchor="middle" class="tiny">1 repos</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="342" viewBox="0 0 1000 342" role="img" aria-label="AI Engineering Trophies">
+  <style>
+    .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compactLabel{fill:#F0F6FC;font:600 11.2px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="999" height="341" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+  <text x="48" y="31" class="title">AI Engineering Trophies</text>
+  <text x="48" y="49" class="subtitle">Evidence-based milestones with transparent repository/activity thresholds</text>
+  <rect x="20" y="70" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(98 85) scale(1.5)" fill="none" stroke="#E5E4E2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="110" y="131" text-anchor="middle" class="small">AI-Native Builder</text>
+      <text x="110" y="152" text-anchor="middle" style="fill:#E5E4E2;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Platinum</text>
+      <text x="110" y="171" text-anchor="middle" class="tiny">Evidence score 10</text><rect x="216" y="70" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(294 85) scale(1.5)" fill="none" stroke="#CD7F32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="306" y="131" text-anchor="middle" class="small">Agentic Architect</text>
+      <text x="306" y="152" text-anchor="middle" style="fill:#CD7F32;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Bronze</text>
+      <text x="306" y="171" text-anchor="middle" class="tiny">Evidence score 2</text><rect x="412" y="70" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(490 85) scale(1.5)" fill="none" stroke="#8B949E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="502" y="131" text-anchor="middle" class="small">Multi-Agent Engineer</text>
+      <text x="502" y="152" text-anchor="middle" style="fill:#8B949E;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Locked</text>
+      <text x="502" y="171" text-anchor="middle" class="tiny">Evidence score 0</text><rect x="608" y="70" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(686 85) scale(1.5)" fill="none" stroke="#8B949E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="698" y="131" text-anchor="middle" class="small">MCP Integrator</text>
+      <text x="698" y="152" text-anchor="middle" style="fill:#8B949E;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Locked</text>
+      <text x="698" y="171" text-anchor="middle" class="tiny">Evidence score 0</text><rect x="804" y="70" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(882 85) scale(1.5)" fill="none" stroke="#CD7F32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="894" y="131" text-anchor="middle" class="small">Context Engineer</text>
+      <text x="894" y="152" text-anchor="middle" style="fill:#CD7F32;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Bronze</text>
+      <text x="894" y="171" text-anchor="middle" class="tiny">Evidence score 1</text><rect x="20" y="200" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(98 215) scale(1.5)" fill="none" stroke="#C0C0C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="110" y="261" text-anchor="middle" class="small">AI Automation Builder</text>
+      <text x="110" y="282" text-anchor="middle" style="fill:#C0C0C0;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Silver</text>
+      <text x="110" y="301" text-anchor="middle" class="tiny">Evidence score 2</text><rect x="216" y="200" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(294 215) scale(1.5)" fill="none" stroke="#8B949E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="306" y="261" text-anchor="middle" class="small">AI Governance</text>
+      <text x="306" y="282" text-anchor="middle" style="fill:#8B949E;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Locked</text>
+      <text x="306" y="301" text-anchor="middle" class="tiny">Evidence score 0</text><rect x="412" y="200" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(490 215) scale(1.5)" fill="none" stroke="#8B949E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="502" y="261" text-anchor="middle" class="small">RAG Engineer</text>
+      <text x="502" y="282" text-anchor="middle" style="fill:#8B949E;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Locked</text>
+      <text x="502" y="301" text-anchor="middle" class="tiny">Evidence score 0</text><rect x="608" y="200" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(686 215) scale(1.5)" fill="none" stroke="#C0C0C0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="698" y="261" text-anchor="middle" class="small">Evaluation-Driven AI</text>
+      <text x="698" y="282" text-anchor="middle" style="fill:#C0C0C0;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Silver</text>
+      <text x="698" y="301" text-anchor="middle" class="tiny">Evidence score 2</text><rect x="804" y="200" width="180" height="112" rx="10" fill="#21262D" stroke="#30363D"/>
+      <g transform="translate(882 215) scale(1.5)" fill="none" stroke="#CD7F32" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h6v3a3 3 0 0 1-6 0V2zM6 10h4M8 8v5M5 14h6M3 3H1v1a3 3 0 0 0 3 3M13 3h2v1a3 3 0 0 1-3 3"/></g>
+      <text x="894" y="261" text-anchor="middle" class="small">AI Workflow Evolution</text>
+      <text x="894" y="282" text-anchor="middle" style="fill:#CD7F32;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">Bronze</text>
+      <text x="894" y="301" text-anchor="middle" class="tiny">Evidence score 5</text>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="405" viewBox="0 0 720 405" role="img" aria-label="AI Engineering Overview">
+  <style>
+    .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compactLabel{fill:#F0F6FC;font:600 11.2px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="719" height="404" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
+  <text x="48" y="31" class="title">AI Engineering Overview</text>
+  <text x="48" y="49" class="subtitle">10 public + 0 private · repository configuration evidence, not AI-generated-code claims</text>
+  <defs>
+    <linearGradient id="ai-overview-ring" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#A371F7"/><stop offset=".52" stop-color="#39C5CF"/><stop offset="1" stop-color="#3FB950"/></linearGradient>
+    <radialGradient id="ai-overview-core"><stop stop-color="#211B38"/><stop offset=".65" stop-color="#121722"/><stop offset="1" stop-color="#0D1117"/></radialGradient>
+    <filter id="ai-overview-glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+  </defs>
+    <line x1="20" y1="65" x2="700" y2="65" stroke="#30363D"/>
+    <text x="24" y="83" class="tiny">MODEL &amp; AGENT CONFIGURATION</text>
+    <text x="506" y="83" class="tiny">TOOLS &amp; AUTOMATION</text>
+    <g transform="translate(24 95) scale(1.0625)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+    <text x="53" y="112" class="value">1</text>
+    <text x="53" y="130" class="label">Claude-configured repositories</text><g transform="translate(24 146) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
+    <text x="53" y="163" class="value">1</text>
+    <text x="53" y="181" class="label">Codex-configured repositories</text><g transform="translate(24 197) scale(1.0625)" fill="none" stroke="#DB61A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+    <text x="53" y="214" class="value">1</text>
+    <text x="53" y="232" class="label">Claude + Codex repositories</text>
+    <g transform="translate(506 95) scale(1.0625)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
+    <text x="535" y="112" class="value">0</text>
+    <text x="535" y="130" class="label">MCP-enabled repositories</text><g transform="translate(506 146) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
+    <text x="535" y="163" class="value">0</text>
+    <text x="535" y="181" class="label">Repositories with agents</text><g transform="translate(506 197) scale(1.0625)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+    <text x="535" y="214" class="value">2</text>
+    <text x="535" y="232" class="label">AI automation repositories</text>
+    <path d="M245 160 C275 160 282 160 290 160" fill="none" stroke="#A371F7" stroke-opacity=".5" stroke-width="2"/>
+    <path d="M430 160 C438 160 445 160 475 160" fill="none" stroke="#3FB950" stroke-opacity=".5" stroke-width="2"/>
+    <circle cx="360" cy="160" r="82" fill="#A371F7" opacity=".1" filter="url(#ai-overview-glow)"/>
+    <circle cx="360" cy="160" r="72" fill="url(#ai-overview-core)" stroke="url(#ai-overview-ring)" stroke-width="3"/>
+    <circle cx="360" cy="160" r="61" fill="none" stroke="#3A334D" stroke-dasharray="2 7"/>
+    <g transform="translate(346 104) scale(1.75)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
+    <text x="360" y="174" text-anchor="middle" class="value" style="font-size:35px;font-weight:800">10</text>
+    <text x="360" y="197" text-anchor="middle" class="small" style="fill:#3FB950">AI-ENABLED REPOS</text>
+    <text x="360" y="215" text-anchor="middle" class="tiny">CONFIGURATION EVIDENCE</text>
+    <circle cx="290" cy="160" r="4" fill="#A371F7"/>
+    <circle cx="430" cy="160" r="4" fill="#3FB950"/>
+    <line x1="20" y1="254" x2="700" y2="254" stroke="#30363D"/>
+    <text x="24" y="275" class="tiny">GOVERNANCE &amp; MATURITY</text>
+    <rect x="20" y="286" width="160" height="99" rx="12" fill="#F85149" fill-opacity=".08" stroke="#F85149" stroke-opacity=".45"/>
+      <g transform="translate(34 301) scale(1.0625)" fill="none" stroke="#F85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.5 14 4v4c0 3.4-2.2 5.8-6 7-3.8-1.2-6-3.6-6-7V4l6-2.5zM5.5 8l1.6 1.6L11 5.7"/></g>
+      <text x="63" y="321" class="value">0</text>
+      <text x="34" y="349" class="small">Governed AI repos</text>
+      <text x="34" y="370" class="tiny">Maturity level 4</text><rect x="193" y="286" width="160" height="99" rx="12" fill="#58A6FF" fill-opacity=".08" stroke="#58A6FF" stroke-opacity=".45"/>
+      <g transform="translate(207 301) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <text x="236" y="321" class="value">10/0</text>
+      <text x="207" y="349" class="small">Public / private repos</text>
+      <text x="207" y="370" class="tiny">AI-enabled scope</text><rect x="366" y="286" width="160" height="99" rx="12" fill="#F0883E" fill-opacity=".08" stroke="#F0883E" stroke-opacity=".45"/>
+      <g transform="translate(380 301) scale(1.0625)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="409" y="321" class="value">1.4/4</text>
+      <text x="380" y="349" class="small">Average maturity</text>
+      <text x="380" y="370" class="tiny">Evidence-based level</text><rect x="539" y="286" width="160" height="99" rx="12" fill="#3FB950" fill-opacity=".08" stroke="#3FB950" stroke-opacity=".45"/>
+      <g transform="translate(553 301) scale(1.0625)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l1.4 4.6L14 7l-4.6 1.4L8 13l-1.4-4.6L2 7l4.6-1.4L8 1z"/></g>
+      <text x="582" y="321" class="value">6</text>
+      <text x="553" y="349" class="small">Detected capabilities</text>
+      <text x="553" y="370" class="tiny">Across enabled repos</text>
+</svg>

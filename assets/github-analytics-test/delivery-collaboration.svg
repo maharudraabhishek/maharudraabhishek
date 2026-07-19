@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360" role="img" aria-label="Delivery &amp; Collaboration">
+  <style>
+    .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .label{fill:#8B949E;font:600 12.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .value{fill:#F0F6FC;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .small{fill:#F0F6FC;font:600 12.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .tiny{fill:#8B949E;font:600 10.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricValue{fill:#58A6FF;font:700 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricLabel{fill:#F0F6FC;font:600 11.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .metricNote{fill:#8B949E;font:600 9.6px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedValue{fill:#F0F6FC;font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .pairedLabel{fill:#8B949E;font:600 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionValue{fill:#F0F6FC;font:700 14.4px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .compositionLabel{fill:#8B949E;font:600 11.8px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
+    .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  </style>
+  <rect x=".5" y=".5" width="599" height="359" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.2c2.1-1.2 4.1-1.2 4.3-1 .2.2.2 2.2-1 4.3l-3.5 5-3.8-3.8 4-4.5zM5.5 6.7L2 7.3 1 10l3.1.2M9.3 10.5L8.7 14 6 15l-.2-3.1M10.5 5.5h.01"/></g>
+  <text x="48" y="31" class="title">Delivery &amp; Collaboration</text>
+  <text x="48" y="49" class="subtitle">Contribution and repository-delivery signals with explicit time ranges</text>
+  <g transform="translate(20 79) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
+      <text x="46" y="92" class="pairedValue">60</text>
+      <text x="46" y="113" class="pairedLabel">Pull requests opened · all time</text><g transform="translate(300 79) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="12" cy="13" r="2"/><path d="M4 5v6a2 2 0 0 0 2 2h4M10 3h2a2 2 0 0 1 2 2v4M12 7l2 2 2-2"/></g>
+      <text x="326" y="92" class="pairedValue">55</text>
+      <text x="326" y="113" class="pairedLabel">Pull requests merged · all time</text><g transform="translate(20 167) scale(1)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.5"/><circle cx="12" cy="6" r="2"/><path d="M1.5 14c.3-3 2-4.5 4.5-4.5S10.2 11 10.5 14M10 10c2.6 0 4 1.2 4.5 4"/></g>
+      <text x="46" y="180" class="pairedValue">11</text>
+      <text x="46" y="201" class="pairedLabel">Review contributions · all time</text><g transform="translate(300 167) scale(1)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 4.5v4M8 11.5h.01"/></g>
+      <text x="326" y="180" class="pairedValue">2</text>
+      <text x="326" y="201" class="pairedLabel">Issues closed · all time</text><g transform="translate(20 255) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="3" r="2"/><circle cx="8" cy="13" r="2"/><path d="M5 3h6M4 5l3 6M12 5l-3 6"/></g>
+      <text x="46" y="268" class="pairedValue">2</text>
+      <text x="46" y="289" class="pairedLabel">Scanned repositories with CI/CD</text><g transform="translate(300 255) scale(1)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
+      <text x="326" y="268" class="pairedValue">5</text>
+      <text x="326" y="289" class="pairedLabel">Repositories updated · 90 days</text>
+</svg>
