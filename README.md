@@ -44,7 +44,7 @@ jobs:
 ⭐ If this project improves your GitHub profile, consider starring the repository.
 
 <!-- ENGINEERING_ANALYTICS:START -->
-## 📊 GitHub Analytics
+## 📊 GitHub Realtime Engineering Analytics 
 
 > Personal contribution cards count GitHub-attributed work. Full public-project composition is shown separately and is not a personal-authorship claim.
 
