@@ -115,8 +115,11 @@ export async function validateSvg(filePath, { filename, secrets = [] } = {}) {
   }
 }
 
-/** Requires staging to contain exactly the fixed cards and manifest projects. */
-export async function validateGeneratedAssets(directory, { secrets = [] } = {}) {
+/** Requires an asset directory to contain exactly the fixed cards and manifest projects. */
+export async function validateGeneratedAssets(
+  directory,
+  { secrets = [], location = "Generated staging" } = {},
+) {
   const manifest = await readProjectManifest(directory, { secrets });
   const expected = [
     ...ANALYTICS_ASSET_FILENAMES,
@@ -125,7 +128,9 @@ export async function validateGeneratedAssets(directory, { secrets = [] } = {}) 
   ].sort();
   const entries = await fs.readdir(directory, { withFileTypes: true });
   if (entries.some((entry) => !entry.isFile())) {
-    throw new SvgValidationError("Generated staging contains a non-file entry.");
+    // Do not include entry names: published output can contain private project
+    // metadata, while the location makes the remediation boundary clear.
+    throw new SvgValidationError(`${location} contains a non-file entry.`);
   }
   const actual = entries.map((entry) => entry.name).sort();
   const missing = expected.filter((name) => !actual.includes(name));

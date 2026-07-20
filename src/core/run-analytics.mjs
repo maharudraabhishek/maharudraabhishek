@@ -91,13 +91,19 @@ export async function runAnalytics(options = {}) {
       strictMode: configuration.strictMode,
     });
     const engineResult = await generateAnalytics();
-    const validated = await validateGeneratedAssets(temporaryDirectory, { secrets });
+    const validated = await validateGeneratedAssets(temporaryDirectory, {
+      secrets,
+      location: "Generated staging",
+    });
     const publication = await publishGeneratedAssets({
       stagingDirectory: temporaryDirectory,
       outputDirectory: configuration.outputDirectory.absolute,
       files: validated.files,
     });
-    await validateGeneratedAssets(configuration.outputDirectory.absolute, { secrets });
+    await validateGeneratedAssets(configuration.outputDirectory.absolute, {
+      secrets,
+      location: "Published analytics output",
+    });
 
     let readmeUpdated = false;
     if (configuration.updateReadme) {

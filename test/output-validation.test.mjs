@@ -17,6 +17,18 @@ test("valid exact generated set passes", async (t) => {
   assert.equal(result.files.length, 23);
 });
 
+test("asset directories reject nested entries with a location-specific error", async (t) => {
+  const workspace = await temporaryWorkspace();
+  t.after(() => removeWorkspace(workspace));
+  await createAssetSet(workspace);
+  await fs.mkdir(path.join(workspace, "nested"));
+
+  await assert.rejects(
+    validateGeneratedAssets(workspace, { location: "Published analytics output" }),
+    /Published analytics output contains a non-file entry/,
+  );
+});
+
 test("invalid SVG payloads fail", async (t) => {
   const workspace = await temporaryWorkspace();
   t.after(() => removeWorkspace(workspace));
