@@ -29,23 +29,23 @@
       <text x="492" y="129" class="small">Evaluation</text>
       <rect x="709" y="117" width="140" height="8" rx="4" fill="#21262D"/>
       <rect x="709" y="117" width="49.4" height="8" rx="4" fill="#3FB950"/>
-      <text x="904" y="129" text-anchor="end" class="tiny">6 repos · 154 signals</text><circle cx="29" cy="171" r="5" fill="#F85149"/>
-      <text x="42" y="176" class="small">AI Security &amp; Governance</text>
+      <text x="904" y="129" text-anchor="end" class="tiny">6 repos · 154 signals</text><circle cx="29" cy="171" r="5" fill="#3FB950"/>
+      <text x="42" y="176" class="small">MCP Servers</text>
       <rect x="259" y="164" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="259" y="164" width="49.4" height="8" rx="4" fill="#F85149"/>
-      <text x="454" y="176" text-anchor="end" class="tiny">6 repos · 24 signals</text><circle cx="479" cy="171" r="5" fill="#39C5CF"/>
-      <text x="492" y="176" class="small">Context Engineering</text>
+      <rect x="259" y="164" width="49.4" height="8" rx="4" fill="#3FB950"/>
+      <text x="454" y="176" text-anchor="end" class="tiny">6 repos · 100 signals</text><circle cx="479" cy="171" r="5" fill="#F85149"/>
+      <text x="492" y="176" class="small">AI Security &amp; Governance</text>
       <rect x="709" y="164" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="709" y="164" width="49.4" height="8" rx="4" fill="#39C5CF"/>
-      <text x="904" y="176" text-anchor="end" class="tiny">6 repos · 16 signals</text><circle cx="29" cy="218" r="5" fill="#DB61A2"/>
-      <text x="42" y="223" class="small">Multi-Agent Orchestration</text>
+      <rect x="709" y="164" width="49.4" height="8" rx="4" fill="#F85149"/>
+      <text x="904" y="176" text-anchor="end" class="tiny">6 repos · 24 signals</text><circle cx="29" cy="218" r="5" fill="#39C5CF"/>
+      <text x="42" y="223" class="small">Context Engineering</text>
       <rect x="259" y="211" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="259" y="211" width="41.2" height="8" rx="4" fill="#DB61A2"/>
-      <text x="454" y="223" text-anchor="end" class="tiny">5 repos · 113 signals</text><circle cx="479" cy="218" r="5" fill="#3FB950"/>
-      <text x="492" y="223" class="small">MCP Servers</text>
+      <rect x="259" y="211" width="49.4" height="8" rx="4" fill="#39C5CF"/>
+      <text x="454" y="223" text-anchor="end" class="tiny">6 repos · 16 signals</text><circle cx="479" cy="218" r="5" fill="#DB61A2"/>
+      <text x="492" y="223" class="small">Multi-Agent Orchestration</text>
       <rect x="709" y="211" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="709" y="211" width="41.2" height="8" rx="4" fill="#3FB950"/>
-      <text x="904" y="223" text-anchor="end" class="tiny">5 repos · 99 signals</text><circle cx="29" cy="265" r="5" fill="#A371F7"/>
+      <rect x="709" y="211" width="41.2" height="8" rx="4" fill="#DB61A2"/>
+      <text x="904" y="223" text-anchor="end" class="tiny">5 repos · 113 signals</text><circle cx="29" cy="265" r="5" fill="#A371F7"/>
       <text x="42" y="270" class="small">Prompt Engineering</text>
       <rect x="259" y="258" width="140" height="8" rx="4" fill="#21262D"/>
       <rect x="259" y="258" width="32.9" height="8" rx="4" fill="#A371F7"/>
@@ -53,22 +53,22 @@
       <text x="492" y="270" class="small">Guardrails</text>
       <rect x="709" y="258" width="140" height="8" rx="4" fill="#21262D"/>
       <rect x="709" y="258" width="32.9" height="8" rx="4" fill="#F85149"/>
-      <text x="904" y="270" text-anchor="end" class="tiny">4 repos · 13 signals</text><circle cx="29" cy="312" r="5" fill="#3FB950"/>
-      <text x="42" y="317" class="small">LLM API Integration</text>
+      <text x="904" y="270" text-anchor="end" class="tiny">4 repos · 13 signals</text><circle cx="29" cy="312" r="5" fill="#58A6FF"/>
+      <text x="42" y="317" class="small">Vector Databases</text>
       <rect x="259" y="305" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="259" y="305" width="32.9" height="8" rx="4" fill="#3FB950"/>
-      <text x="454" y="317" text-anchor="end" class="tiny">4 repos · 4 signals</text><circle cx="479" cy="312" r="5" fill="#58A6FF"/>
-      <text x="492" y="317" class="small">Vector Databases</text>
+      <rect x="259" y="305" width="32.9" height="8" rx="4" fill="#58A6FF"/>
+      <text x="454" y="317" text-anchor="end" class="tiny">4 repos · 5 signals</text><circle cx="479" cy="312" r="5" fill="#D29922"/>
+      <text x="492" y="317" class="small">Embeddings</text>
       <rect x="709" y="305" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="709" y="305" width="24.7" height="8" rx="4" fill="#58A6FF"/>
-      <text x="904" y="317" text-anchor="end" class="tiny">3 repos · 4 signals</text><circle cx="29" cy="359" r="5" fill="#58A6FF"/>
-      <text x="42" y="364" class="small">AI-Assisted Documentation</text>
+      <rect x="709" y="305" width="32.9" height="8" rx="4" fill="#D29922"/>
+      <text x="904" y="317" text-anchor="end" class="tiny">4 repos · 4 signals</text><circle cx="29" cy="359" r="5" fill="#3FB950"/>
+      <text x="42" y="364" class="small">LLM API Integration</text>
       <rect x="259" y="352" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="259" y="352" width="24.7" height="8" rx="4" fill="#58A6FF"/>
-      <text x="454" y="364" text-anchor="end" class="tiny">3 repos · 3 signals</text><circle cx="479" cy="359" r="5" fill="#D29922"/>
-      <text x="492" y="364" class="small">Embeddings</text>
+      <rect x="259" y="352" width="32.9" height="8" rx="4" fill="#3FB950"/>
+      <text x="454" y="364" text-anchor="end" class="tiny">4 repos · 4 signals</text><circle cx="479" cy="359" r="5" fill="#58A6FF"/>
+      <text x="492" y="364" class="small">AI-Assisted Documentation</text>
       <rect x="709" y="352" width="140" height="8" rx="4" fill="#21262D"/>
-      <rect x="709" y="352" width="24.7" height="8" rx="4" fill="#D29922"/>
+      <rect x="709" y="352" width="24.7" height="8" rx="4" fill="#58A6FF"/>
       <text x="904" y="364" text-anchor="end" class="tiny">3 repos · 3 signals</text><circle cx="29" cy="406" r="5" fill="#D29922"/>
       <text x="42" y="411" class="small">Local AI / On-device ML</text>
       <rect x="259" y="399" width="140" height="8" rx="4" fill="#21262D"/>

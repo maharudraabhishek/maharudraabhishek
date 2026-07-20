@@ -15,10 +15,10 @@
   <text x="48" y="49" class="subtitle">Aggregate categories only · private MCP server details are never shown</text>
   <rect x="20" y="72" width="172.5" height="60" rx="10" fill="#3FB950" fill-opacity=".08" stroke="#3FB950" stroke-opacity=".43"/>
       <g transform="translate(32 85) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
-      <text x="60" y="101" class="value">5</text>
+      <text x="60" y="101" class="value">6</text>
       <text x="32" y="122" class="tiny">MCP repositories</text><rect x="202.5" y="72" width="172.5" height="60" rx="10" fill="#58A6FF" fill-opacity=".08" stroke="#58A6FF" stroke-opacity=".43"/>
       <g transform="translate(214.5 85) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 1h7l3 3v11H3zM10 1v4h3M5 8h6M5 11h6"/></g>
-      <text x="242.5" y="101" class="value">99</text>
+      <text x="242.5" y="101" class="value">100</text>
       <text x="214.5" y="122" class="tiny">Configuration signals</text><rect x="385" y="72" width="172.5" height="60" rx="10" fill="#A371F7" fill-opacity=".08" stroke="#A371F7" stroke-opacity=".43"/>
       <g transform="translate(397 85) scale(1)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
       <text x="425" y="101" class="value">113</text>

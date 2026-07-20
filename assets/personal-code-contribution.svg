@@ -19,23 +19,23 @@
   <rect x=".5" y=".5" width="999" height="559" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
   <text x="48" y="31" class="title">Personal Code Contribution</text>
-  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 192/192 commits fully analyzed</text>
+  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 195/195 commits fully analyzed</text>
   <circle cx="31" cy="79" r="5" fill="#083FA1"/>
       <text x="44" y="84" class="small">Markdown</text>
-      <text x="196" y="84" class="label">50.3%</text>
+      <text x="196" y="84" class="label">50.2%</text>
       <rect x="256" y="72" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="72" width="165.0" height="8" rx="4" fill="#083FA1"/>
-      <text x="44" y="104" class="tiny">246.9K changed lines · 129 commits · 1.4K files</text><circle cx="521" cy="79" r="5" fill="#F1E05A"/>
+      <text x="44" y="104" class="tiny">247.5K changed lines · 132 commits · 1.4K files</text><circle cx="521" cy="79" r="5" fill="#F1E05A"/>
       <text x="534" y="84" class="small">JavaScript</text>
-      <text x="686" y="84" class="label">21.9%</text>
+      <text x="686" y="84" class="label">21.8%</text>
       <rect x="746" y="72" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="72" width="71.8" height="8" rx="4" fill="#F1E05A"/>
+      <rect x="746" y="72" width="71.7" height="8" rx="4" fill="#F1E05A"/>
       <text x="534" y="104" class="tiny">107.5K changed lines · 73 commits · 477 files</text><circle cx="31" cy="135" r="5" fill="#3178C6"/>
       <text x="44" y="140" class="small">TypeScript</text>
-      <text x="196" y="140" class="label">20.6%</text>
+      <text x="196" y="140" class="label">20.7%</text>
       <rect x="256" y="128" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="128" width="67.6" height="8" rx="4" fill="#3178C6"/>
-      <text x="44" y="160" class="tiny">101.2K changed lines · 27 commits · 475 files</text><circle cx="521" cy="135" r="5" fill="#E38C00"/>
+      <rect x="256" y="128" width="68.0" height="8" rx="4" fill="#3178C6"/>
+      <text x="44" y="160" class="tiny">102K changed lines · 29 commits · 481 files</text><circle cx="521" cy="135" r="5" fill="#E38C00"/>
       <text x="534" y="140" class="small">SQL</text>
       <text x="686" y="140" class="label">2.1%</text>
       <rect x="746" y="128" width="165" height="8" rx="4" fill="#21262D"/>
@@ -77,10 +77,10 @@
       <rect x="256" y="352" width="1.0" height="8" rx="4" fill="#555555"/>
       <text x="44" y="384" class="tiny">1.1K changed lines · 4 commits · 6 files</text><circle cx="521" cy="359" r="5" fill="#563D7C"/>
       <text x="534" y="364" class="small">CSS</text>
-      <text x="686" y="364" class="label">0.1%</text>
+      <text x="686" y="364" class="label">0.2%</text>
       <rect x="746" y="352" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="746" y="352" width="1.0" height="8" rx="4" fill="#563D7C"/>
-      <text x="534" y="384" class="tiny">605 changed lines · 7 commits · 4 files</text><circle cx="31" cy="415" r="5" fill="#89E051"/>
+      <text x="534" y="384" class="tiny">890 changed lines · 8 commits · 4 files</text><circle cx="31" cy="415" r="5" fill="#89E051"/>
       <text x="44" y="420" class="small">Shell</text>
       <text x="196" y="420" class="label">&lt;0.1%</text>
       <rect x="256" y="408" width="165" height="8" rx="4" fill="#21262D"/>

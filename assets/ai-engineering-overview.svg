@@ -29,7 +29,7 @@
     <text x="53" y="214" class="value">7</text>
     <text x="53" y="232" class="label">Claude + Codex repositories</text>
     <g transform="translate(506 95) scale(1.0625)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="13" cy="12" r="2"/><path d="M7 5 4 10M9 5l3 5M5 12h6"/></g>
-    <text x="535" y="112" class="value">5</text>
+    <text x="535" y="112" class="value">6</text>
     <text x="535" y="130" class="label">MCP-enabled repositories</text><g transform="translate(506 146) scale(1.0625)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="2"/><path d="M8 1v3M5 8h.01M11 8h.01M5 11h6M1 7h1M14 7h1"/></g>
     <text x="535" y="163" class="value">5</text>
     <text x="535" y="181" class="label">Repositories with agents</text><g transform="translate(506 197) scale(1.0625)" fill="none" stroke="#D29922" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
