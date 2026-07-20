@@ -99,6 +99,7 @@ export async function runAnalytics(options = {}) {
       stagingDirectory: temporaryDirectory,
       outputDirectory: configuration.outputDirectory.absolute,
       files: validated.files,
+      secrets,
     });
     await validateGeneratedAssets(configuration.outputDirectory.absolute, {
       secrets,

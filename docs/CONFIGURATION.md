@@ -72,9 +72,11 @@ another Action input. The default is `## 📊 GitHub Analytics`.
 
 Paths resolve against `GITHUB_WORKSPACE`. Workspace escapes, symlink escapes,
 the workspace root, `.git`, `.github/workflows`, `action.yml`, reusable source,
-scripts, and `dist` are rejected. Publication writes only the validated output
-map. Stale project cards are removed only when the prior generator manifest
-records their known-safe filenames.
+scripts, and `dist` are rejected. The output directory is exclusively owned by
+the Action: it is rebuilt in a sibling staging directory and replaced only
+after every validated asset is copied. This removes stale files, placeholders,
+and nested entries while preserving the prior output when staging cannot be
+prepared.
 
 The updater supports the documented lowercase markers and the legacy owner
 `ENGINEERING_ANALYTICS` markers. Exactly one complete style may exist. Missing,

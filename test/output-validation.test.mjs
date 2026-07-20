@@ -17,6 +17,18 @@ test("valid exact generated set passes", async (t) => {
   assert.equal(result.files.length, 23);
 });
 
+test("generated output rejects legacy placeholders", async (t) => {
+  const workspace = await temporaryWorkspace();
+  t.after(() => removeWorkspace(workspace));
+  await createAssetSet(workspace);
+  await fs.writeFile(path.join(workspace, ".gitkeep"), "placeholder");
+
+  await assert.rejects(
+    validateGeneratedAssets(workspace),
+    /Generated asset set mismatch\. Unexpected: \.gitkeep\./,
+  );
+});
+
 test("asset directories reject nested entries with a location-specific error", async (t) => {
   const workspace = await temporaryWorkspace();
   t.after(() => removeWorkspace(workspace));
@@ -75,7 +87,7 @@ test("supplied secrets are detected without exposing them", async (t) => {
   );
 });
 
-test("publisher removes only stale manifest-owned project SVGs", async (t) => {
+test("publisher replaces every stale output entry with the validated asset set", async (t) => {
   const workspace = await temporaryWorkspace();
   t.after(() => removeWorkspace(workspace));
   const staging = path.join(workspace, "staging");
@@ -87,7 +99,9 @@ test("publisher removes only stale manifest-owned project SVGs", async (t) => {
     relationship: "verified-contribution",
   };
   await createAssetSet(output, [oldProject]);
+  await fs.writeFile(path.join(output, ".gitkeep"), "legacy placeholder");
   await fs.writeFile(path.join(output, "user-file.txt"), "preserve");
+  await fs.mkdir(path.join(output, "nested"));
   await createAssetSet(staging);
   const validated = await validateGeneratedAssets(staging);
   const result = await publishGeneratedAssets({
@@ -96,6 +110,30 @@ test("publisher removes only stale manifest-owned project SVGs", async (t) => {
     files: validated.files,
   });
   assert.equal(result.staleFilesRemoved, 1);
+  assert.equal(result.removedEntries, 4);
   await assert.rejects(fs.access(path.join(output, oldProject.filename)));
+  await assert.rejects(fs.access(path.join(output, ".gitkeep")));
+  await assert.rejects(fs.access(path.join(output, "user-file.txt")));
+  await assert.rejects(fs.access(path.join(output, "nested")));
+  await validateGeneratedAssets(output, { location: "Published analytics output" });
+});
+
+test("publisher preserves existing output when staging cannot be copied", async (t) => {
+  const workspace = await temporaryWorkspace();
+  t.after(() => removeWorkspace(workspace));
+  const staging = path.join(workspace, "staging");
+  const output = path.join(workspace, "output");
+  await createAssetSet(staging);
+  await createAssetSet(output);
+  await fs.writeFile(path.join(output, "user-file.txt"), "preserve");
+
+  await assert.rejects(
+    publishGeneratedAssets({
+      stagingDirectory: staging,
+      outputDirectory: output,
+      files: ["github-overview.svg", "missing.svg"],
+    }),
+    /Validated staging asset is missing or unsafe: missing\.svg/,
+  );
   assert.equal(await fs.readFile(path.join(output, "user-file.txt"), "utf8"), "preserve");
 });
