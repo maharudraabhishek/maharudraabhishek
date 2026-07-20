@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import {
   normalizeAliases,
+  normalizeAnalyticsHeading,
   parseBoolean,
   resolveAnalyticsConfig,
 } from "../src/config/resolve-config.mjs";
@@ -20,6 +21,7 @@ test("automatic username, defaults, and profile exclusion", async (t) => {
   assert.equal(config.profileUsername, "octocat");
   assert.equal(config.outputDirectory.relative, "assets/github-analytics");
   assert.equal(config.readmePath.relative, "README.md");
+  assert.equal(config.readmeHeading, "## 📊 GitHub Analytics");
   assert.deepEqual(config.excludedRepositories, ["octocat/octocat"]);
 });
 
@@ -29,7 +31,8 @@ test("explicit input overrides caller config and owner environment", async (t) =
   await fs.writeFile(path.join(workspace, "analytics.config.mjs"), `export default {
     profile: { username: "configured" },
     publicContributions: { aliases: ["old-one"] },
-    output: { directory: "configured-assets" }
+    output: { directory: "configured-assets" },
+    readme: { analyticsHeading: "### Configured analytics" }
   };`);
   const config = await resolveAnalyticsConfig({
     workspace,
@@ -44,6 +47,7 @@ test("explicit input overrides caller config and owner environment", async (t) =
   assert.equal(config.profileUsername, "explicit-user");
   assert.deepEqual(config.publicContributorAliases, ["First", "second"]);
   assert.equal(config.outputDirectory.relative, "chosen-assets");
+  assert.equal(config.readmeHeading, "### Configured analytics");
 });
 
 test("aliases trim, deduplicate case-insensitively, and exclude primary", () => {
@@ -58,6 +62,12 @@ test("boolean values are strict", () => {
   assert.equal(parseBoolean("false", "flag", true), false);
   assert.throws(() => parseBoolean("yes", "flag", false), /exactly/);
   assert.throws(() => parseBoolean("TRUE", "flag", false), /exactly/);
+});
+
+test("analytics headings are single Markdown headings", () => {
+  assert.equal(normalizeAnalyticsHeading("## Engineering analytics"), "## Engineering analytics");
+  assert.throws(() => normalizeAnalyticsHeading("Analytics"), /Markdown heading/);
+  assert.throws(() => normalizeAnalyticsHeading("## One\n## Two"), /single Markdown heading/);
 });
 
 test("missing username fails early", async (t) => {
@@ -133,4 +143,5 @@ test("owner personal config remains compatible", async () => {
   const config = await loadAnalyticsConfig(".github/github-analytics.config.mjs");
   assert.equal(config.profileUsername, "maharudraabhishek");
   assert.deepEqual(config.publicContributorAliases, ["abkumar"]);
+  assert.equal(config.readmeHeading, "## 📊 GitHub Realtime Engineering Analytics");
 });

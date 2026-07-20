@@ -47,4 +47,9 @@ export default {
      */
     exclude: [],
   },
+
+  readme: {
+    // Keeps the owner's established managed-section title during refreshes.
+    analyticsHeading: "## 📊 GitHub Realtime Engineering Analytics",
+  },
 };

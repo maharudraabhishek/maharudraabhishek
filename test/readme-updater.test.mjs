@@ -42,6 +42,22 @@ test("legacy owner markers are reused", async (t) => {
   assert.equal(result.markerStyle, "legacy");
 });
 
+test("a configured analytics heading is retained in the managed block", async (t) => {
+  const { assets, readmePath } = await fixture(
+    t,
+    `${README_MARKERS.standard.start}\nold\n${README_MARKERS.standard.end}\n`,
+  );
+  await updateReadmeAnalytics({
+    readmePath,
+    outputDirectory: assets,
+    username: "octocat",
+    attribution: false,
+    analyticsHeading: "## Realtime engineering analytics",
+  });
+  const updated = await fs.readFile(readmePath, "utf8");
+  assert.match(updated, /## Realtime engineering analytics/);
+});
+
 test("missing markers fail by default and insert deterministically when enabled", async (t) => {
   const { assets, readmePath } = await fixture(t, "# Profile\n");
   await assert.rejects(updateReadmeAnalytics({

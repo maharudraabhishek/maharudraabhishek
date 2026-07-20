@@ -113,6 +113,7 @@ export async function runAnalytics(options = {}) {
         username: configuration.profileUsername,
         insertMarkers: configuration.insertReadmeMarkers,
         attribution: configuration.attribution,
+        analyticsHeading: configuration.readmeHeading,
       });
       readmeUpdated = readmeResult.changed;
     }

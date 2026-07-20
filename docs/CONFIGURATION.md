@@ -53,12 +53,20 @@ export default {
     directory: "assets/github-analytics",
     readmePath: "README.md",
   },
+  readme: {
+    // Optional config-only customization of the managed block heading.
+    analyticsHeading: "## 📊 GitHub Engineering Analytics",
+  },
 };
 ```
 
 Aliases are trimmed, empty entries are removed, duplicates are removed
 case-insensitively, and the primary username is excluded while first-seen
 order is preserved.
+
+`readme.analyticsHeading` is optional and must be one single Markdown heading.
+It lets a profile preserve an established managed-section title without adding
+another Action input. The default is `## 📊 GitHub Analytics`.
 
 ## Path and README rules
 

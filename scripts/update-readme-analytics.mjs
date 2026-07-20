@@ -15,6 +15,7 @@ export async function main() {
     insertMarkers: false,
     // Preserve the owner's existing profile presentation exactly.
     attribution: false,
+    analyticsHeading: config.readmeHeading,
   });
   console.log(`README analytics block updated: ${result.changed ? "yes" : "no"}.`);
   return result;

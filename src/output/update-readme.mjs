@@ -16,6 +16,8 @@ export const README_MARKERS = Object.freeze({
   }),
 });
 
+export const DEFAULT_ANALYTICS_HEADING = "## 📊 GitHub Analytics";
+
 const CARD = Object.freeze({
   overview: ["github-overview.svg", "GitHub overview"],
   streak: ["contribution-streak.svg", "Contribution streak"],
@@ -138,9 +140,10 @@ export function buildAnalyticsMarkdown({
   assetPrefix,
   projects,
   attribution,
+  analyticsHeading = DEFAULT_ANALYTICS_HEADING,
 }) {
   const encodedUsername = encodeURIComponent(username);
-  return `## 📊 GitHub Analytics
+  return `${analyticsHeading}
 
 > Personal contribution cards count GitHub-attributed work. Full public-project composition is shown separately and is not a personal-authorship claim.
 
@@ -262,6 +265,7 @@ export async function updateReadmeAnalytics({
   username,
   insertMarkers = false,
   attribution = true,
+  analyticsHeading = DEFAULT_ANALYTICS_HEADING,
 }) {
   let readme;
   try {
@@ -284,6 +288,7 @@ export async function updateReadmeAnalytics({
     assetPrefix,
     projects: manifest.projects,
     attribution,
+    analyticsHeading,
   }).replaceAll("\n", lineEnding);
 
   let markers = selectedMarkerPair(readme);

@@ -2,11 +2,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
+import { loadAnalyticsConfig } from "../scripts/github-analytics-config.mjs";
 import { updateReadmeAnalytics } from "../src/output/update-readme.mjs";
 import { removeWorkspace, temporaryWorkspace } from "./helpers.mjs";
 
 test("owner legacy analytics presentation remains structurally equivalent", async (t) => {
   const repositoryRoot = path.resolve(import.meta.dirname, "..");
+  const config = await loadAnalyticsConfig(
+    path.join(repositoryRoot, ".github/github-analytics.config.mjs"),
+  );
   const workspace = await temporaryWorkspace("owner-compatibility-");
   t.after(() => removeWorkspace(workspace));
   await fs.cp(path.join(repositoryRoot, "assets"), path.join(workspace, "assets"), {
@@ -21,6 +25,7 @@ test("owner legacy analytics presentation remains structurally equivalent", asyn
     outputDirectory: path.join(workspace, "assets"),
     username: "maharudraabhishek",
     attribution: false,
+    analyticsHeading: config.readmeHeading,
   });
   const updated = await fs.readFile(readmePath, "utf8");
   const startMarker = "<!-- ENGINEERING_ANALYTICS:START -->";
@@ -41,6 +46,7 @@ test("owner legacy analytics presentation remains structurally equivalent", asyn
   ).replaceAll("\r\n", "\n");
   assert.equal(sourcePrefix, updatedPrefix);
   assert.equal(sourceSuffix, updatedSuffix);
+  assert.match(updatedInner, new RegExp(`^${config.readmeHeading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "m"));
   assert.equal(
     sourceInner.replaceAll(/\?v=[0-9a-f]{16}/g, "?v=VERSION"),
     updatedInner.replaceAll(/\?v=[0-9a-f]{16}/g, "?v=VERSION"),

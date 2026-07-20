@@ -14,6 +14,7 @@ const importCallerConfig = new Function(
 export const DEFAULTS = Object.freeze({
   outputDirectory: "assets/github-analytics",
   readmePath: "README.md",
+  analyticsHeading: "## 📊 GitHub Analytics",
   includePrivate: false,
   updateReadme: true,
   insertReadmeMarkers: false,
@@ -67,6 +68,19 @@ export function parseBoolean(value, label, fallback) {
   if (value === true || value === "true") return true;
   if (value === false || value === "false") return false;
   throw new ConfigurationError(`${label} must be exactly 'true' or 'false'.`);
+}
+
+/** Validates the first line of the managed README analytics block. */
+export function normalizeAnalyticsHeading(value, label = "readme.analyticsHeading") {
+  const heading = String(value ?? "").trim();
+  if (!heading) throw new ConfigurationError(`${label} is required.`);
+  if (/\r|\n|<!--[\s\S]*?-->/u.test(heading)) {
+    throw new ConfigurationError(`${label} must be a single Markdown heading.`);
+  }
+  if (!/^#{1,6}[ \t]+\S/u.test(heading)) {
+    throw new ConfigurationError(`${label} must be a Markdown heading.`);
+  }
+  return heading;
 }
 
 function normalizeRepository(value, label) {
@@ -142,6 +156,7 @@ export async function resolveAnalyticsConfig({
     { optional: true },
   );
   const output = plainObject(root.output, "output", { optional: true });
+  const readme = plainObject(root.readme, "readme", { optional: true });
 
   const username = normalizeUsername(
     String(inputs.githubUsername ?? "").trim() ||
@@ -223,6 +238,9 @@ export async function resolveAnalyticsConfig({
     excludedRepositories: Object.freeze([...exclusions.values()]),
     outputDirectory,
     readmePath,
+    readmeHeading: normalizeAnalyticsHeading(
+      readme.analyticsHeading ?? DEFAULTS.analyticsHeading,
+    ),
     includePrivate: parseBoolean(
       inputs.includePrivate,
       "include-private",
