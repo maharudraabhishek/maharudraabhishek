@@ -4,6 +4,7 @@ node_modules/
 .github-analytics-run-*/
 .action-dist-*/
 /docs/previews/
+docs/internal/
 SETUP.md
 .claude/settings.local.json
 .claude/worktrees/
