@@ -35,7 +35,7 @@
       <g transform="translate(39 209) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
       <text x="62" y="221" class="small">Filesystem</text>
       <rect x="300" y="207" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>
-      <text x="333" y="221" text-anchor="middle" class="tiny">12 repos</text><rect x="386" y="201" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
+      <text x="333" y="221" text-anchor="middle" class="tiny">13 repos</text><rect x="386" y="201" width="346" height="32" rx="8" fill="#0D1117" stroke="#39C5CF" stroke-opacity=".38"/>
       <g transform="translate(397 209) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 2.2a3.5 3.5 0 0 0-4.2 4.5L2 11l3 3 4.3-4.3a3.5 3.5 0 0 0 4.5-4.2l-2.2 2.2-2.3-.6-.6-2.3 1.8-2.6z"/></g>
       <text x="420" y="221" class="small">Cloud &amp; deployment</text>
       <rect x="658" y="207" width="66" height="20" rx="10" fill="#39C5CF" fill-opacity=".13"/>

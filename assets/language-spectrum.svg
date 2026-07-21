@@ -23,7 +23,7 @@
   
       <defs><clipPath id="language-bar"><rect x="28" y="68" width="844" height="13" rx="6.5"/></clipPath></defs>
       <rect x="28" y="68" width="844" height="13" rx="6.5" fill="#21262D"/>
-      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="143.658" height="13" fill="#00B4AB"/><rect x="171.658" y="68" width="118.421" height="13" fill="#F1E05A"/><rect x="290.079" y="68" width="105.573" height="13" fill="#F05138"/><rect x="395.652" y="68" width="105.318" height="13" fill="#A97BFF"/><rect x="500.970" y="68" width="93.681" height="13" fill="#3178C6"/><rect x="594.650" y="68" width="90.957" height="13" fill="#B07219"/><rect x="685.607" y="68" width="79.277" height="13" fill="#F34B7D"/><rect x="764.884" y="68" width="26.836" height="13" fill="#58A6FF"/><rect x="791.720" y="68" width="25.168" height="13" fill="#DA5B0B"/><rect x="816.888" y="68" width="12.378" height="13" fill="#DA3434"/><rect x="829.267" y="68" width="10.832" height="13" fill="#083FA1"/><rect x="840.099" y="68" width="9.035" height="13" fill="#555555"/><rect x="849.134" y="68" width="5.867" height="13" fill="#CB171E"/><rect x="855.001" y="68" width="5.016" height="13" fill="#F0883E"/><rect x="860.017" y="68" width="4.189" height="13" fill="#E34C26"/><rect x="864.206" y="68" width="3.800" height="13" fill="#427819"/><rect x="868.006" y="68" width="1.557" height="13" fill="#89E051"/><rect x="869.563" y="68" width="1.245" height="13" fill="#563D7C"/><rect x="870.808" y="68" width="0.503" height="13" fill="#3572A5"/><rect x="871.311" y="68" width="0.425" height="13" fill="#DB61A2"/><rect x="871.736" y="68" width="0.109" height="13" fill="#C1F12E"/><rect x="871.845" y="68" width="0.072" height="13" fill="#701516"/><rect x="871.918" y="68" width="0.040" height="13" fill="#4F5D95"/><rect x="871.958" y="68" width="0.035" height="13" fill="#384D54"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
+      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="143.618" height="13" fill="#00B4AB"/><rect x="171.618" y="68" width="118.531" height="13" fill="#F1E05A"/><rect x="290.149" y="68" width="105.544" height="13" fill="#F05138"/><rect x="395.693" y="68" width="105.289" height="13" fill="#A97BFF"/><rect x="500.982" y="68" width="93.699" height="13" fill="#3178C6"/><rect x="594.681" y="68" width="90.932" height="13" fill="#B07219"/><rect x="685.613" y="68" width="79.255" height="13" fill="#F34B7D"/><rect x="764.868" y="68" width="26.829" height="13" fill="#58A6FF"/><rect x="791.697" y="68" width="25.161" height="13" fill="#DA5B0B"/><rect x="816.858" y="68" width="12.375" height="13" fill="#DA3434"/><rect x="829.233" y="68" width="10.829" height="13" fill="#083FA1"/><rect x="840.062" y="68" width="9.032" height="13" fill="#555555"/><rect x="849.094" y="68" width="5.866" height="13" fill="#CB171E"/><rect x="854.960" y="68" width="5.015" height="13" fill="#F0883E"/><rect x="859.975" y="68" width="4.188" height="13" fill="#E34C26"/><rect x="864.162" y="68" width="3.799" height="13" fill="#427819"/><rect x="867.961" y="68" width="1.557" height="13" fill="#89E051"/><rect x="869.518" y="68" width="1.245" height="13" fill="#563D7C"/><rect x="870.763" y="68" width="0.503" height="13" fill="#3572A5"/><rect x="871.266" y="68" width="0.425" height="13" fill="#DB61A2"/><rect x="871.691" y="68" width="0.109" height="13" fill="#C1F12E"/><rect x="871.800" y="68" width="0.081" height="13" fill="#384D54"/><rect x="871.881" y="68" width="0.072" height="13" fill="#701516"/><rect x="871.953" y="68" width="0.040" height="13" fill="#4F5D95"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
       <circle cx="33" cy="106" r="5" fill="#00B4AB"/>
       <text x="46" y="110" class="small">Dart</text>
       <text x="186" y="110" class="label">17.0%</text>
@@ -87,16 +87,16 @@
       <text x="536" y="314" class="tiny">1 repo</text><circle cx="613" cy="310" r="5" fill="#C1F12E"/>
       <text x="626" y="314" class="small">Batchfile</text>
       <text x="766" y="314" class="label">&lt;0.1%</text>
-      <text x="826" y="314" class="tiny">2 repos</text><circle cx="33" cy="344" r="5" fill="#701516"/>
-      <text x="46" y="348" class="small">Ruby</text>
+      <text x="826" y="314" class="tiny">2 repos</text><circle cx="33" cy="344" r="5" fill="#384D54"/>
+      <text x="46" y="348" class="small">Dockerfile</text>
       <text x="186" y="348" class="label">&lt;0.1%</text>
-      <text x="246" y="348" class="tiny">1 repo</text><circle cx="323" cy="344" r="5" fill="#4F5D95"/>
-      <text x="336" y="348" class="small">PHP</text>
+      <text x="246" y="348" class="tiny">3 repos</text><circle cx="323" cy="344" r="5" fill="#701516"/>
+      <text x="336" y="348" class="small">Ruby</text>
       <text x="476" y="348" class="label">&lt;0.1%</text>
-      <text x="536" y="348" class="tiny">1 repo</text><circle cx="613" cy="344" r="5" fill="#384D54"/>
-      <text x="626" y="348" class="small">Dockerfile</text>
+      <text x="536" y="348" class="tiny">1 repo</text><circle cx="613" cy="344" r="5" fill="#4F5D95"/>
+      <text x="626" y="348" class="small">PHP</text>
       <text x="766" y="348" class="label">&lt;0.1%</text>
-      <text x="826" y="348" class="tiny">2 repos</text><circle cx="33" cy="378" r="5" fill="#438EFF"/>
+      <text x="826" y="348" class="tiny">1 repo</text><circle cx="33" cy="378" r="5" fill="#438EFF"/>
       <text x="46" y="382" class="small">Objective-C</text>
       <text x="186" y="382" class="label">&lt;0.1%</text>
       <text x="246" y="382" class="tiny">6 repos</text>
