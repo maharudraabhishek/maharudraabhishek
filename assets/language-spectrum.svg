@@ -23,13 +23,13 @@
   
       <defs><clipPath id="language-bar"><rect x="28" y="68" width="844" height="13" rx="6.5"/></clipPath></defs>
       <rect x="28" y="68" width="844" height="13" rx="6.5" fill="#21262D"/>
-      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="143.618" height="13" fill="#00B4AB"/><rect x="171.618" y="68" width="118.531" height="13" fill="#F1E05A"/><rect x="290.149" y="68" width="105.544" height="13" fill="#F05138"/><rect x="395.693" y="68" width="105.289" height="13" fill="#A97BFF"/><rect x="500.982" y="68" width="93.699" height="13" fill="#3178C6"/><rect x="594.681" y="68" width="90.932" height="13" fill="#B07219"/><rect x="685.613" y="68" width="79.255" height="13" fill="#F34B7D"/><rect x="764.868" y="68" width="26.829" height="13" fill="#58A6FF"/><rect x="791.697" y="68" width="25.161" height="13" fill="#DA5B0B"/><rect x="816.858" y="68" width="12.375" height="13" fill="#DA3434"/><rect x="829.233" y="68" width="10.829" height="13" fill="#083FA1"/><rect x="840.062" y="68" width="9.032" height="13" fill="#555555"/><rect x="849.094" y="68" width="5.866" height="13" fill="#CB171E"/><rect x="854.960" y="68" width="5.015" height="13" fill="#F0883E"/><rect x="859.975" y="68" width="4.188" height="13" fill="#E34C26"/><rect x="864.162" y="68" width="3.799" height="13" fill="#427819"/><rect x="867.961" y="68" width="1.557" height="13" fill="#89E051"/><rect x="869.518" y="68" width="1.245" height="13" fill="#563D7C"/><rect x="870.763" y="68" width="0.503" height="13" fill="#3572A5"/><rect x="871.266" y="68" width="0.425" height="13" fill="#DB61A2"/><rect x="871.691" y="68" width="0.109" height="13" fill="#C1F12E"/><rect x="871.800" y="68" width="0.081" height="13" fill="#384D54"/><rect x="871.881" y="68" width="0.072" height="13" fill="#701516"/><rect x="871.953" y="68" width="0.040" height="13" fill="#4F5D95"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
+      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="143.565" height="13" fill="#00B4AB"/><rect x="171.565" y="68" width="118.640" height="13" fill="#F1E05A"/><rect x="290.205" y="68" width="105.505" height="13" fill="#F05138"/><rect x="395.710" y="68" width="105.250" height="13" fill="#A97BFF"/><rect x="500.960" y="68" width="93.823" height="13" fill="#3178C6"/><rect x="594.783" y="68" width="90.898" height="13" fill="#B07219"/><rect x="685.681" y="68" width="79.226" height="13" fill="#F34B7D"/><rect x="764.907" y="68" width="26.819" height="13" fill="#58A6FF"/><rect x="791.726" y="68" width="25.152" height="13" fill="#DA5B0B"/><rect x="816.878" y="68" width="12.371" height="13" fill="#DA3434"/><rect x="829.249" y="68" width="10.825" height="13" fill="#083FA1"/><rect x="840.074" y="68" width="9.029" height="13" fill="#555555"/><rect x="849.103" y="68" width="5.864" height="13" fill="#CB171E"/><rect x="854.967" y="68" width="5.013" height="13" fill="#F0883E"/><rect x="859.979" y="68" width="4.186" height="13" fill="#E34C26"/><rect x="864.165" y="68" width="3.798" height="13" fill="#427819"/><rect x="867.963" y="68" width="1.556" height="13" fill="#89E051"/><rect x="869.519" y="68" width="1.245" height="13" fill="#563D7C"/><rect x="870.764" y="68" width="0.502" height="13" fill="#3572A5"/><rect x="871.266" y="68" width="0.425" height="13" fill="#DB61A2"/><rect x="871.691" y="68" width="0.109" height="13" fill="#C1F12E"/><rect x="871.800" y="68" width="0.081" height="13" fill="#384D54"/><rect x="871.881" y="68" width="0.072" height="13" fill="#701516"/><rect x="871.953" y="68" width="0.040" height="13" fill="#4F5D95"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
       <circle cx="33" cy="106" r="5" fill="#00B4AB"/>
       <text x="46" y="110" class="small">Dart</text>
       <text x="186" y="110" class="label">17.0%</text>
       <text x="246" y="110" class="tiny">8 repos</text><circle cx="323" cy="106" r="5" fill="#F1E05A"/>
       <text x="336" y="110" class="small">JavaScript</text>
-      <text x="476" y="110" class="label">14.0%</text>
+      <text x="476" y="110" class="label">14.1%</text>
       <text x="536" y="110" class="tiny">11 repos</text><circle cx="613" cy="106" r="5" fill="#F05138"/>
       <text x="626" y="110" class="small">Swift</text>
       <text x="766" y="110" class="label">12.5%</text>
@@ -71,7 +71,7 @@
       <text x="766" y="246" class="label">0.5%</text>
       <text x="826" y="246" class="tiny">3 repos</text><circle cx="33" cy="276" r="5" fill="#427819"/>
       <text x="46" y="280" class="small">Makefile</text>
-      <text x="186" y="280" class="label">0.5%</text>
+      <text x="186" y="280" class="label">0.4%</text>
       <text x="246" y="280" class="tiny">1 repo</text><circle cx="323" cy="276" r="5" fill="#89E051"/>
       <text x="336" y="280" class="small">Shell</text>
       <text x="476" y="280" class="label">0.2%</text>
