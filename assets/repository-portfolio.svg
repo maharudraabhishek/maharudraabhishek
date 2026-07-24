@@ -33,7 +33,7 @@
       <text x="46" y="251" class="pairedLabel">Scanned repositories with README</text><g transform="translate(300 217) scale(1)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 1h6M6 1v4l-4 7a2 2 0 0 0 1.7 3h8.6A2 2 0 0 0 14 12l-4-7V1M4.5 10h7"/></g>
       <text x="326" y="230" class="pairedValue">19</text>
       <text x="326" y="251" class="pairedLabel">Scanned repositories with tests</text><g transform="translate(20 291) scale(1)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="3" r="2"/><circle cx="13" cy="3" r="2"/><circle cx="8" cy="13" r="2"/><path d="M5 3h6M4 5l3 6M12 5l-3 6"/></g>
-      <text x="46" y="304" class="pairedValue">7</text>
+      <text x="46" y="304" class="pairedValue">8</text>
       <text x="46" y="325" class="pairedLabel">Scanned repositories with CI/CD</text><g transform="translate(300 291) scale(1)" fill="none" stroke="#8B949E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2.5A1.5 1.5 0 0 1 3.5 1H14v12H4a2 2 0 0 0-2 2V2.5z"/><path d="M4 13h10M5 4h6"/></g>
       <text x="326" y="304" class="pairedValue">0</text>
       <text x="326" y="325" class="pairedLabel">Archived repositories</text>

@@ -15,7 +15,7 @@
   <text x="48" y="49" class="subtitle">Instructions, decisions, handovers and context shaping</text>
   <text x="22" y="88" class="value">8</text>
       <text x="22" y="106" class="label">repositories</text>
-      <text x="164" y="88" class="value">307</text>
+      <text x="164" y="88" class="value">311</text>
       <text x="164" y="106" class="label">evidence signals</text>
       <rect x="304" y="75" width="150" height="10" rx="5" fill="#21262D"/>
       <rect x="304" y="75" width="150.0" height="10" rx="5" fill="#3FB950"/>
@@ -25,7 +25,7 @@
       <text x="52" y="153" class="small">236</text>
       <text x="30" y="170" class="compactLabel">Instruction hierarchy</text><rect x="244" y="132" width="212" height="46" rx="8" fill="#39C5CF" fill-opacity=".075" stroke="#39C5CF" stroke-opacity=".42"/>
       <g transform="translate(254 142) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
-      <text x="276" y="153" class="small">67</text>
+      <text x="276" y="153" class="small">71</text>
       <text x="254" y="170" class="compactLabel">Decisions &amp; handovers</text><rect x="20" y="188" width="212" height="46" rx="8" fill="#39C5CF" fill-opacity=".075" stroke="#39C5CF" stroke-opacity=".42"/>
       <g transform="translate(30 198) scale(0.875)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
       <text x="52" y="209" class="small">3</text>
