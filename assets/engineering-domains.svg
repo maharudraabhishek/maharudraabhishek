@@ -27,7 +27,7 @@
       <text x="630" y="84" text-anchor="end" class="label">40%</text><g transform="translate(24 113) scale(0.9375)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
       <text x="50" y="130" class="small">Full-Stack Development</text>
       <rect x="278" y="118" width="320" height="9" rx="4.5" fill="#21262D"/>
-      <rect x="278" y="118" width="72.2" height="9" rx="4.5" fill="#A371F7"/>
+      <rect x="278" y="118" width="72.3" height="9" rx="4.5" fill="#A371F7"/>
       <text x="630" y="130" text-anchor="end" class="label">23%</text><g transform="translate(24 159) scale(0.9375)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
       <text x="50" y="176" class="small">Cloud &amp; DevOps</text>
       <rect x="278" y="164" width="320" height="9" rx="4.5" fill="#21262D"/>
