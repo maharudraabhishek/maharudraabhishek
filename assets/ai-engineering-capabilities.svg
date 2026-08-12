@@ -33,7 +33,7 @@
       <text x="42" y="176" class="small">MCP Servers</text>
       <rect x="259" y="164" width="140" height="8" rx="4" fill="#21262D"/>
       <rect x="259" y="164" width="49.4" height="8" rx="4" fill="#3FB950"/>
-      <text x="454" y="176" text-anchor="end" class="tiny">6 repos · 100 signals</text><circle cx="479" cy="171" r="5" fill="#F85149"/>
+      <text x="454" y="176" text-anchor="end" class="tiny">6 repos · 101 signals</text><circle cx="479" cy="171" r="5" fill="#F85149"/>
       <text x="492" y="176" class="small">AI Security &amp; Governance</text>
       <rect x="709" y="164" width="140" height="8" rx="4" fill="#21262D"/>
       <rect x="709" y="164" width="49.4" height="8" rx="4" fill="#F85149"/>
