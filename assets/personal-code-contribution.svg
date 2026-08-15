@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-label="Personal Code Contribution">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="616" viewBox="0 0 1000 616" role="img" aria-label="Personal Code Contribution">
   <style>
     .title{fill:#58A6FF;font:600 19px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
     .subtitle{fill:#8B949E;font:600 11.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -16,84 +16,99 @@
     .sectionLabel{fill:#3FB950;font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.5px}
     .empty{fill:#8B949E;font:600 13.7px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
-  <rect x=".5" y=".5" width="999" height="559" rx="12" fill="#0D1117" stroke="#30363D"/>
+  <rect x=".5" y=".5" width="999" height="615" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
   <text x="48" y="31" class="title">Personal Code Contribution</text>
-  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 218/218 commits fully analyzed</text>
+  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 222/222 commits fully analyzed</text>
   <circle cx="31" cy="79" r="5" fill="#083FA1"/>
       <text x="44" y="84" class="small">Markdown</text>
-      <text x="196" y="84" class="label">50.0%</text>
+      <text x="196" y="84" class="label">47.4%</text>
       <rect x="256" y="72" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="72" width="165.0" height="8" rx="4" fill="#083FA1"/>
-      <text x="44" y="104" class="tiny">258.7K changed lines · 146 commits · 1.5K files</text><circle cx="521" cy="79" r="5" fill="#F1E05A"/>
-      <text x="534" y="84" class="small">JavaScript</text>
+      <text x="44" y="104" class="tiny">260.3K changed lines · 148 commits · 1.5K files</text><circle cx="521" cy="79" r="5" fill="#3178C6"/>
+      <text x="534" y="84" class="small">TypeScript</text>
       <text x="686" y="84" class="label">22.2%</text>
       <rect x="746" y="72" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="72" width="73.3" height="8" rx="4" fill="#F1E05A"/>
-      <text x="534" y="104" class="tiny">115K changed lines · 80 commits · 502 files</text><circle cx="31" cy="135" r="5" fill="#3178C6"/>
-      <text x="44" y="140" class="small">TypeScript</text>
-      <text x="196" y="140" class="label">20.0%</text>
+      <rect x="746" y="72" width="77.4" height="8" rx="4" fill="#3178C6"/>
+      <text x="534" y="104" class="tiny">122K changed lines · 41 commits · 498 files</text><circle cx="31" cy="135" r="5" fill="#F1E05A"/>
+      <text x="44" y="140" class="small">JavaScript</text>
+      <text x="196" y="140" class="label">20.9%</text>
       <rect x="256" y="128" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="128" width="65.9" height="8" rx="4" fill="#3178C6"/>
-      <text x="44" y="160" class="tiny">103.4K changed lines · 38 commits · 485 files</text><circle cx="521" cy="135" r="5" fill="#CB171E"/>
-      <text x="534" y="140" class="small">YAML</text>
-      <text x="686" y="140" class="label">2.2%</text>
+      <rect x="256" y="128" width="72.9" height="8" rx="4" fill="#F1E05A"/>
+      <text x="44" y="160" class="tiny">115K changed lines · 80 commits · 502 files</text><circle cx="521" cy="135" r="5" fill="#00B4AB"/>
+      <text x="534" y="140" class="small">Dart</text>
+      <text x="686" y="140" class="label">2.3%</text>
       <rect x="746" y="128" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="128" width="7.4" height="8" rx="4" fill="#CB171E"/>
-      <text x="534" y="160" class="tiny">11.5K changed lines · 72 commits · 56 files</text><circle cx="31" cy="191" r="5" fill="#E38C00"/>
-      <text x="44" y="196" class="small">SQL</text>
-      <text x="196" y="196" class="label">2.0%</text>
+      <rect x="746" y="128" width="8.0" height="8" rx="4" fill="#00B4AB"/>
+      <text x="534" y="160" class="tiny">12.6K changed lines · 6 commits · 164 files</text><circle cx="31" cy="191" r="5" fill="#CB171E"/>
+      <text x="44" y="196" class="small">YAML</text>
+      <text x="196" y="196" class="label">2.1%</text>
       <rect x="256" y="184" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="184" width="6.6" height="8" rx="4" fill="#E38C00"/>
-      <text x="44" y="216" class="tiny">10.3K changed lines · 33 commits · 59 files</text><circle cx="521" cy="191" r="5" fill="#B07219"/>
-      <text x="534" y="196" class="small">Java</text>
-      <text x="686" y="196" class="label">0.7%</text>
+      <rect x="256" y="184" width="7.3" height="8" rx="4" fill="#CB171E"/>
+      <text x="44" y="216" class="tiny">11.6K changed lines · 74 commits · 60 files</text><circle cx="521" cy="191" r="5" fill="#E38C00"/>
+      <text x="534" y="196" class="small">SQL</text>
+      <text x="686" y="196" class="label">1.9%</text>
       <rect x="746" y="184" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="184" width="2.4" height="8" rx="4" fill="#B07219"/>
-      <text x="534" y="216" class="tiny">3.7K changed lines · 5 commits · 47 files</text><circle cx="31" cy="247" r="5" fill="#A97BFF"/>
+      <rect x="746" y="184" width="6.5" height="8" rx="4" fill="#E38C00"/>
+      <text x="534" y="216" class="tiny">10.3K changed lines · 34 commits · 60 files</text><circle cx="31" cy="247" r="5" fill="#A97BFF"/>
       <text x="44" y="252" class="small">Kotlin</text>
-      <text x="196" y="252" class="label">0.7%</text>
+      <text x="196" y="252" class="label">1.0%</text>
       <rect x="256" y="240" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="240" width="2.4" height="8" rx="4" fill="#A97BFF"/>
-      <text x="44" y="272" class="tiny">3.7K changed lines · 7 commits · 218 files</text><circle cx="521" cy="247" r="5" fill="#00B4AB"/>
-      <text x="534" y="252" class="small">Dart</text>
+      <rect x="256" y="240" width="3.5" height="8" rx="4" fill="#A97BFF"/>
+      <text x="44" y="272" class="tiny">5.5K changed lines · 8 commits · 232 files</text><circle cx="521" cy="247" r="5" fill="#B07219"/>
+      <text x="534" y="252" class="small">Java</text>
       <text x="686" y="252" class="label">0.7%</text>
       <rect x="746" y="240" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="240" width="2.3" height="8" rx="4" fill="#00B4AB"/>
-      <text x="534" y="272" class="tiny">3.6K changed lines · 5 commits · 76 files</text><circle cx="31" cy="303" r="5" fill="#E34C26"/>
+      <rect x="746" y="240" width="2.4" height="8" rx="4" fill="#B07219"/>
+      <text x="534" y="272" class="tiny">3.7K changed lines · 5 commits · 47 files</text><circle cx="31" cy="303" r="5" fill="#E34C26"/>
       <text x="44" y="308" class="small">HTML</text>
       <text x="196" y="308" class="label">0.4%</text>
       <rect x="256" y="296" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="296" width="1.4" height="8" rx="4" fill="#E34C26"/>
-      <text x="44" y="328" class="tiny">2.1K changed lines · 19 commits · 16 files</text><circle cx="521" cy="303" r="5" fill="#3572A5"/>
-      <text x="534" y="308" class="small">Python</text>
-      <text x="686" y="308" class="label">0.3%</text>
+      <text x="44" y="328" class="tiny">2.2K changed lines · 20 commits · 17 files</text><circle cx="521" cy="303" r="5" fill="#F05138"/>
+      <text x="534" y="308" class="small">Swift</text>
+      <text x="686" y="308" class="label">0.2%</text>
       <rect x="746" y="296" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="296" width="1.0" height="8" rx="4" fill="#3572A5"/>
-      <text x="534" y="328" class="tiny">1.3K changed lines · 3 commits · 2 files</text><circle cx="31" cy="359" r="5" fill="#F05138"/>
-      <text x="44" y="364" class="small">Swift</text>
+      <rect x="746" y="296" width="1.0" height="8" rx="4" fill="#F05138"/>
+      <text x="534" y="328" class="tiny">1.3K changed lines · 9 commits · 35 files</text><circle cx="31" cy="359" r="5" fill="#3572A5"/>
+      <text x="44" y="364" class="small">Python</text>
       <text x="196" y="364" class="label">0.2%</text>
       <rect x="256" y="352" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="352" width="1.0" height="8" rx="4" fill="#F05138"/>
-      <text x="44" y="384" class="tiny">1.3K changed lines · 8 commits · 28 files</text><circle cx="521" cy="359" r="5" fill="#555555"/>
+      <rect x="256" y="352" width="1.0" height="8" rx="4" fill="#3572A5"/>
+      <text x="44" y="384" class="tiny">1.3K changed lines · 3 commits · 2 files</text><circle cx="521" cy="359" r="5" fill="#555555"/>
       <text x="534" y="364" class="small">C</text>
       <text x="686" y="364" class="label">0.2%</text>
       <rect x="746" y="352" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="746" y="352" width="1.0" height="8" rx="4" fill="#555555"/>
-      <text x="534" y="384" class="tiny">1.1K changed lines · 4 commits · 6 files</text><circle cx="31" cy="415" r="5" fill="#563D7C"/>
+      <text x="534" y="384" class="tiny">1.3K changed lines · 5 commits · 12 files</text><circle cx="31" cy="415" r="5" fill="#563D7C"/>
       <text x="44" y="420" class="small">CSS</text>
       <text x="196" y="420" class="label">0.2%</text>
       <rect x="256" y="408" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="408" width="1.0" height="8" rx="4" fill="#563D7C"/>
-      <text x="44" y="440" class="tiny">904 changed lines · 12 commits · 5 files</text><circle cx="521" cy="415" r="5" fill="#89E051"/>
-      <text x="534" y="420" class="small">Shell</text>
+      <text x="44" y="440" class="tiny">904 changed lines · 12 commits · 5 files</text><circle cx="521" cy="415" r="5" fill="#F34B7D"/>
+      <text x="534" y="420" class="small">C++</text>
       <text x="686" y="420" class="label">&lt;0.1%</text>
       <rect x="746" y="408" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="746" y="408" width="1.0" height="8" rx="4" fill="#89E051"/>
-      <text x="534" y="440" class="tiny">371 changed lines · 2 commits · 5 files</text><circle cx="31" cy="471" r="5" fill="#384D54"/>
-      <text x="44" y="476" class="small">Dockerfile</text>
+      <rect x="746" y="408" width="1.0" height="8" rx="4" fill="#F34B7D"/>
+      <text x="534" y="440" class="tiny">481 changed lines · 1 commits · 5 files</text><circle cx="31" cy="471" r="5" fill="#89E051"/>
+      <text x="44" y="476" class="small">Shell</text>
       <text x="196" y="476" class="label">&lt;0.1%</text>
       <rect x="256" y="464" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="464" width="1.0" height="8" rx="4" fill="#384D54"/>
-      <text x="44" y="496" class="tiny">80 changed lines · 5 commits · 2 files</text>
+      <rect x="256" y="464" width="1.0" height="8" rx="4" fill="#89E051"/>
+      <text x="44" y="496" class="tiny">371 changed lines · 2 commits · 5 files</text><circle cx="521" cy="471" r="5" fill="#DA3434"/>
+      <text x="534" y="476" class="small">CMake</text>
+      <text x="686" y="476" class="label">&lt;0.1%</text>
+      <rect x="746" y="464" width="165" height="8" rx="4" fill="#21262D"/>
+      <rect x="746" y="464" width="1.0" height="8" rx="4" fill="#DA3434"/>
+      <text x="534" y="496" class="tiny">281 changed lines · 1 commits · 4 files</text><circle cx="31" cy="527" r="5" fill="#012456"/>
+      <text x="44" y="532" class="small">PowerShell</text>
+      <text x="196" y="532" class="label">&lt;0.1%</text>
+      <rect x="256" y="520" width="165" height="8" rx="4" fill="#21262D"/>
+      <rect x="256" y="520" width="1.0" height="8" rx="4" fill="#012456"/>
+      <text x="44" y="552" class="tiny">241 changed lines · 1 commits · 2 files</text><circle cx="521" cy="527" r="5" fill="#384D54"/>
+      <text x="534" y="532" class="small">Dockerfile</text>
+      <text x="686" y="532" class="label">&lt;0.1%</text>
+      <rect x="746" y="520" width="165" height="8" rx="4" fill="#21262D"/>
+      <rect x="746" y="520" width="1.0" height="8" rx="4" fill="#384D54"/>
+      <text x="534" y="552" class="tiny">80 changed lines · 5 commits · 2 files</text>
 </svg>

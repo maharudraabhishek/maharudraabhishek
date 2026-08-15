@@ -12,7 +12,7 @@
   <rect x=".5" y=".5" width="719" height="404" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
   <text x="48" y="31" class="title">AI Engineering Overview</text>
-  <text x="48" y="49" class="subtitle">10 public + 9 private · repository configuration evidence, not AI-generated-code claims</text>
+  <text x="48" y="49" class="subtitle">11 public + 9 private · repository configuration evidence, not AI-generated-code claims</text>
   <defs>
     <linearGradient id="ai-overview-ring" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#A371F7"/><stop offset=".52" stop-color="#39C5CF"/><stop offset="1" stop-color="#3FB950"/></linearGradient>
     <radialGradient id="ai-overview-core"><stop stop-color="#211B38"/><stop offset=".65" stop-color="#121722"/><stop offset="1" stop-color="#0D1117"/></radialGradient>
@@ -41,7 +41,7 @@
     <circle cx="360" cy="160" r="72" fill="url(#ai-overview-core)" stroke="url(#ai-overview-ring)" stroke-width="3"/>
     <circle cx="360" cy="160" r="61" fill="none" stroke="#3A334D" stroke-dasharray="2 7"/>
     <g transform="translate(346 104) scale(1.75)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.2A2.8 2.8 0 0 0 3.4 5a2.8 2.8 0 0 0 .7 5.4A2.7 2.7 0 0 0 8 13V3.5A2 2 0 0 0 6 1.5M10 2.2A2.8 2.8 0 0 1 12.6 5a2.8 2.8 0 0 1-.7 5.4A2.7 2.7 0 0 1 8 13V3.5a2 2 0 0 1 2-2M4.2 6.2h2M9.8 6.2h2M5 9h1.5M9.5 9H11"/></g>
-    <text x="360" y="174" text-anchor="middle" class="value" style="font-size:35px;font-weight:800">19</text>
+    <text x="360" y="174" text-anchor="middle" class="value" style="font-size:35px;font-weight:800">20</text>
     <text x="360" y="197" text-anchor="middle" class="small" style="fill:#3FB950">AI-ENABLED REPOS</text>
     <text x="360" y="215" text-anchor="middle" class="tiny">CONFIGURATION EVIDENCE</text>
     <circle cx="290" cy="160" r="4" fill="#A371F7"/>
@@ -54,7 +54,7 @@
       <text x="34" y="349" class="small">Governed AI repos</text>
       <text x="34" y="370" class="tiny">Maturity level 4</text><rect x="193" y="286" width="160" height="99" rx="12" fill="#58A6FF" fill-opacity=".08" stroke="#58A6FF" stroke-opacity=".45"/>
       <g transform="translate(207 301) scale(1.0625)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
-      <text x="236" y="321" class="value">10/9</text>
+      <text x="236" y="321" class="value">11/9</text>
       <text x="207" y="349" class="small">Public / private repos</text>
       <text x="207" y="370" class="tiny">AI-enabled scope</text><rect x="366" y="286" width="160" height="99" rx="12" fill="#F0883E" fill-opacity=".08" stroke="#F0883E" stroke-opacity=".45"/>
       <g transform="translate(380 301) scale(1.0625)" fill="none" stroke="#F0883E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8h3l2-5 4 10 2-5h3"/></g>
