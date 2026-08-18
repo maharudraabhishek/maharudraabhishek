@@ -35,9 +35,9 @@
       <rect x="32" y="171" width="936" height="22" rx="7" fill="#3FB950" fill-opacity=".1"/>
       <text x="42" y="188" class="sectionLabel">FULL PROJECT COMPOSITION</text>
       <rect x="42" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="55" y="224" class="compositionValue">411</text>
+      <text x="55" y="224" class="compositionValue">413</text>
       <text x="55" y="240" class="compositionLabel">Project commits</text><rect x="350.6666666666667" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="363.6666666666667" y="224" class="compositionValue">118</text>
+      <text x="363.6666666666667" y="224" class="compositionValue">119</text>
       <text x="363.6666666666667" y="240" class="compositionLabel">Releases</text><rect x="659.3333333333334" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
       <text x="672.3333333333334" y="224" class="compositionValue">7</text>
       <text x="672.3333333333334" y="240" class="compositionLabel">Languages</text><rect x="42" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
@@ -88,10 +88,10 @@
         </clipPath>
       </defs>
       <rect x="42" y="530" width="916" height="12" rx="6" fill="#21262D"/>
-      <g clip-path="url(#public-project-0-heremaps-here-sdk-examples)"><rect x="42.00" y="530" width="254.22" height="12" fill="#B07219"/><rect x="296.22" y="530" width="211.82" height="12" fill="#F05138"/><rect x="508.05" y="530" width="205.38" height="12" fill="#A97BFF"/><rect x="713.43" y="530" width="168.34" height="12" fill="#00B4AB"/><rect x="881.77" y="530" width="48.25" height="12" fill="#083FA1"/><rect x="930.02" y="530" width="27.75" height="12" fill="#CB171E"/><rect x="957.77" y="530" width="0.23" height="12" fill="#555555"/></g>
+      <g clip-path="url(#public-project-0-heremaps-here-sdk-examples)"><rect x="42.00" y="530" width="254.02" height="12" fill="#B07219"/><rect x="296.02" y="530" width="211.72" height="12" fill="#F05138"/><rect x="507.73" y="530" width="205.09" height="12" fill="#A97BFF"/><rect x="712.82" y="530" width="169.10" height="12" fill="#00B4AB"/><rect x="881.92" y="530" width="48.14" height="12" fill="#083FA1"/><rect x="930.06" y="530" width="27.71" height="12" fill="#CB171E"/><rect x="957.77" y="530" width="0.23" height="12" fill="#555555"/></g>
       <circle cx="47" cy="562" r="5" fill="#B07219"/>
       <text x="60" y="566" class="small">Java</text>
-      <text x="192" y="566" class="label">27.8%</text>
+      <text x="192" y="566" class="label">27.7%</text>
       <text x="252" y="566" class="tiny">246 files</text><circle cx="352.3333333333333" cy="562" r="5" fill="#F05138"/>
       <text x="365.3333333333333" y="566" class="small">Swift</text>
       <text x="497.3333333333333" y="566" class="label">23.1%</text>
@@ -100,8 +100,8 @@
       <text x="802.6666666666666" y="566" class="label">22.4%</text>
       <text x="862.6666666666666" y="566" class="tiny">557 files</text><circle cx="47" cy="594" r="5" fill="#00B4AB"/>
       <text x="60" y="598" class="small">Dart</text>
-      <text x="192" y="598" class="label">18.4%</text>
-      <text x="252" y="598" class="tiny">176 files</text><circle cx="352.3333333333333" cy="594" r="5" fill="#083FA1"/>
+      <text x="192" y="598" class="label">18.5%</text>
+      <text x="252" y="598" class="tiny">174 files</text><circle cx="352.3333333333333" cy="594" r="5" fill="#083FA1"/>
       <text x="365.3333333333333" y="598" class="small">Markdown</text>
       <text x="497.3333333333333" y="598" class="label">5.3%</text>
       <text x="557.3333333333333" y="598" class="tiny">401 files</text><circle cx="657.6666666666666" cy="594" r="5" fill="#CB171E"/>
