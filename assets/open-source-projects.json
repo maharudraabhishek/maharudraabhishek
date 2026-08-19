@@ -2,6 +2,13 @@
   "version": 1,
   "projects": [
     {
+      "fullName": "maharudraabhishek/chime_meeting_demo",
+      "url": "https://github.com/maharudraabhishek/chime_meeting_demo",
+      "filename": "open-source-project-maharudraabhishek-chime_meeting_demo-96f8aafa.svg",
+      "relationship": "owned-open-source",
+      "licenseSpdx": "Apache-2.0"
+    },
+    {
       "fullName": "maharudraabhishek/MoonTradr-public",
       "url": "https://github.com/maharudraabhishek/MoonTradr-public",
       "filename": "open-source-project-maharudraabhishek-moontradr-public-65af3bc0.svg",
