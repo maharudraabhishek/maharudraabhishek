@@ -23,11 +23,11 @@
   <g transform="translate(24 67) scale(0.9375)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
       <text x="50" y="84" class="small">Mobile Engineering</text>
       <rect x="278" y="72" width="320" height="9" rx="4.5" fill="#21262D"/>
-      <rect x="278" y="72" width="127.8" height="9" rx="4.5" fill="#58A6FF"/>
+      <rect x="278" y="72" width="127.9" height="9" rx="4.5" fill="#58A6FF"/>
       <text x="630" y="84" text-anchor="end" class="label">40%</text><g transform="translate(24 113) scale(0.9375)" fill="none" stroke="#A371F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
       <text x="50" y="130" class="small">Full-Stack Development</text>
       <rect x="278" y="118" width="320" height="9" rx="4.5" fill="#21262D"/>
-      <rect x="278" y="118" width="71.5" height="9" rx="4.5" fill="#A371F7"/>
+      <rect x="278" y="118" width="71.4" height="9" rx="4.5" fill="#A371F7"/>
       <text x="630" y="130" text-anchor="end" class="label">22%</text><g transform="translate(24 159) scale(0.9375)" fill="none" stroke="#3FB950" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
       <text x="50" y="176" class="small">Cloud &amp; DevOps</text>
       <rect x="278" y="164" width="320" height="9" rx="4.5" fill="#21262D"/>
