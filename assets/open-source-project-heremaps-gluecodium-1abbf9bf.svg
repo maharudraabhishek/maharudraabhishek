@@ -88,32 +88,32 @@
         </clipPath>
       </defs>
       <rect x="42" y="530" width="916" height="12" rx="6" fill="#21262D"/>
-      <g clip-path="url(#public-project-0-heremaps-gluecodium)"><rect x="42.00" y="530" width="214.63" height="12" fill="#00B4AB"/><rect x="256.63" y="530" width="210.12" height="12" fill="#F34B7D"/><rect x="466.75" y="530" width="157.70" height="12" fill="#A97BFF"/><rect x="624.46" y="530" width="147.36" height="12" fill="#F05138"/><rect x="771.82" y="530" width="72.80" height="12" fill="#58A6FF"/><rect x="844.62" y="530" width="50.26" height="12" fill="#B07219"/><rect x="894.88" y="530" width="33.32" height="12" fill="#DA3434"/><rect x="928.20" y="530" width="24.17" height="12" fill="#555555"/><rect x="952.37" y="530" width="3.12" height="12" fill="#89E051"/><rect x="955.49" y="530" width="1.35" height="12" fill="#3572A5"/><rect x="956.85" y="530" width="1.14" height="12" fill="#DB61A2"/><rect x="957.99" y="530" width="0.01" height="12" fill="#C1F12E"/></g>
-      <circle cx="47" cy="562" r="5" fill="#00B4AB"/>
-      <text x="60" y="566" class="small">Dart</text>
+      <g clip-path="url(#public-project-0-heremaps-gluecodium)"><rect x="42.00" y="530" width="214.76" height="12" fill="#F34B7D"/><rect x="256.76" y="530" width="212.47" height="12" fill="#00B4AB"/><rect x="469.23" y="530" width="156.15" height="12" fill="#A97BFF"/><rect x="625.38" y="530" width="145.88" height="12" fill="#F05138"/><rect x="771.26" y="530" width="74.50" height="12" fill="#58A6FF"/><rect x="845.75" y="530" width="49.75" height="12" fill="#B07219"/><rect x="895.51" y="530" width="32.99" height="12" fill="#DA3434"/><rect x="928.50" y="530" width="23.93" height="12" fill="#555555"/><rect x="952.43" y="530" width="3.09" height="12" fill="#89E051"/><rect x="955.52" y="530" width="1.34" height="12" fill="#3572A5"/><rect x="956.86" y="530" width="1.13" height="12" fill="#DB61A2"/><rect x="957.99" y="530" width="0.01" height="12" fill="#C1F12E"/></g>
+      <circle cx="47" cy="562" r="5" fill="#F34B7D"/>
+      <text x="60" y="566" class="small">C++</text>
       <text x="192" y="566" class="label">23.4%</text>
-      <text x="252" y="566" class="tiny">299 files</text><circle cx="352.3333333333333" cy="562" r="5" fill="#F34B7D"/>
-      <text x="365.3333333333333" y="566" class="small">C++</text>
-      <text x="497.3333333333333" y="566" class="label">22.9%</text>
-      <text x="557.3333333333333" y="566" class="tiny">581 files</text><circle cx="657.6666666666666" cy="562" r="5" fill="#A97BFF"/>
+      <text x="252" y="566" class="tiny">582 files</text><circle cx="352.3333333333333" cy="562" r="5" fill="#00B4AB"/>
+      <text x="365.3333333333333" y="566" class="small">Dart</text>
+      <text x="497.3333333333333" y="566" class="label">23.2%</text>
+      <text x="557.3333333333333" y="566" class="tiny">299 files</text><circle cx="657.6666666666666" cy="562" r="5" fill="#A97BFF"/>
       <text x="670.6666666666666" y="566" class="small">Kotlin</text>
-      <text x="802.6666666666666" y="566" class="label">17.2%</text>
+      <text x="802.6666666666666" y="566" class="label">17.0%</text>
       <text x="862.6666666666666" y="566" class="tiny">580 files</text><circle cx="47" cy="594" r="5" fill="#F05138"/>
       <text x="60" y="598" class="small">Swift</text>
-      <text x="192" y="598" class="label">16.1%</text>
+      <text x="192" y="598" class="label">15.9%</text>
       <text x="252" y="598" class="tiny">325 files</text><circle cx="352.3333333333333" cy="594" r="5" fill="#58A6FF"/>
       <text x="365.3333333333333" y="598" class="small">Mustache</text>
-      <text x="497.3333333333333" y="598" class="label">7.9%</text>
+      <text x="497.3333333333333" y="598" class="label">8.1%</text>
       <text x="557.3333333333333" y="598" class="tiny">github-linguist</text><circle cx="657.6666666666666" cy="594" r="5" fill="#B07219"/>
       <text x="670.6666666666666" y="598" class="small">Java</text>
-      <text x="802.6666666666666" y="598" class="label">5.5%</text>
+      <text x="802.6666666666666" y="598" class="label">5.4%</text>
       <text x="862.6666666666666" y="598" class="tiny">312 files</text><circle cx="47" cy="626" r="5" fill="#DA3434"/>
       <text x="60" y="630" class="small">CMake</text>
       <text x="192" y="630" class="label">3.6%</text>
       <text x="252" y="630" class="tiny">128 files</text><circle cx="352.3333333333333" cy="626" r="5" fill="#555555"/>
       <text x="365.3333333333333" y="630" class="small">C</text>
       <text x="497.3333333333333" y="630" class="label">2.6%</text>
-      <text x="557.3333333333333" y="630" class="tiny">442 files</text><circle cx="657.6666666666666" cy="626" r="5" fill="#89E051"/>
+      <text x="557.3333333333333" y="630" class="tiny">446 files</text><circle cx="657.6666666666666" cy="626" r="5" fill="#89E051"/>
       <text x="670.6666666666666" y="630" class="small">Shell</text>
       <text x="802.6666666666666" y="630" class="label">0.3%</text>
       <text x="862.6666666666666" y="630" class="tiny">2 files</text><circle cx="47" cy="658" r="5" fill="#3572A5"/>
