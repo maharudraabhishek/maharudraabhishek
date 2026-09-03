@@ -88,7 +88,7 @@
         </clipPath>
       </defs>
       <rect x="42" y="530" width="916" height="12" rx="6" fill="#21262D"/>
-      <g clip-path="url(#public-project-0-heremaps-gluecodium)"><rect x="42.00" y="530" width="217.77" height="12" fill="#F34B7D"/><rect x="259.77" y="530" width="212.03" height="12" fill="#00B4AB"/><rect x="471.80" y="530" width="154.48" height="12" fill="#A97BFF"/><rect x="626.28" y="530" width="145.17" height="12" fill="#F05138"/><rect x="771.45" y="530" width="75.44" height="12" fill="#58A6FF"/><rect x="846.89" y="530" width="49.43" height="12" fill="#B07219"/><rect x="896.32" y="530" width="32.57" height="12" fill="#DA3434"/><rect x="928.89" y="530" width="23.61" height="12" fill="#555555"/><rect x="952.50" y="530" width="3.05" height="12" fill="#89E051"/><rect x="955.55" y="530" width="1.32" height="12" fill="#3572A5"/><rect x="956.87" y="530" width="1.12" height="12" fill="#DB61A2"/><rect x="957.99" y="530" width="0.01" height="12" fill="#C1F12E"/></g>
+      <g clip-path="url(#public-project-0-heremaps-gluecodium)"><rect x="42.00" y="530" width="217.91" height="12" fill="#F34B7D"/><rect x="259.91" y="530" width="211.90" height="12" fill="#00B4AB"/><rect x="471.81" y="530" width="154.39" height="12" fill="#A97BFF"/><rect x="626.20" y="530" width="145.08" height="12" fill="#F05138"/><rect x="771.28" y="530" width="75.68" height="12" fill="#58A6FF"/><rect x="846.96" y="530" width="49.40" height="12" fill="#B07219"/><rect x="896.36" y="530" width="32.55" height="12" fill="#DA3434"/><rect x="928.91" y="530" width="23.60" height="12" fill="#555555"/><rect x="952.50" y="530" width="3.05" height="12" fill="#89E051"/><rect x="955.55" y="530" width="1.32" height="12" fill="#3572A5"/><rect x="956.87" y="530" width="1.12" height="12" fill="#DB61A2"/><rect x="957.99" y="530" width="0.01" height="12" fill="#C1F12E"/></g>
       <circle cx="47" cy="562" r="5" fill="#F34B7D"/>
       <text x="60" y="566" class="small">C++</text>
       <text x="192" y="566" class="label">23.8%</text>
@@ -103,7 +103,7 @@
       <text x="192" y="598" class="label">15.8%</text>
       <text x="252" y="598" class="tiny">329 files</text><circle cx="352.3333333333333" cy="594" r="5" fill="#58A6FF"/>
       <text x="365.3333333333333" y="598" class="small">Mustache</text>
-      <text x="497.3333333333333" y="598" class="label">8.2%</text>
+      <text x="497.3333333333333" y="598" class="label">8.3%</text>
       <text x="557.3333333333333" y="598" class="tiny">github-linguist</text><circle cx="657.6666666666666" cy="594" r="5" fill="#B07219"/>
       <text x="670.6666666666666" y="598" class="small">Java</text>
       <text x="802.6666666666666" y="598" class="label">5.4%</text>
