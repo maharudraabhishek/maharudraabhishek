@@ -37,7 +37,7 @@
       <rect x="42" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
       <text x="55" y="224" class="compositionValue">2.6K</text>
       <text x="55" y="240" class="compositionLabel">Project commits</text><rect x="350.6666666666667" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="363.6666666666667" y="224" class="compositionValue">242</text>
+      <text x="363.6666666666667" y="224" class="compositionValue">243</text>
       <text x="363.6666666666667" y="240" class="compositionLabel">Releases</text><rect x="659.3333333333334" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
       <text x="672.3333333333334" y="224" class="compositionValue">12</text>
       <text x="672.3333333333334" y="240" class="compositionLabel">Languages</text><rect x="42" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
@@ -88,7 +88,7 @@
         </clipPath>
       </defs>
       <rect x="42" y="530" width="916" height="12" rx="6" fill="#21262D"/>
-      <g clip-path="url(#public-project-0-heremaps-gluecodium)"><rect x="42.00" y="530" width="217.57" height="12" fill="#F34B7D"/><rect x="259.57" y="530" width="211.44" height="12" fill="#00B4AB"/><rect x="471.00" y="530" width="155.92" height="12" fill="#A97BFF"/><rect x="626.92" y="530" width="144.76" height="12" fill="#F05138"/><rect x="771.69" y="530" width="75.51" height="12" fill="#58A6FF"/><rect x="847.20" y="530" width="49.30" height="12" fill="#B07219"/><rect x="896.49" y="530" width="32.47" height="12" fill="#DA3434"/><rect x="928.97" y="530" width="23.55" height="12" fill="#555555"/><rect x="952.51" y="530" width="3.04" height="12" fill="#89E051"/><rect x="955.56" y="530" width="1.32" height="12" fill="#3572A5"/><rect x="956.88" y="530" width="1.11" height="12" fill="#DB61A2"/><rect x="957.99" y="530" width="0.01" height="12" fill="#C1F12E"/></g>
+      <g clip-path="url(#public-project-0-heremaps-gluecodium)"><rect x="42.00" y="530" width="217.59" height="12" fill="#F34B7D"/><rect x="259.59" y="530" width="211.43" height="12" fill="#00B4AB"/><rect x="471.02" y="530" width="155.91" height="12" fill="#A97BFF"/><rect x="626.93" y="530" width="144.76" height="12" fill="#F05138"/><rect x="771.69" y="530" width="75.51" height="12" fill="#58A6FF"/><rect x="847.20" y="530" width="49.29" height="12" fill="#B07219"/><rect x="896.50" y="530" width="32.47" height="12" fill="#DA3434"/><rect x="928.97" y="530" width="23.54" height="12" fill="#555555"/><rect x="952.51" y="530" width="3.04" height="12" fill="#89E051"/><rect x="955.56" y="530" width="1.32" height="12" fill="#3572A5"/><rect x="956.88" y="530" width="1.11" height="12" fill="#DB61A2"/><rect x="957.99" y="530" width="0.01" height="12" fill="#C1F12E"/></g>
       <circle cx="47" cy="562" r="5" fill="#F34B7D"/>
       <text x="60" y="566" class="small">C++</text>
       <text x="192" y="566" class="label">23.8%</text>
