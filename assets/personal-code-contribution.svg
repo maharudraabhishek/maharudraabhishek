@@ -19,23 +19,23 @@
   <rect x=".5" y=".5" width="999" height="615" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><circle cx="12" cy="8" r="2"/><path d="M4 5v6M6 4c4 0 4 4 4 4"/></g>
   <text x="48" y="31" class="title">Personal Code Contribution</text>
-  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 231/231 commits fully analyzed</text>
+  <text x="48" y="49" class="subtitle">GitHub-attributed default-branch source changes · 10y · 233/233 commits fully analyzed</text>
   <circle cx="31" cy="79" r="5" fill="#083FA1"/>
       <text x="44" y="84" class="small">Markdown</text>
-      <text x="196" y="84" class="label">47.6%</text>
+      <text x="196" y="84" class="label">47.5%</text>
       <rect x="256" y="72" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="256" y="72" width="165.0" height="8" rx="4" fill="#083FA1"/>
-      <text x="44" y="104" class="tiny">262.4K changed lines · 152 commits · 1.5K files</text><circle cx="521" cy="79" r="5" fill="#3178C6"/>
+      <text x="44" y="104" class="tiny">262.5K changed lines · 154 commits · 1.5K files</text><circle cx="521" cy="79" r="5" fill="#3178C6"/>
       <text x="534" y="84" class="small">TypeScript</text>
       <text x="686" y="84" class="label">22.1%</text>
       <rect x="746" y="72" width="165" height="8" rx="4" fill="#21262D"/>
       <rect x="746" y="72" width="76.7" height="8" rx="4" fill="#3178C6"/>
       <text x="534" y="104" class="tiny">122K changed lines · 41 commits · 498 files</text><circle cx="31" cy="135" r="5" fill="#F1E05A"/>
       <text x="44" y="140" class="small">JavaScript</text>
-      <text x="196" y="140" class="label">20.8%</text>
+      <text x="196" y="140" class="label">21.0%</text>
       <rect x="256" y="128" width="165" height="8" rx="4" fill="#21262D"/>
-      <rect x="256" y="128" width="72.3" height="8" rx="4" fill="#F1E05A"/>
-      <text x="44" y="160" class="tiny">115K changed lines · 80 commits · 502 files</text><circle cx="521" cy="135" r="5" fill="#00B4AB"/>
+      <rect x="256" y="128" width="73.0" height="8" rx="4" fill="#F1E05A"/>
+      <text x="44" y="160" class="tiny">116.1K changed lines · 82 commits · 503 files</text><circle cx="521" cy="135" r="5" fill="#00B4AB"/>
       <text x="534" y="140" class="small">Dart</text>
       <text x="686" y="140" class="label">2.3%</text>
       <rect x="746" y="128" width="165" height="8" rx="4" fill="#21262D"/>

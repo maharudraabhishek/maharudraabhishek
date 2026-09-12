@@ -23,19 +23,19 @@
   
       <defs><clipPath id="language-bar"><rect x="28" y="68" width="844" height="13" rx="6.5"/></clipPath></defs>
       <rect x="28" y="68" width="844" height="13" rx="6.5" fill="#21262D"/>
-      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="146.890" height="13" fill="#00B4AB"/><rect x="174.890" y="68" width="120.986" height="13" fill="#F1E05A"/><rect x="295.876" y="68" width="106.184" height="13" fill="#A97BFF"/><rect x="402.060" y="68" width="99.521" height="13" fill="#F05138"/><rect x="501.581" y="68" width="92.845" height="13" fill="#3178C6"/><rect x="594.426" y="68" width="86.459" height="13" fill="#B07219"/><rect x="680.885" y="68" width="80.576" height="13" fill="#F34B7D"/><rect x="761.461" y="68" width="27.324" height="13" fill="#58A6FF"/><rect x="788.786" y="68" width="23.872" height="13" fill="#DA5B0B"/><rect x="812.658" y="68" width="12.056" height="13" fill="#DA3434"/><rect x="824.714" y="68" width="10.797" height="13" fill="#083FA1"/><rect x="835.511" y="68" width="8.592" height="13" fill="#555555"/><rect x="844.103" y="68" width="8.087" height="13" fill="#E34C26"/><rect x="852.190" y="68" width="6.180" height="13" fill="#CB171E"/><rect x="858.370" y="68" width="4.758" height="13" fill="#F0883E"/><rect x="863.128" y="68" width="3.604" height="13" fill="#427819"/><rect x="866.732" y="68" width="1.729" height="13" fill="#3572A5"/><rect x="868.461" y="68" width="1.477" height="13" fill="#89E051"/><rect x="869.938" y="68" width="1.181" height="13" fill="#563D7C"/><rect x="871.119" y="68" width="0.403" height="13" fill="#DB61A2"/><rect x="871.522" y="68" width="0.183" height="13" fill="#012456"/><rect x="871.705" y="68" width="0.104" height="13" fill="#C1F12E"/><rect x="871.809" y="68" width="0.077" height="13" fill="#384D54"/><rect x="871.886" y="68" width="0.069" height="13" fill="#701516"/><rect x="871.954" y="68" width="0.038" height="13" fill="#4F5D95"/><rect x="871.992" y="68" width="0.008" height="13" fill="#438EFF"/></g>
+      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="146.273" height="13" fill="#00B4AB"/><rect x="174.273" y="68" width="120.860" height="13" fill="#F1E05A"/><rect x="295.133" y="68" width="105.738" height="13" fill="#A97BFF"/><rect x="400.871" y="68" width="99.103" height="13" fill="#F05138"/><rect x="499.974" y="68" width="92.455" height="13" fill="#3178C6"/><rect x="592.430" y="68" width="86.096" height="13" fill="#B07219"/><rect x="678.526" y="68" width="80.238" height="13" fill="#F34B7D"/><rect x="758.764" y="68" width="27.209" height="13" fill="#58A6FF"/><rect x="785.973" y="68" width="23.772" height="13" fill="#DA5B0B"/><rect x="809.745" y="68" width="12.006" height="13" fill="#DA3434"/><rect x="821.751" y="68" width="10.751" height="13" fill="#083FA1"/><rect x="832.502" y="68" width="8.556" height="13" fill="#555555"/><rect x="841.058" y="68" width="8.053" height="13" fill="#E34C26"/><rect x="849.111" y="68" width="7.899" height="13" fill="#F0883E"/><rect x="857.010" y="68" width="6.154" height="13" fill="#CB171E"/><rect x="863.165" y="68" width="3.589" height="13" fill="#427819"/><rect x="866.754" y="68" width="1.722" height="13" fill="#3572A5"/><rect x="868.476" y="68" width="1.471" height="13" fill="#89E051"/><rect x="869.946" y="68" width="1.176" height="13" fill="#563D7C"/><rect x="871.123" y="68" width="0.401" height="13" fill="#DB61A2"/><rect x="871.524" y="68" width="0.183" height="13" fill="#012456"/><rect x="871.707" y="68" width="0.103" height="13" fill="#C1F12E"/><rect x="871.810" y="68" width="0.077" height="13" fill="#384D54"/><rect x="871.886" y="68" width="0.068" height="13" fill="#701516"/><rect x="871.955" y="68" width="0.038" height="13" fill="#4F5D95"/><rect x="871.992" y="68" width="0.008" height="13" fill="#438EFF"/></g>
       <circle cx="33" cy="106" r="5" fill="#00B4AB"/>
       <text x="46" y="110" class="small">Dart</text>
-      <text x="186" y="110" class="label">17.4%</text>
+      <text x="186" y="110" class="label">17.3%</text>
       <text x="246" y="110" class="tiny">9 repos</text><circle cx="323" cy="106" r="5" fill="#F1E05A"/>
       <text x="336" y="110" class="small">JavaScript</text>
       <text x="476" y="110" class="label">14.3%</text>
       <text x="536" y="110" class="tiny">13 repos</text><circle cx="613" cy="106" r="5" fill="#A97BFF"/>
       <text x="626" y="110" class="small">Kotlin</text>
-      <text x="766" y="110" class="label">12.6%</text>
+      <text x="766" y="110" class="label">12.5%</text>
       <text x="826" y="110" class="tiny">9 repos</text><circle cx="33" cy="140" r="5" fill="#F05138"/>
       <text x="46" y="144" class="small">Swift</text>
-      <text x="186" y="144" class="label">11.8%</text>
+      <text x="186" y="144" class="label">11.7%</text>
       <text x="246" y="144" class="tiny">10 repos</text><circle cx="323" cy="140" r="5" fill="#3178C6"/>
       <text x="336" y="144" class="small">TypeScript</text>
       <text x="476" y="144" class="label">11.0%</text>
@@ -63,12 +63,12 @@
       <text x="826" y="212" class="tiny">3 repos</text><circle cx="33" cy="242" r="5" fill="#E34C26"/>
       <text x="46" y="246" class="small">HTML</text>
       <text x="186" y="246" class="label">1.0%</text>
-      <text x="246" y="246" class="tiny">5 repos</text><circle cx="323" cy="242" r="5" fill="#CB171E"/>
-      <text x="336" y="246" class="small">YAML</text>
-      <text x="476" y="246" class="label">0.7%</text>
-      <text x="536" y="246" class="tiny">1 repo</text><circle cx="613" cy="242" r="5" fill="#F0883E"/>
-      <text x="626" y="246" class="small">PLpgSQL</text>
-      <text x="766" y="246" class="label">0.6%</text>
+      <text x="246" y="246" class="tiny">5 repos</text><circle cx="323" cy="242" r="5" fill="#F0883E"/>
+      <text x="336" y="246" class="small">PLpgSQL</text>
+      <text x="476" y="246" class="label">0.9%</text>
+      <text x="536" y="246" class="tiny">1 repo</text><circle cx="613" cy="242" r="5" fill="#CB171E"/>
+      <text x="626" y="246" class="small">YAML</text>
+      <text x="766" y="246" class="label">0.7%</text>
       <text x="826" y="246" class="tiny">1 repo</text><circle cx="33" cy="276" r="5" fill="#427819"/>
       <text x="46" y="280" class="small">Makefile</text>
       <text x="186" y="280" class="label">0.4%</text>
