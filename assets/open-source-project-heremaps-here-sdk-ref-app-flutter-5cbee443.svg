@@ -37,7 +37,7 @@
       <rect x="42" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
       <text x="55" y="224" class="compositionValue">237</text>
       <text x="55" y="240" class="compositionLabel">Project commits</text><rect x="350.6666666666667" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
-      <text x="363.6666666666667" y="224" class="compositionValue">19</text>
+      <text x="363.6666666666667" y="224" class="compositionValue">20</text>
       <text x="363.6666666666667" y="240" class="compositionLabel">Releases</text><rect x="659.3333333333334" y="205" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
       <text x="672.3333333333334" y="224" class="compositionValue">7</text>
       <text x="672.3333333333334" y="240" class="compositionLabel">Languages</text><rect x="42" y="257" width="298.6666666666667" height="42" rx="9" fill="#0D1117" stroke="#3FB950" stroke-opacity=".34"/>
