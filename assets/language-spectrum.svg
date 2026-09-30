@@ -19,54 +19,54 @@
   <rect x=".5" y=".5" width="899" height="427" rx="12" fill="#0D1117" stroke="#30363D"/>
   <g transform="translate(20 17) scale(1.125)" fill="none" stroke="#39C5CF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3L1 8l5 5M10 3l5 5-5 5"/></g>
   <text x="48" y="31" class="title">Engineering Language Footprint</text>
-  <text x="48" y="49" class="subtitle">Code-byte composition across 25 personal repositories + 4 verified public projects · Linguist with source-tree fallback</text>
+  <text x="48" y="49" class="subtitle">Code-byte composition across 26 personal repositories + 4 verified public projects · Linguist with source-tree fallback</text>
   
       <defs><clipPath id="language-bar"><rect x="28" y="68" width="844" height="13" rx="6.5"/></clipPath></defs>
       <rect x="28" y="68" width="844" height="13" rx="6.5" fill="#21262D"/>
-      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="145.268" height="13" fill="#00B4AB"/><rect x="173.268" y="68" width="125.087" height="13" fill="#F1E05A"/><rect x="298.355" y="68" width="105.012" height="13" fill="#A97BFF"/><rect x="403.367" y="68" width="98.422" height="13" fill="#F05138"/><rect x="501.789" y="68" width="91.820" height="13" fill="#3178C6"/><rect x="593.610" y="68" width="85.505" height="13" fill="#B07219"/><rect x="679.114" y="68" width="79.687" height="13" fill="#F34B7D"/><rect x="758.801" y="68" width="27.022" height="13" fill="#58A6FF"/><rect x="785.823" y="68" width="23.609" height="13" fill="#DA5B0B"/><rect x="809.432" y="68" width="12.034" height="13" fill="#DA3434"/><rect x="821.466" y="68" width="10.677" height="13" fill="#083FA1"/><rect x="832.143" y="68" width="8.497" height="13" fill="#555555"/><rect x="840.641" y="68" width="8.475" height="13" fill="#F0883E"/><rect x="849.116" y="68" width="7.998" height="13" fill="#E34C26"/><rect x="857.113" y="68" width="6.112" height="13" fill="#CB171E"/><rect x="863.226" y="68" width="3.565" height="13" fill="#427819"/><rect x="866.790" y="68" width="1.710" height="13" fill="#3572A5"/><rect x="868.500" y="68" width="1.461" height="13" fill="#89E051"/><rect x="869.960" y="68" width="1.168" height="13" fill="#563D7C"/><rect x="871.129" y="68" width="0.399" height="13" fill="#DB61A2"/><rect x="871.527" y="68" width="0.181" height="13" fill="#012456"/><rect x="871.709" y="68" width="0.102" height="13" fill="#C1F12E"/><rect x="871.811" y="68" width="0.076" height="13" fill="#384D54"/><rect x="871.887" y="68" width="0.068" height="13" fill="#701516"/><rect x="871.955" y="68" width="0.037" height="13" fill="#4F5D95"/><rect x="871.992" y="68" width="0.008" height="13" fill="#438EFF"/></g>
+      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="141.091" height="13" fill="#00B4AB"/><rect x="169.091" y="68" width="122.838" height="13" fill="#F1E05A"/><rect x="291.929" y="68" width="110.094" height="13" fill="#3178C6"/><rect x="402.023" y="68" width="101.992" height="13" fill="#A97BFF"/><rect x="504.015" y="68" width="95.592" height="13" fill="#F05138"/><rect x="599.607" y="68" width="83.046" height="13" fill="#B07219"/><rect x="682.653" y="68" width="77.395" height="13" fill="#F34B7D"/><rect x="760.049" y="68" width="26.245" height="13" fill="#58A6FF"/><rect x="786.294" y="68" width="22.930" height="13" fill="#DA5B0B"/><rect x="809.224" y="68" width="11.688" height="13" fill="#DA3434"/><rect x="820.912" y="68" width="10.370" height="13" fill="#083FA1"/><rect x="831.282" y="68" width="9.021" height="13" fill="#F0883E"/><rect x="840.303" y="68" width="8.253" height="13" fill="#555555"/><rect x="848.556" y="68" width="7.783" height="13" fill="#E34C26"/><rect x="856.340" y="68" width="5.936" height="13" fill="#CB171E"/><rect x="862.276" y="68" width="3.462" height="13" fill="#427819"/><rect x="865.738" y="68" width="2.148" height="13" fill="#3572A5"/><rect x="867.886" y="68" width="1.762" height="13" fill="#563D7C"/><rect x="869.649" y="68" width="1.419" height="13" fill="#89E051"/><rect x="871.067" y="68" width="0.387" height="13" fill="#DB61A2"/><rect x="871.454" y="68" width="0.215" height="13" fill="#012456"/><rect x="871.669" y="68" width="0.122" height="13" fill="#384D54"/><rect x="871.791" y="68" width="0.099" height="13" fill="#C1F12E"/><rect x="871.890" y="68" width="0.066" height="13" fill="#701516"/><rect x="871.956" y="68" width="0.036" height="13" fill="#4F5D95"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
       <circle cx="33" cy="106" r="5" fill="#00B4AB"/>
       <text x="46" y="110" class="small">Dart</text>
-      <text x="186" y="110" class="label">17.2%</text>
+      <text x="186" y="110" class="label">16.7%</text>
       <text x="246" y="110" class="tiny">9 repos</text><circle cx="323" cy="106" r="5" fill="#F1E05A"/>
       <text x="336" y="110" class="small">JavaScript</text>
-      <text x="476" y="110" class="label">14.8%</text>
-      <text x="536" y="110" class="tiny">13 repos</text><circle cx="613" cy="106" r="5" fill="#A97BFF"/>
-      <text x="626" y="110" class="small">Kotlin</text>
-      <text x="766" y="110" class="label">12.4%</text>
-      <text x="826" y="110" class="tiny">9 repos</text><circle cx="33" cy="140" r="5" fill="#F05138"/>
-      <text x="46" y="144" class="small">Swift</text>
-      <text x="186" y="144" class="label">11.7%</text>
-      <text x="246" y="144" class="tiny">10 repos</text><circle cx="323" cy="140" r="5" fill="#3178C6"/>
-      <text x="336" y="144" class="small">TypeScript</text>
-      <text x="476" y="144" class="label">10.9%</text>
-      <text x="536" y="144" class="tiny">7 repos</text><circle cx="613" cy="140" r="5" fill="#B07219"/>
+      <text x="476" y="110" class="label">14.6%</text>
+      <text x="536" y="110" class="tiny">14 repos</text><circle cx="613" cy="106" r="5" fill="#3178C6"/>
+      <text x="626" y="110" class="small">TypeScript</text>
+      <text x="766" y="110" class="label">13.0%</text>
+      <text x="826" y="110" class="tiny">8 repos</text><circle cx="33" cy="140" r="5" fill="#A97BFF"/>
+      <text x="46" y="144" class="small">Kotlin</text>
+      <text x="186" y="144" class="label">12.1%</text>
+      <text x="246" y="144" class="tiny">9 repos</text><circle cx="323" cy="140" r="5" fill="#F05138"/>
+      <text x="336" y="144" class="small">Swift</text>
+      <text x="476" y="144" class="label">11.3%</text>
+      <text x="536" y="144" class="tiny">10 repos</text><circle cx="613" cy="140" r="5" fill="#B07219"/>
       <text x="626" y="144" class="small">Java</text>
-      <text x="766" y="144" class="label">10.1%</text>
+      <text x="766" y="144" class="label">9.8%</text>
       <text x="826" y="144" class="tiny">8 repos</text><circle cx="33" cy="174" r="5" fill="#F34B7D"/>
       <text x="46" y="178" class="small">C++</text>
-      <text x="186" y="178" class="label">9.4%</text>
+      <text x="186" y="178" class="label">9.2%</text>
       <text x="246" y="178" class="tiny">4 repos</text><circle cx="323" cy="174" r="5" fill="#58A6FF"/>
       <text x="336" y="178" class="small">Mustache</text>
-      <text x="476" y="178" class="label">3.2%</text>
+      <text x="476" y="178" class="label">3.1%</text>
       <text x="536" y="178" class="tiny">1 repo</text><circle cx="613" cy="174" r="5" fill="#DA5B0B"/>
       <text x="626" y="178" class="small">Jupyter Notebook</text>
-      <text x="766" y="178" class="label">2.8%</text>
+      <text x="766" y="178" class="label">2.7%</text>
       <text x="826" y="178" class="tiny">1 repo</text><circle cx="33" cy="208" r="5" fill="#DA3434"/>
       <text x="46" y="212" class="small">CMake</text>
       <text x="186" y="212" class="label">1.4%</text>
       <text x="246" y="212" class="tiny">2 repos</text><circle cx="323" cy="208" r="5" fill="#083FA1"/>
       <text x="336" y="212" class="small">Markdown</text>
-      <text x="476" y="212" class="label">1.3%</text>
-      <text x="536" y="212" class="tiny">2 repos</text><circle cx="613" cy="208" r="5" fill="#555555"/>
-      <text x="626" y="212" class="small">C</text>
-      <text x="766" y="212" class="label">1.0%</text>
-      <text x="826" y="212" class="tiny">3 repos</text><circle cx="33" cy="242" r="5" fill="#F0883E"/>
-      <text x="46" y="246" class="small">PLpgSQL</text>
+      <text x="476" y="212" class="label">1.2%</text>
+      <text x="536" y="212" class="tiny">2 repos</text><circle cx="613" cy="208" r="5" fill="#F0883E"/>
+      <text x="626" y="212" class="small">PLpgSQL</text>
+      <text x="766" y="212" class="label">1.1%</text>
+      <text x="826" y="212" class="tiny">2 repos</text><circle cx="33" cy="242" r="5" fill="#555555"/>
+      <text x="46" y="246" class="small">C</text>
       <text x="186" y="246" class="label">1.0%</text>
-      <text x="246" y="246" class="tiny">1 repo</text><circle cx="323" cy="242" r="5" fill="#E34C26"/>
+      <text x="246" y="246" class="tiny">3 repos</text><circle cx="323" cy="242" r="5" fill="#E34C26"/>
       <text x="336" y="246" class="small">HTML</text>
       <text x="476" y="246" class="label">0.9%</text>
-      <text x="536" y="246" class="tiny">5 repos</text><circle cx="613" cy="242" r="5" fill="#CB171E"/>
+      <text x="536" y="246" class="tiny">6 repos</text><circle cx="613" cy="242" r="5" fill="#CB171E"/>
       <text x="626" y="246" class="small">YAML</text>
       <text x="766" y="246" class="label">0.7%</text>
       <text x="826" y="246" class="tiny">1 repo</text><circle cx="33" cy="276" r="5" fill="#427819"/>
@@ -74,26 +74,26 @@
       <text x="186" y="280" class="label">0.4%</text>
       <text x="246" y="280" class="tiny">1 repo</text><circle cx="323" cy="276" r="5" fill="#3572A5"/>
       <text x="336" y="280" class="small">Python</text>
-      <text x="476" y="280" class="label">0.2%</text>
-      <text x="536" y="280" class="tiny">2 repos</text><circle cx="613" cy="276" r="5" fill="#89E051"/>
-      <text x="626" y="280" class="small">Shell</text>
+      <text x="476" y="280" class="label">0.3%</text>
+      <text x="536" y="280" class="tiny">3 repos</text><circle cx="613" cy="276" r="5" fill="#563D7C"/>
+      <text x="626" y="280" class="small">CSS</text>
       <text x="766" y="280" class="label">0.2%</text>
-      <text x="826" y="280" class="tiny">4 repos</text><circle cx="33" cy="310" r="5" fill="#563D7C"/>
-      <text x="46" y="314" class="small">CSS</text>
-      <text x="186" y="314" class="label">0.1%</text>
+      <text x="826" y="280" class="tiny">5 repos</text><circle cx="33" cy="310" r="5" fill="#89E051"/>
+      <text x="46" y="314" class="small">Shell</text>
+      <text x="186" y="314" class="label">0.2%</text>
       <text x="246" y="314" class="tiny">4 repos</text><circle cx="323" cy="310" r="5" fill="#DB61A2"/>
       <text x="336" y="314" class="small">ANTLR</text>
       <text x="476" y="314" class="label">&lt;0.1%</text>
       <text x="536" y="314" class="tiny">1 repo</text><circle cx="613" cy="310" r="5" fill="#012456"/>
       <text x="626" y="314" class="small">PowerShell</text>
       <text x="766" y="314" class="label">&lt;0.1%</text>
-      <text x="826" y="314" class="tiny">1 repo</text><circle cx="33" cy="344" r="5" fill="#C1F12E"/>
-      <text x="46" y="348" class="small">Batchfile</text>
+      <text x="826" y="314" class="tiny">2 repos</text><circle cx="33" cy="344" r="5" fill="#384D54"/>
+      <text x="46" y="348" class="small">Dockerfile</text>
       <text x="186" y="348" class="label">&lt;0.1%</text>
-      <text x="246" y="348" class="tiny">2 repos</text><circle cx="323" cy="344" r="5" fill="#384D54"/>
-      <text x="336" y="348" class="small">Dockerfile</text>
+      <text x="246" y="348" class="tiny">4 repos</text><circle cx="323" cy="344" r="5" fill="#C1F12E"/>
+      <text x="336" y="348" class="small">Batchfile</text>
       <text x="476" y="348" class="label">&lt;0.1%</text>
-      <text x="536" y="348" class="tiny">3 repos</text><circle cx="613" cy="344" r="5" fill="#701516"/>
+      <text x="536" y="348" class="tiny">2 repos</text><circle cx="613" cy="344" r="5" fill="#701516"/>
       <text x="626" y="348" class="small">Ruby</text>
       <text x="766" y="348" class="label">&lt;0.1%</text>
       <text x="826" y="348" class="tiny">1 repo</text><circle cx="33" cy="378" r="5" fill="#4F5D95"/>

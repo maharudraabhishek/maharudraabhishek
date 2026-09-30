@@ -16,8 +16,8 @@
   <g transform="translate(24 66) scale(0.9375)" fill="none" stroke="#8B949E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
       <text x="50" y="82" class="small">Level 0 · No AI evidence</text>
       <rect x="290" y="70" width="330" height="9" rx="4.5" fill="#21262D"/>
-      <rect x="290" y="70" width="297.0" height="9" rx="4.5" fill="#8B949E"/>
-      <text x="650" y="82" text-anchor="end" class="label">9 repos</text><g transform="translate(24 109) scale(0.9375)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
+      <rect x="290" y="70" width="330.0" height="9" rx="4.5" fill="#8B949E"/>
+      <text x="650" y="82" text-anchor="end" class="label">10 repos</text><g transform="translate(24 109) scale(0.9375)" fill="none" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1l7 4-7 4-7-4 7-4zM1 8l7 4 7-4M1 11l7 4 7-4"/></g>
       <text x="50" y="125" class="small">Level 1 · AI Assisted</text>
       <rect x="290" y="113" width="330" height="9" rx="4.5" fill="#21262D"/>
       <rect x="290" y="113" width="330.0" height="9" rx="4.5" fill="#58A6FF"/>
