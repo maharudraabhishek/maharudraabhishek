@@ -23,16 +23,16 @@
   
       <defs><clipPath id="language-bar"><rect x="28" y="68" width="844" height="13" rx="6.5"/></clipPath></defs>
       <rect x="28" y="68" width="844" height="13" rx="6.5" fill="#21262D"/>
-      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="141.091" height="13" fill="#00B4AB"/><rect x="169.091" y="68" width="122.838" height="13" fill="#F1E05A"/><rect x="291.929" y="68" width="110.094" height="13" fill="#3178C6"/><rect x="402.023" y="68" width="101.992" height="13" fill="#A97BFF"/><rect x="504.015" y="68" width="95.592" height="13" fill="#F05138"/><rect x="599.607" y="68" width="83.046" height="13" fill="#B07219"/><rect x="682.653" y="68" width="77.395" height="13" fill="#F34B7D"/><rect x="760.049" y="68" width="26.245" height="13" fill="#58A6FF"/><rect x="786.294" y="68" width="22.930" height="13" fill="#DA5B0B"/><rect x="809.224" y="68" width="11.688" height="13" fill="#DA3434"/><rect x="820.912" y="68" width="10.370" height="13" fill="#083FA1"/><rect x="831.282" y="68" width="9.021" height="13" fill="#F0883E"/><rect x="840.303" y="68" width="8.253" height="13" fill="#555555"/><rect x="848.556" y="68" width="7.783" height="13" fill="#E34C26"/><rect x="856.340" y="68" width="5.936" height="13" fill="#CB171E"/><rect x="862.276" y="68" width="3.462" height="13" fill="#427819"/><rect x="865.738" y="68" width="2.148" height="13" fill="#3572A5"/><rect x="867.886" y="68" width="1.762" height="13" fill="#563D7C"/><rect x="869.649" y="68" width="1.419" height="13" fill="#89E051"/><rect x="871.067" y="68" width="0.387" height="13" fill="#DB61A2"/><rect x="871.454" y="68" width="0.215" height="13" fill="#012456"/><rect x="871.669" y="68" width="0.122" height="13" fill="#384D54"/><rect x="871.791" y="68" width="0.099" height="13" fill="#C1F12E"/><rect x="871.890" y="68" width="0.066" height="13" fill="#701516"/><rect x="871.956" y="68" width="0.036" height="13" fill="#4F5D95"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
+      <g clip-path="url(#language-bar)"><rect x="28.000" y="68" width="140.762" height="13" fill="#00B4AB"/><rect x="168.762" y="68" width="122.410" height="13" fill="#F1E05A"/><rect x="291.172" y="68" width="111.933" height="13" fill="#3178C6"/><rect x="403.105" y="68" width="101.756" height="13" fill="#A97BFF"/><rect x="504.860" y="68" width="95.418" height="13" fill="#F05138"/><rect x="600.278" y="68" width="83.244" height="13" fill="#B07219"/><rect x="683.522" y="68" width="77.037" height="13" fill="#F34B7D"/><rect x="760.559" y="68" width="26.124" height="13" fill="#58A6FF"/><rect x="786.683" y="68" width="22.824" height="13" fill="#DA5B0B"/><rect x="809.507" y="68" width="11.634" height="13" fill="#DA3434"/><rect x="821.141" y="68" width="10.324" height="13" fill="#083FA1"/><rect x="831.464" y="68" width="8.979" height="13" fill="#F0883E"/><rect x="840.444" y="68" width="8.215" height="13" fill="#555555"/><rect x="848.658" y="68" width="7.747" height="13" fill="#E34C26"/><rect x="856.406" y="68" width="5.909" height="13" fill="#CB171E"/><rect x="862.315" y="68" width="3.446" height="13" fill="#427819"/><rect x="865.761" y="68" width="2.138" height="13" fill="#3572A5"/><rect x="867.899" y="68" width="1.760" height="13" fill="#563D7C"/><rect x="869.660" y="68" width="1.412" height="13" fill="#89E051"/><rect x="871.071" y="68" width="0.385" height="13" fill="#DB61A2"/><rect x="871.457" y="68" width="0.214" height="13" fill="#012456"/><rect x="871.671" y="68" width="0.121" height="13" fill="#384D54"/><rect x="871.792" y="68" width="0.099" height="13" fill="#C1F12E"/><rect x="871.891" y="68" width="0.066" height="13" fill="#701516"/><rect x="871.956" y="68" width="0.036" height="13" fill="#4F5D95"/><rect x="871.993" y="68" width="0.007" height="13" fill="#438EFF"/></g>
       <circle cx="33" cy="106" r="5" fill="#00B4AB"/>
       <text x="46" y="110" class="small">Dart</text>
       <text x="186" y="110" class="label">16.7%</text>
       <text x="246" y="110" class="tiny">9 repos</text><circle cx="323" cy="106" r="5" fill="#F1E05A"/>
       <text x="336" y="110" class="small">JavaScript</text>
-      <text x="476" y="110" class="label">14.6%</text>
+      <text x="476" y="110" class="label">14.5%</text>
       <text x="536" y="110" class="tiny">14 repos</text><circle cx="613" cy="106" r="5" fill="#3178C6"/>
       <text x="626" y="110" class="small">TypeScript</text>
-      <text x="766" y="110" class="label">13.0%</text>
+      <text x="766" y="110" class="label">13.3%</text>
       <text x="826" y="110" class="tiny">8 repos</text><circle cx="33" cy="140" r="5" fill="#A97BFF"/>
       <text x="46" y="144" class="small">Kotlin</text>
       <text x="186" y="144" class="label">12.1%</text>
@@ -41,10 +41,10 @@
       <text x="476" y="144" class="label">11.3%</text>
       <text x="536" y="144" class="tiny">10 repos</text><circle cx="613" cy="140" r="5" fill="#B07219"/>
       <text x="626" y="144" class="small">Java</text>
-      <text x="766" y="144" class="label">9.8%</text>
+      <text x="766" y="144" class="label">9.9%</text>
       <text x="826" y="144" class="tiny">8 repos</text><circle cx="33" cy="174" r="5" fill="#F34B7D"/>
       <text x="46" y="178" class="small">C++</text>
-      <text x="186" y="178" class="label">9.2%</text>
+      <text x="186" y="178" class="label">9.1%</text>
       <text x="246" y="178" class="tiny">4 repos</text><circle cx="323" cy="174" r="5" fill="#58A6FF"/>
       <text x="336" y="178" class="small">Mustache</text>
       <text x="476" y="178" class="label">3.1%</text>
